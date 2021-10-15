@@ -453,6 +453,34 @@ describe('TreasureMarketplace', function () {
             expect(listing.expirationTime).to.be.equal(ethers.constants.MaxUint256);
           });
         })
+
+        describe('TreasureNFTOracle', function () {
+          it('getPrice()', async function () {
+            const price = await treasuryOracle.getPrice(erc1155.address, tokenId);
+            expect(price.price).to.be.equal(0);
+            expect(price.denomination).to.be.equal(ethers.constants.AddressZero);
+          })
+
+          describe('after sale', function () {
+            beforeEach(async function () {
+              await magicToken.mint(buyer, pricePerItem.mul(quantity));
+              await magicToken.connect(buyerSigner).approve(marketplace.address, pricePerItem.mul(quantity));
+
+              await marketplace.connect(buyerSigner).buyItem(
+                erc1155.address,
+                tokenId,
+                seller,
+                quantity
+              )
+            });
+
+            it('getPrice()', async function () {
+              const price = await treasuryOracle.getPrice(erc1155.address, tokenId);
+              expect(price.price).to.be.equal(pricePerItem);
+              expect(price.denomination).to.be.equal(magicToken.address);
+            })
+          })
+        })
       })
     })
   })

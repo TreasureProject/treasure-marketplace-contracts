@@ -100,6 +100,21 @@ describe('TreasureMarketplace', function () {
       await marketplace.setOracleOwner(newOwner);
       expect(await treasuryOracle.owner()).to.be.equal(newOwner);
     });
+
+    it('addToWhitelist()', async function () {
+      expect(await marketplace.nftWhitelist(nft.address)).to.be.false;
+      await marketplace.addToWhitelist(nft.address);
+      expect(await marketplace.nftWhitelist(nft.address)).to.be.true;
+      await expect(marketplace.addToWhitelist(nft.address)).to.be.revertedWith("nft already whitelisted");
+    });
+
+    it('removeFromWhitelist()', async function () {
+      await marketplace.addToWhitelist(nft.address);
+      expect(await marketplace.nftWhitelist(nft.address)).to.be.true;
+      await marketplace.removeFromWhitelist(nft.address);
+      expect(await marketplace.nftWhitelist(nft.address)).to.be.false;
+      await expect(marketplace.removeFromWhitelist(nft.address)).to.be.revertedWith("nft not whitelisted");
+    });
   })
 
   describe('ERC721', function () {
@@ -115,6 +130,16 @@ describe('TreasureMarketplace', function () {
         expect(await nft.ownerOf(tokenId)).to.be.equal(seller);
 
         await nft.connect(sellerSigner).setApprovalForAll(marketplace.address, true);
+
+        await expect(marketplace.connect(sellerSigner).createListing(
+            nft.address,
+            tokenId,
+            1,
+            pricePerItem,
+            expirationTime
+        )).to.be.revertedWith("nft not whitelisted")
+
+        await marketplace.addToWhitelist(nft.address);
         await marketplace.connect(sellerSigner).createListing(
             nft.address,
             tokenId,
@@ -138,6 +163,7 @@ describe('TreasureMarketplace', function () {
           expect(await nft.ownerOf(tokenId)).to.be.equal(seller);
 
           await nft.connect(sellerSigner).setApprovalForAll(marketplace.address, true);
+          await marketplace.addToWhitelist(nft.address);
           await marketplace.connect(sellerSigner).createListing(
               nft.address,
               tokenId,
@@ -217,7 +243,7 @@ describe('TreasureMarketplace', function () {
         expect(await erc1155.balanceOf(seller, tokenId)).to.be.equal(quantity);
 
         await erc1155.connect(sellerSigner).setApprovalForAll(marketplace.address, true);
-
+        await marketplace.addToWhitelist(erc1155.address);
         await expect(marketplace.connect(sellerSigner).createListing(
           erc1155.address,
           tokenId,
@@ -255,6 +281,7 @@ describe('TreasureMarketplace', function () {
           expirationTime = await getCurrentTime() + timedelta;
 
           expect(await erc1155.balanceOf(seller, tokenId)).to.be.equal(quantity);
+          await marketplace.addToWhitelist(erc1155.address);
 
           await erc1155.connect(sellerSigner).setApprovalForAll(marketplace.address, true);
           await marketplace.connect(sellerSigner).createListing(
@@ -322,6 +349,7 @@ describe('TreasureMarketplace', function () {
           expect(await erc1155.balanceOf(seller, tokenId)).to.be.equal(quantity);
 
           await erc1155.connect(sellerSigner).setApprovalForAll(marketplace.address, true);
+          await marketplace.addToWhitelist(erc1155.address);
           await marketplace.connect(sellerSigner).createListing(
               erc1155.address,
               tokenId,

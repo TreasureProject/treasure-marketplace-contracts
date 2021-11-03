@@ -32,11 +32,15 @@ contract TreasureMarketplace is Ownable, ReentrancyGuard {
 
     //  _nftAddress => _tokenId => _owner
     mapping(address => mapping(uint256 => mapping(address => Listing))) public listings;
+    mapping(address => bool) public nftWhitelist;
 
     event UpdateFee(uint256 fee);
     event UpdateFeeRecipient(address feeRecipient);
     event UpdateOracle(address oracle);
     event UpdatePaymentToken(address paymentToken);
+
+    event NftWhitelistAdd(address nft);
+    event NftWhitelistRemove(address nft);
 
     event ItemListed(
         address seller,
@@ -106,6 +110,11 @@ contract TreasureMarketplace is Ownable, ReentrancyGuard {
         _;
     }
 
+    modifier onlyWhitelisted(address nft) {
+        require(nftWhitelist[nft], "nft not whitelisted");
+        _;
+    }
+
     constructor(uint256 _fee, address _feeRecipient, address _oracle, address _paymentToken) {
         setFee(_fee);
         setFeeRecipient(_feeRecipient);
@@ -119,7 +128,7 @@ contract TreasureMarketplace is Ownable, ReentrancyGuard {
         uint256 _quantity,
         uint256 _pricePerItem,
         uint256 _expirationTime
-    ) external notListed(_nftAddress, _tokenId, _msgSender()) {
+    ) external notListed(_nftAddress, _tokenId, _msgSender()) onlyWhitelisted(_nftAddress) {
         if (_expirationTime == 0) _expirationTime = type(uint256).max;
         require(_expirationTime > block.timestamp, "invalid expiration time");
         require(_quantity > 0, "nothing to list");
@@ -290,5 +299,16 @@ contract TreasureMarketplace is Ownable, ReentrancyGuard {
 
     function setOracleOwner(address _newOwner) public onlyOwner {
         TreasureNFTOracle(oracle).transferOwnership(_newOwner);
+    }
+
+    function addToWhitelist(address _nft) external onlyOwner {
+        require(!nftWhitelist[_nft], "nft already whitelisted");
+        nftWhitelist[_nft] = true;
+        emit NftWhitelistAdd(_nft);
+    }
+
+    function removeFromWhitelist(address _nft) external onlyOwner onlyWhitelisted(_nft) {
+        nftWhitelist[_nft] = false;
+        emit NftWhitelistRemove(_nft);
     }
 }

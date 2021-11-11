@@ -234,6 +234,8 @@ contract TreasureMarketplace is Ownable, ReentrancyGuard {
         isListed(_nftAddress, _tokenId, _owner)
         validListing(_nftAddress, _tokenId, _owner)
     {
+        require(_msgSender() != _owner, "Cannot buy your own item");
+
         Listing memory listedItem = listings[_nftAddress][_tokenId][_owner];
         require(listedItem.quantity >= _quantity, "not enough quantity");
 

@@ -1,0 +1,274 @@
+{
+  "address": "0x48d0A85E5A79f043c1721DD4E13F2418287C8D45",
+  "abi": [
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "previousOwner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnershipTransferred",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "nftAddress",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "paymentToken",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "pricePerItem",
+          "type": "uint256"
+        }
+      ],
+      "name": "PriceUpdate",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "getPrice",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "price",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "denomination",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "renounceOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_nftAddress",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_tokenId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "_paymentToken",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_pricePerItem",
+          "type": "uint256"
+        }
+      ],
+      "name": "reportSale",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "transferOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0xb17025cdcc7aa1379c00e42ad62a541820bc4cb3bec610004406f620c3a003e6",
+  "receipt": {
+    "to": null,
+    "from": "0x393248aE29A7C2128E8E27d23330b1F87E0600fc",
+    "contractAddress": "0x48d0A85E5A79f043c1721DD4E13F2418287C8D45",
+    "transactionIndex": 0,
+    "gasUsed": "9503936",
+    "logsBloom": "0x40000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004000001000000000000000000000000000000000000020000000400000000000800000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000020000000000000000000000008000000000000000000000000000000000000000000",
+    "blockHash": "0x76fdd9f9a5715d8912e81666993bbce2a24eb6416c58d6e45ddd71972870b88f",
+    "transactionHash": "0xb17025cdcc7aa1379c00e42ad62a541820bc4cb3bec610004406f620c3a003e6",
+    "logs": [
+      {
+        "transactionIndex": 0,
+        "blockNumber": 2983167,
+        "transactionHash": "0xb17025cdcc7aa1379c00e42ad62a541820bc4cb3bec610004406f620c3a003e6",
+        "address": "0x48d0A85E5A79f043c1721DD4E13F2418287C8D45",
+        "topics": [
+          "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0",
+          "0x0000000000000000000000000000000000000000000000000000000000000000",
+          "0x000000000000000000000000393248ae29a7c2128e8e27d23330b1f87e0600fc"
+        ],
+        "data": "0x",
+        "logIndex": 0,
+        "blockHash": "0x76fdd9f9a5715d8912e81666993bbce2a24eb6416c58d6e45ddd71972870b88f"
+      }
+    ],
+    "blockNumber": 2983167,
+    "cumulativeGasUsed": "6840536",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [],
+  "solcInputHash": "8910363c4030e770fb83f81b403f33d9",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.7+commit.e28d00a7\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"nftAddress\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"paymentToken\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"pricePerItem\",\"type\":\"uint256\"}],\"name\":\"PriceUpdate\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"getPrice\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"denomination\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_nftAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_tokenId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"_paymentToken\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_pricePerItem\",\"type\":\"uint256\"}],\"name\":\"reportSale\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{\"owner()\":{\"details\":\"Returns the address of the current owner.\"},\"renounceOwnership()\":{\"details\":\"Leaves the contract without owner. It will not be possible to call `onlyOwner` functions anymore. Can only be called by the current owner. NOTE: Renouncing ownership will leave the contract without an owner, thereby removing any functionality that is only available to the owner.\"},\"transferOwnership(address)\":{\"details\":\"Transfers ownership of the contract to a new account (`newOwner`). Can only be called by the current owner.\"}},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"getPrice(address,uint256)\":{\"notice\":\"_nftAddress => _tokenId => Price\"}},\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/TreasureNFTOracle.sol\":\"TreasureNFTOracle\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"@openzeppelin/contracts/access/Ownable.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n\\npragma solidity ^0.8.0;\\n\\nimport \\\"../utils/Context.sol\\\";\\n\\n/**\\n * @dev Contract module which provides a basic access control mechanism, where\\n * there is an account (an owner) that can be granted exclusive access to\\n * specific functions.\\n *\\n * By default, the owner account will be the one that deploys the contract. This\\n * can later be changed with {transferOwnership}.\\n *\\n * This module is used through inheritance. It will make available the modifier\\n * `onlyOwner`, which can be applied to your functions to restrict their use to\\n * the owner.\\n */\\nabstract contract Ownable is Context {\\n    address private _owner;\\n\\n    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);\\n\\n    /**\\n     * @dev Initializes the contract setting the deployer as the initial owner.\\n     */\\n    constructor() {\\n        _setOwner(_msgSender());\\n    }\\n\\n    /**\\n     * @dev Returns the address of the current owner.\\n     */\\n    function owner() public view virtual returns (address) {\\n        return _owner;\\n    }\\n\\n    /**\\n     * @dev Throws if called by any account other than the owner.\\n     */\\n    modifier onlyOwner() {\\n        require(owner() == _msgSender(), \\\"Ownable: caller is not the owner\\\");\\n        _;\\n    }\\n\\n    /**\\n     * @dev Leaves the contract without owner. It will not be possible to call\\n     * `onlyOwner` functions anymore. Can only be called by the current owner.\\n     *\\n     * NOTE: Renouncing ownership will leave the contract without an owner,\\n     * thereby removing any functionality that is only available to the owner.\\n     */\\n    function renounceOwnership() public virtual onlyOwner {\\n        _setOwner(address(0));\\n    }\\n\\n    /**\\n     * @dev Transfers ownership of the contract to a new account (`newOwner`).\\n     * Can only be called by the current owner.\\n     */\\n    function transferOwnership(address newOwner) public virtual onlyOwner {\\n        require(newOwner != address(0), \\\"Ownable: new owner is the zero address\\\");\\n        _setOwner(newOwner);\\n    }\\n\\n    function _setOwner(address newOwner) private {\\n        address oldOwner = _owner;\\n        _owner = newOwner;\\n        emit OwnershipTransferred(oldOwner, newOwner);\\n    }\\n}\\n\",\"keccak256\":\"0x6bb804a310218875e89d12c053e94a13a4607cdf7cc2052f3e52bd32a0dc50a1\",\"license\":\"MIT\"},\"@openzeppelin/contracts/utils/Context.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n\\npragma solidity ^0.8.0;\\n\\n/**\\n * @dev Provides information about the current execution context, including the\\n * sender of the transaction and its data. While these are generally available\\n * via msg.sender and msg.data, they should not be accessed in such a direct\\n * manner, since when dealing with meta-transactions the account sending and\\n * paying for execution may not be the actual sender (as far as an application\\n * is concerned).\\n *\\n * This contract is only required for intermediate, library-like contracts.\\n */\\nabstract contract Context {\\n    function _msgSender() internal view virtual returns (address) {\\n        return msg.sender;\\n    }\\n\\n    function _msgData() internal view virtual returns (bytes calldata) {\\n        return msg.data;\\n    }\\n}\\n\",\"keccak256\":\"0x90565a39ae45c80f0468dc96c7b20d0afc3055f344c8203a0c9258239f350b9f\",\"license\":\"MIT\"},\"contracts/TreasureNFTOracle.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity 0.8.7;\\n\\nimport '@openzeppelin/contracts/access/Ownable.sol';\\n\\ncontract TreasureNFTOracle is Ownable {\\n\\n    struct Price {\\n        uint256 price;\\n        address denomination;\\n    }\\n\\n    /// _nftAddress => _tokenId => Price\\n    mapping(address => mapping(uint256 => Price)) public getPrice;\\n\\n    event PriceUpdate(address indexed nftAddress, uint256 indexed tokenId, address paymentToken, uint256 pricePerItem);\\n\\n    function reportSale(address _nftAddress, uint256 _tokenId, address _paymentToken, uint256 _pricePerItem) external onlyOwner {\\n        getPrice[_nftAddress][_tokenId] = Price(_pricePerItem, _paymentToken);\\n        emit PriceUpdate(_nftAddress, _tokenId, _paymentToken, _pricePerItem);\\n    }\\n}\\n\",\"keccak256\":\"0x44866ef29c108626b6fcfde40c307616a6724b74fd678b1aba15d336dc6437b6\",\"license\":\"MIT\"}},\"version\":1}",
+  "bytecode": "0x608060405234801561001057600080fd5b5061001a3361001f565b61006f565b600080546001600160a01b038381166001600160a01b0319831681178455604051919092169283917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e09190a35050565b6104038061007e6000396000f3fe608060405234801561001057600080fd5b50600436106100575760003560e01c8063449e815d1461005c578063715018a6146100b65780638da5cb5b146100c0578063cdf229e7146100db578063f2fde38b146100ee575b600080fd5b61009461006a36600461032a565b6001602081815260009384526040808520909152918352912080549101546001600160a01b031682565b604080519283526001600160a01b039091166020830152015b60405180910390f35b6100be610101565b005b6000546040516001600160a01b0390911681526020016100ad565b6100be6100e9366004610354565b610140565b6100be6100fc366004610308565b610201565b6000546001600160a01b031633146101345760405162461bcd60e51b815260040161012b90610398565b60405180910390fd5b61013e600061029c565b565b6000546001600160a01b0316331461016a5760405162461bcd60e51b815260040161012b90610398565b6040805180820182528281526001600160a01b038481166020808401828152898416600081815260018085528882208c83528552908890209651875591519590910180546001600160a01b0319169590941694909417909255835190815290810184905285927f572f5206b5d6a41a589d1adb21db361f499161fd2378465567b357c6424c269b910160405180910390a350505050565b6000546001600160a01b0316331461022b5760405162461bcd60e51b815260040161012b90610398565b6001600160a01b0381166102905760405162461bcd60e51b815260206004820152602660248201527f4f776e61626c653a206e6577206f776e657220697320746865207a65726f206160448201526564647265737360d01b606482015260840161012b565b6102998161029c565b50565b600080546001600160a01b038381166001600160a01b0319831681178455604051919092169283917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e09190a35050565b80356001600160a01b038116811461030357600080fd5b919050565b60006020828403121561031a57600080fd5b610323826102ec565b9392505050565b6000806040838503121561033d57600080fd5b610346836102ec565b946020939093013593505050565b6000806000806080858703121561036a57600080fd5b610373856102ec565b935060208501359250610388604086016102ec565b9396929550929360600135925050565b6020808252818101527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e657260408201526060019056fea2646970667358221220e86cf8deaa2d01307213befb7319b085233f9201c5a5a3d33cb2a0ba329176c764736f6c63430008070033",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100575760003560e01c8063449e815d1461005c578063715018a6146100b65780638da5cb5b146100c0578063cdf229e7146100db578063f2fde38b146100ee575b600080fd5b61009461006a36600461032a565b6001602081815260009384526040808520909152918352912080549101546001600160a01b031682565b604080519283526001600160a01b039091166020830152015b60405180910390f35b6100be610101565b005b6000546040516001600160a01b0390911681526020016100ad565b6100be6100e9366004610354565b610140565b6100be6100fc366004610308565b610201565b6000546001600160a01b031633146101345760405162461bcd60e51b815260040161012b90610398565b60405180910390fd5b61013e600061029c565b565b6000546001600160a01b0316331461016a5760405162461bcd60e51b815260040161012b90610398565b6040805180820182528281526001600160a01b038481166020808401828152898416600081815260018085528882208c83528552908890209651875591519590910180546001600160a01b0319169590941694909417909255835190815290810184905285927f572f5206b5d6a41a589d1adb21db361f499161fd2378465567b357c6424c269b910160405180910390a350505050565b6000546001600160a01b0316331461022b5760405162461bcd60e51b815260040161012b90610398565b6001600160a01b0381166102905760405162461bcd60e51b815260206004820152602660248201527f4f776e61626c653a206e6577206f776e657220697320746865207a65726f206160448201526564647265737360d01b606482015260840161012b565b6102998161029c565b50565b600080546001600160a01b038381166001600160a01b0319831681178455604051919092169283917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e09190a35050565b80356001600160a01b038116811461030357600080fd5b919050565b60006020828403121561031a57600080fd5b610323826102ec565b9392505050565b6000806040838503121561033d57600080fd5b610346836102ec565b946020939093013593505050565b6000806000806080858703121561036a57600080fd5b610373856102ec565b935060208501359250610388604086016102ec565b9396929550929360600135925050565b6020808252818101527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e657260408201526060019056fea2646970667358221220e86cf8deaa2d01307213befb7319b085233f9201c5a5a3d33cb2a0ba329176c764736f6c63430008070033",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {
+      "owner()": {
+        "details": "Returns the address of the current owner."
+      },
+      "renounceOwnership()": {
+        "details": "Leaves the contract without owner. It will not be possible to call `onlyOwner` functions anymore. Can only be called by the current owner. NOTE: Renouncing ownership will leave the contract without an owner, thereby removing any functionality that is only available to the owner."
+      },
+      "transferOwnership(address)": {
+        "details": "Transfers ownership of the contract to a new account (`newOwner`). Can only be called by the current owner."
+      }
+    },
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {
+      "getPrice(address,uint256)": {
+        "notice": "_nftAddress => _tokenId => Price"
+      }
+    },
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [
+      {
+        "astId": 591,
+        "contract": "contracts/TreasureNFTOracle.sol:TreasureNFTOracle",
+        "label": "_owner",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_address"
+      },
+      {
+        "astId": 7161,
+        "contract": "contracts/TreasureNFTOracle.sol:TreasureNFTOracle",
+        "label": "getPrice",
+        "offset": 0,
+        "slot": "1",
+        "type": "t_mapping(t_address,t_mapping(t_uint256,t_struct(Price)7153_storage))"
+      }
+    ],
+    "types": {
+      "t_address": {
+        "encoding": "inplace",
+        "label": "address",
+        "numberOfBytes": "20"
+      },
+      "t_mapping(t_address,t_mapping(t_uint256,t_struct(Price)7153_storage))": {
+        "encoding": "mapping",
+        "key": "t_address",
+        "label": "mapping(address => mapping(uint256 => struct TreasureNFTOracle.Price))",
+        "numberOfBytes": "32",
+        "value": "t_mapping(t_uint256,t_struct(Price)7153_storage)"
+      },
+      "t_mapping(t_uint256,t_struct(Price)7153_storage)": {
+        "encoding": "mapping",
+        "key": "t_uint256",
+        "label": "mapping(uint256 => struct TreasureNFTOracle.Price)",
+        "numberOfBytes": "32",
+        "value": "t_struct(Price)7153_storage"
+      },
+      "t_struct(Price)7153_storage": {
+        "encoding": "inplace",
+        "label": "struct TreasureNFTOracle.Price",
+        "members": [
+          {
+            "astId": 7150,
+            "contract": "contracts/TreasureNFTOracle.sol:TreasureNFTOracle",
+            "label": "price",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 7152,
+            "contract": "contracts/TreasureNFTOracle.sol:TreasureNFTOracle",
+            "label": "denomination",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_address"
+          }
+        ],
+        "numberOfBytes": "64"
+      },
+      "t_uint256": {
+        "encoding": "inplace",
+        "label": "uint256",
+        "numberOfBytes": "32"
+      }
+    }
+  }
+}

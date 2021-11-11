@@ -64,7 +64,8 @@ const config: HardhatUserConfig = {
       chainId: 42161,
       live: true,
       saveDeployments: true,
-      gasMultiplier: 2
+      gasMultiplier: 2,
+      deploy: ["deploy/arbitrum"]
     }
   },
   solidity: {
@@ -97,7 +98,7 @@ const config: HardhatUserConfig = {
   paths: {
     artifacts: "artifacts",
     cache: "cache",
-    deploy: "deploy",
+    deploy: "deploy/arbitrum",
     deployments: "deployments",
     imports: "imports",
     sources: "contracts",

@@ -11,12 +11,31 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const feeRecipient = "0xDb6Ab450178bAbCf0e467c1F3B436050d907E233";
     const oracle = (await deployments.get("TreasureNFTOracle")).address;
     const newOwner = feeRecipient;
+    const nftWhitelist = [
+      "0xEBba467eCB6b21239178033189CeAE27CA12EaDf", // treasure
+      "0x3956C81A51FeAed98d7A678d53F44b9166c8ed66", // seedOfLife
+      "0x658365026D06F00965B5bb570727100E821e6508", // legions
+      "0xE83c0200E93Cb1496054e387BDdaE590C07f0194", // legionsGenesis
+      "0xf0a35bA261ECE4FC12870e5B7b9E7790202EF9B5", // keys
+      "0x21e1969884D477afD2Afd4Ad668864a0EebD644c", // extraLife
+    ]
 
     const treasureMarketplace = await deploy('TreasureMarketplace', {
       from: deployer,
       log: true,
       args: [fee, feeRecipient, oracle, magicArbitrum]
     })
+
+    for (const nft of nftWhitelist) {
+      if ((await read('TreasureMarketplace', 'nftWhitelist', nft)) == false) {
+        await execute(
+          'TreasureMarketplace',
+          { from: deployer, log: true },
+          'addToWhitelist',
+          nft
+        );
+      }
+    }
 
     if ((await read('TreasureNFTOracle', 'owner')) != treasureMarketplace.address) {
       await execute(

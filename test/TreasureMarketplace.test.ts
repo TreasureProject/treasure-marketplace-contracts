@@ -6,7 +6,7 @@ const {ethers, deployments, getNamedAccounts} = hre;
 const { deploy } = deployments;
 
 describe('TreasureMarketplace', function () {
-  let marketplace: any, treasuryOracle: any;
+  let marketplace: any, marketplaceBuyer: any, treasuryOracle: any;
   let magicToken: any, nft: any, erc1155: any;
   let seller: any, buyer: any, staker3: any, feeRecipient: any, deployer: any;
   let sellerSigner: any, buyerSigner: any, staker3Signer: any, feeRecipientSigner: any, deployerSigner: any;
@@ -48,6 +48,10 @@ describe('TreasureMarketplace', function () {
     marketplace = await TreasureMarketplace.deploy(100, feeRecipient, treasuryOracle.address, magicToken.address)
     await marketplace.deployed();
     await treasuryOracle.transferOwnership(marketplace.address);
+
+    const TreasureMarketplaceBuyer = await ethers.getContractFactory('TreasureMarketplaceBuyer')
+    marketplaceBuyer = await TreasureMarketplaceBuyer.deploy(marketplace.address);
+    await marketplaceBuyer.deployed();
   });
 
   describe('constructor', function () {
@@ -212,6 +216,31 @@ describe('TreasureMarketplace', function () {
             tokenId,
             seller,
             1
+          )
+
+          expect(await magicToken.balanceOf(await marketplace.feeReceipient())).to.be.equal(pricePerItem.div(100));
+          expect(await magicToken.balanceOf(seller)).to.be.equal(pricePerItem.mul(99).div(100));
+
+          expect(await nft.ownerOf(tokenId)).to.be.equal(buyer);
+          const listing = await marketplace.listings(nft.address, tokenId, seller);
+          expect(listing.quantity).to.be.equal(0);
+          expect(listing.pricePerItem).to.be.equal(0);
+          expect(listing.expirationTime).to.be.equal(0);
+        });
+
+        it('TreasureMarketplaceBuyer.buyItem()', async function () {
+          expect(await nft.ownerOf(tokenId)).to.be.equal(seller);
+          await magicToken.mint(buyer, pricePerItem);
+          await magicToken.connect(buyerSigner).approve(marketplaceBuyer.address, pricePerItem);
+          expect(await magicToken.balanceOf(marketplace.address)).to.be.equal(0);
+          expect(await magicToken.balanceOf(seller)).to.be.equal(0);
+
+          await marketplaceBuyer.connect(buyerSigner).buyItem(
+            nft.address,
+            tokenId,
+            seller,
+            1,
+            pricePerItem
           )
 
           expect(await magicToken.balanceOf(await marketplace.feeReceipient())).to.be.equal(pricePerItem.div(100));
@@ -467,6 +496,107 @@ describe('TreasureMarketplace', function () {
               tokenId,
               seller,
               buyQuantity
+            )
+
+            expect(await magicToken.balanceOf(await marketplace.feeReceipient())).to.be.equal(pricePerItem.mul(buyQuantity).div(100));
+            expect(await magicToken.balanceOf(seller)).to.be.equal(pricePerItem.mul(buyQuantity).mul(99).div(100));
+
+            expect(await erc1155.balanceOf(buyer, tokenId)).to.be.equal(buyQuantity);
+            expect(await erc1155.balanceOf(seller, tokenId)).to.be.equal(quantity - buyQuantity);
+
+            const listing = await marketplace.listings(erc1155.address, tokenId, seller);
+            expect(listing.quantity).to.be.equal(quantity - buyQuantity);
+            expect(listing.pricePerItem).to.be.equal(pricePerItem);
+            expect(listing.expirationTime).to.be.equal(ethers.constants.MaxUint256);
+          });
+        })
+
+        describe('TreasureMarketplaceBuyer.buyItem()', function () {
+          it('all', async function () {
+            expect(await erc1155.balanceOf(seller, tokenId)).to.be.equal(quantity);
+            await magicToken.mint(buyer, pricePerItem.mul(quantity));
+            await magicToken.connect(buyerSigner).approve(marketplaceBuyer.address, pricePerItem.mul(quantity));
+            expect(await magicToken.balanceOf(marketplace.address)).to.be.equal(0);
+            expect(await magicToken.balanceOf(seller)).to.be.equal(0);
+
+            await expect(marketplaceBuyer.connect(buyerSigner).buyItem(
+              erc1155.address,
+              2,
+              seller,
+              quantity,
+              0
+            )).to.be.revertedWith("not listed item");
+
+            await erc1155.connect(sellerSigner).safeTransferFrom(seller, staker3, tokenId, 1, "0x");
+
+            await expect(marketplaceBuyer.connect(buyerSigner).buyItem(
+              erc1155.address,
+              tokenId,
+              seller,
+              quantity,
+              pricePerItem
+            )).to.be.revertedWith("not owning item");
+
+            await erc1155.connect(staker3Signer).safeTransferFrom(staker3, seller, tokenId, 1, "0x");
+
+            await marketplace.connect(sellerSigner).updateListing(
+                erc1155.address,
+                tokenId,
+                quantity,
+                pricePerItem.mul(2),
+                (await getCurrentTime()) + 50
+            );
+
+            await expect(marketplaceBuyer.connect(buyerSigner).buyItem(
+              erc1155.address,
+              tokenId,
+              seller,
+              quantity,
+              pricePerItem
+            )).to.be.revertedWith("pricePerItem changed!");
+
+            await marketplace.connect(sellerSigner).updateListing(
+                erc1155.address,
+                tokenId,
+                quantity,
+                pricePerItem,
+                (await getCurrentTime()) + 100
+            );
+
+            await marketplaceBuyer.connect(buyerSigner).buyItem(
+              erc1155.address,
+              tokenId,
+              seller,
+              quantity,
+              pricePerItem
+            )
+
+            expect(await magicToken.balanceOf(await marketplace.feeReceipient())).to.be.equal(pricePerItem.mul(quantity).div(100));
+            expect(await magicToken.balanceOf(seller)).to.be.equal(pricePerItem.mul(quantity).mul(99).div(100));
+
+            expect(await erc1155.balanceOf(buyer, tokenId)).to.be.equal(quantity);
+            expect(await erc1155.balanceOf(seller, tokenId)).to.be.equal(0);
+            const listing = await marketplace.listings(erc1155.address, tokenId, seller);
+            expect(listing.quantity).to.be.equal(0);
+            expect(listing.pricePerItem).to.be.equal(0);
+            expect(listing.expirationTime).to.be.equal(0);
+          });
+
+          it('partial', async function () {
+            const buyQuantity = 5;
+
+            expect(await erc1155.balanceOf(seller, tokenId)).to.be.equal(quantity);
+            await magicToken.mint(buyer, pricePerItem.mul(buyQuantity));
+            await magicToken.connect(buyerSigner).approve(marketplaceBuyer.address, pricePerItem.mul(buyQuantity));
+            expect(await magicToken.balanceOf(marketplace.address)).to.be.equal(0);
+            expect(await magicToken.balanceOf(seller)).to.be.equal(0);
+
+            await marketplaceBuyer.connect(buyerSigner).buyItem(
+              erc1155.address,
+              tokenId,
+              seller,
+              buyQuantity,
+              pricePerItem
             )
 
             expect(await magicToken.balanceOf(await marketplace.feeReceipient())).to.be.equal(pricePerItem.mul(buyQuantity).div(100));

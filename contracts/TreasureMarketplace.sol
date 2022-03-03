@@ -1,24 +1,22 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.7;
 
-import '@openzeppelin/contracts/access/Ownable.sol';
-import '@openzeppelin/contracts/interfaces/IERC165.sol';
-import '@openzeppelin/contracts/token/ERC1155/IERC1155.sol';
-import '@openzeppelin/contracts/token/ERC721/IERC721.sol';
-import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import '@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol';
+import '@openzeppelin/contracts-upgradeable/interfaces/IERC165Upgradeable.sol';
+import '@openzeppelin/contracts-upgradeable/token/ERC1155/IERC1155Upgradeable.sol';
+import '@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol';
+import '@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol';
+import '@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol';
+import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 
-import './TreasureNFTOracle.sol';
-
-contract TreasureMarketplace is Ownable, ReentrancyGuard {
-    using SafeERC20 for IERC20;
+contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, ReentrancyGuardUpgradeable {
+    using SafeERC20Upgradeable for IERC20Upgradeable;
 
     bytes4 private constant INTERFACE_ID_ERC721 = 0x80ac58cd;
     bytes4 private constant INTERFACE_ID_ERC1155 = 0xd9b67a26;
     uint256 public constant BASIS_POINTS = 10000;
 
-    address public oracle;
     address public paymentToken;
 
     uint256 public fee;
@@ -97,16 +95,18 @@ contract TreasureMarketplace is Ownable, ReentrancyGuard {
         address _owner
     ) {
         Listing memory listedItem = listings[_nftAddress][_tokenId][_owner];
-        if (IERC165(_nftAddress).supportsInterface(INTERFACE_ID_ERC721)) {
-            IERC721 nft = IERC721(_nftAddress);
+        if (IERC165Upgradeable(_nftAddress).supportsInterface(INTERFACE_ID_ERC721)) {
+            IERC721Upgradeable nft = IERC721Upgradeable(_nftAddress);
             require(nft.ownerOf(_tokenId) == _owner, "not owning item");
-        } else if (IERC165(_nftAddress).supportsInterface(INTERFACE_ID_ERC1155)) {
-            IERC1155 nft = IERC1155(_nftAddress);
+        } else if (IERC165Upgradeable(_nftAddress).supportsInterface(INTERFACE_ID_ERC1155)) {
+            IERC1155Upgradeable nft = IERC1155Upgradeable(_nftAddress);
             require(nft.balanceOf(_owner, _tokenId) >= listedItem.quantity, "not owning item");
         } else {
             revert("invalid nft address");
         }
         require(listedItem.expirationTime >= block.timestamp, "listing expired");
+        require(listedItem.quantity > 0, "listing quantity invalid");
+        require(listedItem.pricePerItem > 0, "listing price invalid");
         _;
     }
 
@@ -115,10 +115,13 @@ contract TreasureMarketplace is Ownable, ReentrancyGuard {
         _;
     }
 
-    constructor(uint256 _fee, address _feeRecipient, address _oracle, address _paymentToken) {
+    function init(uint256 _fee, address _feeRecipient, address _paymentToken) external initializer {
+        __Ownable_init_unchained();
+        __Pausable_init_unchained();
+        __ReentrancyGuard_init_unchained();
+
         setFee(_fee);
         setFeeRecipient(_feeRecipient);
-        setOracle(_oracle);
         setPaymentToken(_paymentToken);
     }
 
@@ -128,19 +131,26 @@ contract TreasureMarketplace is Ownable, ReentrancyGuard {
         uint256 _quantity,
         uint256 _pricePerItem,
         uint256 _expirationTime
-    ) external notListed(_nftAddress, _tokenId, _msgSender()) onlyWhitelisted(_nftAddress) {
+    )
+        external
+        whenNotPaused
+        notListed(_nftAddress, _tokenId, _msgSender())
+        onlyWhitelisted(_nftAddress)
+    {
         if (_expirationTime == 0) _expirationTime = type(uint256).max;
         require(_expirationTime > block.timestamp, "invalid expiration time");
-        require(_quantity > 0, "nothing to list");
+        require(_pricePerItem > 0, "cannot sell for 0");
 
-        if (IERC165(_nftAddress).supportsInterface(INTERFACE_ID_ERC721)) {
-            IERC721 nft = IERC721(_nftAddress);
+        if (IERC165Upgradeable(_nftAddress).supportsInterface(INTERFACE_ID_ERC721)) {
+            IERC721Upgradeable nft = IERC721Upgradeable(_nftAddress);
             require(nft.ownerOf(_tokenId) == _msgSender(), "not owning item");
             require(nft.isApprovedForAll(_msgSender(), address(this)), "item not approved");
-        } else if (IERC165(_nftAddress).supportsInterface(INTERFACE_ID_ERC1155)) {
-            IERC1155 nft = IERC1155(_nftAddress);
+            require(_quantity == 1, "cannot list multiple ERC721");
+        } else if (IERC165Upgradeable(_nftAddress).supportsInterface(INTERFACE_ID_ERC1155)) {
+            IERC1155Upgradeable nft = IERC1155Upgradeable(_nftAddress);
             require(nft.balanceOf(_msgSender(), _tokenId) >= _quantity, "must hold enough nfts");
             require(nft.isApprovedForAll(_msgSender(), address(this)), "item not approved");
+            require(_quantity > 0, "nothing to list");
         } else {
             revert("invalid nft address");
         }
@@ -167,16 +177,24 @@ contract TreasureMarketplace is Ownable, ReentrancyGuard {
         uint256 _newQuantity,
         uint256 _newPricePerItem,
         uint256 _newExpirationTime
-    ) external nonReentrant isListed(_nftAddress, _tokenId, _msgSender()) {
+    )
+        external
+        nonReentrant
+        whenNotPaused
+        isListed(_nftAddress, _tokenId, _msgSender())
+    {
         require(_newExpirationTime > block.timestamp, "invalid expiration time");
+        require(_newPricePerItem > 0, "cannot sell for 0");
 
         Listing storage listedItem = listings[_nftAddress][_tokenId][_msgSender()];
-        if (IERC165(_nftAddress).supportsInterface(INTERFACE_ID_ERC721)) {
-            IERC721 nft = IERC721(_nftAddress);
+        if (IERC165Upgradeable(_nftAddress).supportsInterface(INTERFACE_ID_ERC721)) {
+            IERC721Upgradeable nft = IERC721Upgradeable(_nftAddress);
             require(nft.ownerOf(_tokenId) == _msgSender(), "not owning item");
-        } else if (IERC165(_nftAddress).supportsInterface(INTERFACE_ID_ERC1155)) {
-            IERC1155 nft = IERC1155(_nftAddress);
+            require(_newQuantity == 1, "Cannot list multiple ERC721");
+        } else if (IERC165Upgradeable(_nftAddress).supportsInterface(INTERFACE_ID_ERC1155)) {
+            IERC1155Upgradeable nft = IERC1155Upgradeable(_nftAddress);
             require(nft.balanceOf(_msgSender(), _tokenId) >= _newQuantity, "must hold enough nfts");
+            require(_newQuantity > 0, "cannot update quantity to 0");
         } else {
             revert("invalid nft address");
         }
@@ -198,6 +216,7 @@ contract TreasureMarketplace is Ownable, ReentrancyGuard {
     function cancelListing(address _nftAddress, uint256 _tokenId)
         external
         nonReentrant
+        whenNotPaused
         isListed(_nftAddress, _tokenId, _msgSender())
     {
         _cancelListing(_nftAddress, _tokenId, _msgSender());
@@ -209,11 +228,11 @@ contract TreasureMarketplace is Ownable, ReentrancyGuard {
         address _owner
     ) internal {
         Listing memory listedItem = listings[_nftAddress][_tokenId][_owner];
-        if (IERC165(_nftAddress).supportsInterface(INTERFACE_ID_ERC721)) {
-            IERC721 nft = IERC721(_nftAddress);
+        if (IERC165Upgradeable(_nftAddress).supportsInterface(INTERFACE_ID_ERC721)) {
+            IERC721Upgradeable nft = IERC721Upgradeable(_nftAddress);
             require(nft.ownerOf(_tokenId) == _owner, "not owning item");
-        } else if (IERC165(_nftAddress).supportsInterface(INTERFACE_ID_ERC1155)) {
-            IERC1155 nft = IERC1155(_nftAddress);
+        } else if (IERC165Upgradeable(_nftAddress).supportsInterface(INTERFACE_ID_ERC1155)) {
+            IERC1155Upgradeable nft = IERC1155Upgradeable(_nftAddress);
             require(nft.balanceOf(_msgSender(), _tokenId) >= listedItem.quantity, "not owning item");
         } else {
             revert("invalid nft address");
@@ -227,23 +246,42 @@ contract TreasureMarketplace is Ownable, ReentrancyGuard {
         address _nftAddress,
         uint256 _tokenId,
         address _owner,
-        uint256 _quantity
+        uint256 _quantity,
+        uint256 _pricePerItem
     )
         external
         nonReentrant
+        whenNotPaused
         isListed(_nftAddress, _tokenId, _owner)
         validListing(_nftAddress, _tokenId, _owner)
     {
         require(_msgSender() != _owner, "Cannot buy your own item");
 
-        Listing memory listedItem = listings[_nftAddress][_tokenId][_owner];
+        Listing storage listedItem = listings[_nftAddress][_tokenId][_owner];
+        uint256 pricePerItem = listedItem.pricePerItem;
+
+        require(_quantity > 0, "Nothing to buy");
         require(listedItem.quantity >= _quantity, "not enough quantity");
+        require(pricePerItem <= _pricePerItem, "price increased");
+
+        _buyItem(_nftAddress, _tokenId, _owner, _quantity, pricePerItem);
+    }
+
+    function _buyItem(
+        address _nftAddress,
+        uint256 _tokenId,
+        address _owner,
+        uint256 _quantity,
+        uint256 _pricePerItem
+    ) internal {
+        Listing storage listedItem = listings[_nftAddress][_tokenId][_owner];
 
         // Transfer NFT to buyer
-        if (IERC165(_nftAddress).supportsInterface(INTERFACE_ID_ERC721)) {
-            IERC721(_nftAddress).safeTransferFrom(_owner, _msgSender(), _tokenId);
+        if (IERC165Upgradeable(_nftAddress).supportsInterface(INTERFACE_ID_ERC721)) {
+            require(_quantity == 1, "Cannot buy multiple ERC721");
+            IERC721Upgradeable(_nftAddress).safeTransferFrom(_owner, _msgSender(), _tokenId);
         } else {
-            IERC1155(_nftAddress).safeTransferFrom(_owner, _msgSender(), _tokenId, _quantity, bytes(""));
+            IERC1155Upgradeable(_nftAddress).safeTransferFrom(_owner, _msgSender(), _tokenId, _quantity, bytes(""));
         }
 
         if (listedItem.quantity == _quantity) {
@@ -261,19 +299,10 @@ contract TreasureMarketplace is Ownable, ReentrancyGuard {
             listedItem.pricePerItem
         );
 
-        TreasureNFTOracle(oracle).reportSale(_nftAddress, _tokenId, paymentToken, listedItem.pricePerItem);
-        _buyItem(listedItem.pricePerItem, _quantity, _owner);
-    }
-
-    function _buyItem(
-        uint256 _pricePerItem,
-        uint256 _quantity,
-        address _owner
-    ) internal {
         uint256 totalPrice = _pricePerItem * _quantity;
         uint256 feeAmount = totalPrice * fee / BASIS_POINTS;
-        IERC20(paymentToken).safeTransferFrom(_msgSender(), feeReceipient, feeAmount);
-        IERC20(paymentToken).safeTransferFrom(_msgSender(), _owner, totalPrice - feeAmount);
+        IERC20Upgradeable(paymentToken).safeTransferFrom(_msgSender(), feeReceipient, feeAmount);
+        IERC20Upgradeable(paymentToken).safeTransferFrom(_msgSender(), _owner, totalPrice - feeAmount);
     }
 
     // admin
@@ -289,18 +318,9 @@ contract TreasureMarketplace is Ownable, ReentrancyGuard {
         emit UpdateFeeRecipient(_feeRecipient);
     }
 
-    function setOracle(address _oracle) public onlyOwner {
-        oracle = _oracle;
-        emit UpdateOracle(_oracle);
-    }
-
     function setPaymentToken(address _paymentToken) public onlyOwner {
         paymentToken = _paymentToken;
         emit UpdatePaymentToken(_paymentToken);
-    }
-
-    function setOracleOwner(address _newOwner) public onlyOwner {
-        TreasureNFTOracle(oracle).transferOwnership(_newOwner);
     }
 
     function addToWhitelist(address _nft) external onlyOwner {
@@ -312,5 +332,13 @@ contract TreasureMarketplace is Ownable, ReentrancyGuard {
     function removeFromWhitelist(address _nft) external onlyOwner onlyWhitelisted(_nft) {
         nftWhitelist[_nft] = false;
         emit NftWhitelistRemove(_nft);
+    }
+
+    function pause() external onlyOwner {
+        _pause();
+    }
+
+    function unpause() external onlyOwner {
+        _unpause();
     }
 }

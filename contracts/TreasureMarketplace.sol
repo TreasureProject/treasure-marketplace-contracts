@@ -246,7 +246,7 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
         uint256 _tokenId,
         address _owner,
         uint256 _quantity,
-        uint256 _pricePerItem
+        uint256 _maxPricePerItem
     )
         external
         nonReentrant
@@ -261,7 +261,7 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
 
         require(_quantity > 0, "Nothing to buy");
         require(listedItem.quantity >= _quantity, "not enough quantity");
-        require(pricePerItem <= _pricePerItem, "price increased");
+        require(pricePerItem <= _maxPricePerItem, "price increased");
 
         _buyItem(_nftAddress, _tokenId, _owner, _quantity, pricePerItem);
     }
@@ -295,7 +295,7 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
             _nftAddress,
             _tokenId,
             _quantity,
-            listedItem.pricePerItem
+            _pricePerItem
         );
 
         uint256 totalPrice = _pricePerItem * _quantity;

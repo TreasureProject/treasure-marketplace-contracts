@@ -97,6 +97,14 @@ describe('TreasureMarketplace', function () {
       expect(await marketplace.nftWhitelist(nft.address)).to.be.false;
       await expect(marketplace.removeFromWhitelist(nft.address)).to.be.revertedWith("nft not whitelisted");
     });
+
+    it('pause() & unpause()', async function () {
+      expect(await marketplace.paused()).to.be.false;
+      await marketplace.pause();
+      expect(await marketplace.paused()).to.be.true;
+      await marketplace.unpause();
+      expect(await marketplace.paused()).to.be.false;
+    });
   })
 
   describe('ERC721', function () {
@@ -147,6 +155,18 @@ describe('TreasureMarketplace', function () {
             expirationTime
         )).to.be.revertedWith("not owning item")
 
+        await marketplace.pause();
+
+        await expect(marketplace.connect(sellerSigner).createListing(
+            nft.address,
+            tokenId,
+            1,
+            pricePerItem,
+            expirationTime
+        )).to.be.revertedWith("Pausable: paused");
+
+        await marketplace.unpause();
+
         await marketplace.connect(sellerSigner).createListing(
             nft.address,
             tokenId,
@@ -183,6 +203,19 @@ describe('TreasureMarketplace', function () {
         it('updateListing()', async function () {
           const newPricePerItem = pricePerItem.mul(2);
           const newExpirationTime = (await getCurrentTime()) + 500;
+
+          await marketplace.pause();
+
+          await expect(marketplace.connect(sellerSigner).updateListing(
+              nft.address,
+              tokenId,
+              1,
+              newPricePerItem,
+              newExpirationTime
+          )).to.be.revertedWith("Pausable: paused");
+
+          await marketplace.unpause();
+
 
           await marketplace.connect(sellerSigner).updateListing(
               nft.address,
@@ -265,6 +298,18 @@ describe('TreasureMarketplace', function () {
             1,
             pricePerItem
           )).to.be.revertedWith("Cannot buy your own item");
+
+          await marketplace.pause();
+
+          await expect(marketplace.connect(buyerSigner).buyItem(
+            nft.address,
+            tokenId,
+            seller,
+            1,
+            pricePerItem
+          )).to.be.revertedWith("Pausable: paused");
+
+          await marketplace.unpause();
 
           await marketplace.connect(buyerSigner).buyItem(
             nft.address,

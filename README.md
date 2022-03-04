@@ -4,3 +4,6 @@
 - Stores price history on-chain
 - Takes fee on sale @ 5%
 - Supports ERC721 and ERC1155
+
+## test coverage
+`npx hardhat coverage --testfiles "contracts/TreasureMarketplace.sol"`

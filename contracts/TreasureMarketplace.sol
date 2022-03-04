@@ -34,7 +34,6 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
 
     event UpdateFee(uint256 fee);
     event UpdateFeeRecipient(address feeRecipient);
-    event UpdateOracle(address oracle);
     event UpdatePaymentToken(address paymentToken);
 
     event NftWhitelistAdd(address nft);

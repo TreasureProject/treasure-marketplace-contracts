@@ -186,6 +186,8 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
         require(_newPricePerItem > 0, "cannot sell for 0");
 
         Listing storage listedItem = listings[_nftAddress][_tokenId][_msgSender()];
+        require(_newPricePerItem <= listedItem.pricePerItem, "Cannot increase price");
+
         if (IERC165Upgradeable(_nftAddress).supportsInterface(INTERFACE_ID_ERC721)) {
             IERC721Upgradeable nft = IERC721Upgradeable(_nftAddress);
             require(nft.ownerOf(_tokenId) == _msgSender(), "not owning item");

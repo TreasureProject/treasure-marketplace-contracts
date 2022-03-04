@@ -201,7 +201,7 @@ describe('TreasureMarketplace', function () {
         });
 
         it('updateListing()', async function () {
-          const newPricePerItem = pricePerItem.mul(2);
+          const newPricePerItem = pricePerItem.div(2);
           const newExpirationTime = (await getCurrentTime()) + 500;
 
           await marketplace.pause();
@@ -216,6 +216,13 @@ describe('TreasureMarketplace', function () {
 
           await marketplace.unpause();
 
+          await expect(marketplace.connect(sellerSigner).updateListing(
+              nft.address,
+              tokenId,
+              1,
+              pricePerItem.add(1),
+              newExpirationTime
+          )).to.be.revertedWith("Cannot increase price")
 
           await marketplace.connect(sellerSigner).updateListing(
               nft.address,
@@ -492,7 +499,7 @@ describe('TreasureMarketplace', function () {
         });
 
         it('updateListing()', async function () {
-          const newPricePerItem = pricePerItem.mul(2);
+          const newPricePerItem = pricePerItem.div(2);
           const newQuantity = 5;
           const newExpirationTime = (await getCurrentTime()) + 500;
 
@@ -527,6 +534,14 @@ describe('TreasureMarketplace', function () {
               0,
               newExpirationTime
           )).to.be.revertedWith("cannot sell for 0");
+
+          await expect(marketplace.connect(sellerSigner).updateListing(
+              erc1155.address,
+              tokenId,
+              newQuantity,
+              pricePerItem.add(1),
+              newExpirationTime
+          )).to.be.revertedWith("Cannot increase price");
 
           await marketplace.connect(sellerSigner).updateListing(
               erc1155.address,

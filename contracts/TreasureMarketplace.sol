@@ -273,7 +273,7 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
         _cancelListing(_nftAddress, _tokenId, _msgSender());
     }
 
-    /// @dev Cancel existing listing
+    /// @dev Delete listing
     /// @param _nftAddress address of the NFT to be sold
     /// @param _tokenId token ID of the NFT to be sold
     /// @param _owner current owner of the NFT

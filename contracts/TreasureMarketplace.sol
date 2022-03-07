@@ -261,42 +261,17 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
         );
     }
 
-    /// @dev Cancel existing listing
+    /// @notice Cancel any existing listing
+    /// @dev Even if no such listing currently exists, it is still cancelled and the event is emitted
     /// @param _nftAddress address of the NFT to be sold
     /// @param _tokenId token ID of the NFT to be sold
     function cancelListing(address _nftAddress, uint256 _tokenId)
         external
         nonReentrant
-        whenNotPaused
-        isListed(_nftAddress, _tokenId, _msgSender())
     {
-        _cancelListing(_nftAddress, _tokenId, _msgSender());
+        delete (listings[_nftAddress][_tokenId][_msgSender()]);
+        emit ItemCanceled(_msgSender(), _nftAddress, _tokenId);
     }
-
-    /// @dev Delete listing
-    /// @param _nftAddress address of the NFT to be sold
-    /// @param _tokenId token ID of the NFT to be sold
-    /// @param _owner current owner of the NFT
-    function _cancelListing(
-        address _nftAddress,
-        uint256 _tokenId,
-        address _owner
-    ) internal {
-        Listing memory listedItem = listings[_nftAddress][_tokenId][_owner];
-        if (IERC165Upgradeable(_nftAddress).supportsInterface(INTERFACE_ID_ERC721)) {
-            IERC721Upgradeable nft = IERC721Upgradeable(_nftAddress);
-            require(nft.ownerOf(_tokenId) == _owner, "not owning item");
-        } else if (IERC165Upgradeable(_nftAddress).supportsInterface(INTERFACE_ID_ERC1155)) {
-            IERC1155Upgradeable nft = IERC1155Upgradeable(_nftAddress);
-            require(nft.balanceOf(_msgSender(), _tokenId) >= listedItem.quantity, "not owning item");
-        } else {
-            revert("invalid nft address");
-        }
-
-        delete (listings[_nftAddress][_tokenId][_owner]);
-        emit ItemCanceled(_owner, _nftAddress, _tokenId);
-    }
-
 
     /// @dev Buy listed NFT
     /// @param _nftAddress address of the NFT to be bought

@@ -255,9 +255,17 @@ describe('TreasureMarketplace', function () {
         });
 
         it('cancelListing()', async function () {
-          await expect(
-            marketplace.connect(buyerSigner).cancelListing(nft.address, tokenId)
-          ).to.be.revertedWith("not listed item");
+          await marketplace.connect(sellerSigner).cancelListing(nft.address, tokenId);
+
+          const listing = await marketplace.listings(nft.address, tokenId, seller);
+          expect(listing.quantity).to.be.equal(0);
+          expect(listing.pricePerItem).to.be.equal(0);
+          expect(listing.expirationTime).to.be.equal(0);
+        });
+
+        it('cancelListing() even if paused', async function () {
+          await marketplace.pause();
+          expect(await marketplace.paused()).to.be.true;
 
           await marketplace.connect(sellerSigner).cancelListing(nft.address, tokenId);
 

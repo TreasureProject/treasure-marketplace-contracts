@@ -25,7 +25,7 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
     uint256 public constant BASIS_POINTS = 10000;
 
     /// @dev token used for payments
-    address public paymentToken;
+    IERC20Upgradeable public paymentToken;
 
     /// @dev fee taken on each sale in basis points,
     /// for example 100 is 100 basis points => 100/10000 = 1/100 = 1%
@@ -50,7 +50,7 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
 
     event UpdateFee(uint256 fee);
     event UpdateFeeRecipient(address feeRecipient);
-    event UpdatePaymentToken(address paymentToken);
+    event UpdatePaymentToken(IERC20Upgradeable paymentToken);
 
     event NftWhitelistAdd(address nft);
     event NftWhitelistRemove(address nft);
@@ -148,7 +148,7 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
     /// @param _fee fee to be paid on each sale, in basis points
     /// @param _feeRecipient wallet to collets fees
     /// @param _paymentToken address of the token that is used for settlement
-    function init(uint256 _fee, address _feeRecipient, address _paymentToken) external initializer {
+    function init(uint256 _fee, address _feeRecipient, IERC20Upgradeable _paymentToken) external initializer {
         __Ownable_init_unchained();
         __Pausable_init_unchained();
         __ReentrancyGuard_init_unchained();
@@ -375,8 +375,8 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
 
         uint256 totalPrice = _pricePerItem * _quantity;
         uint256 feeAmount = totalPrice * fee / BASIS_POINTS;
-        IERC20Upgradeable(paymentToken).safeTransferFrom(_msgSender(), feeReceipient, feeAmount);
-        IERC20Upgradeable(paymentToken).safeTransferFrom(_msgSender(), _owner, totalPrice - feeAmount);
+        paymentToken.safeTransferFrom(_msgSender(), feeReceipient, feeAmount);
+        paymentToken.safeTransferFrom(_msgSender(), _owner, totalPrice - feeAmount);
     }
 
     // admin
@@ -398,7 +398,7 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
 
     /// @dev Sets payment token address. Callable by owner only.
     /// @param _paymentToken address of the token that is used for settlement
-    function setPaymentToken(address _paymentToken) public onlyOwner {
+    function setPaymentToken(IERC20Upgradeable _paymentToken) public onlyOwner {
         paymentToken = _paymentToken;
         emit UpdatePaymentToken(_paymentToken);
     }

@@ -46,14 +46,14 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
     /// @dev mapping for listings, maps: nftAddress => tokenId => owner
     mapping(address => mapping(uint256 => mapping(address => Listing))) public listings;
     /// @dev nfts that are allowed to be sold on the marketplace, maps: nftAddress => bool
-    mapping(address => bool) public nftWhitelist;
+    mapping(address => bool) public nftAllowList;
 
     event UpdateFee(uint256 fee);
     event UpdateFeeRecipient(address feeRecipient);
     event UpdatePaymentToken(address paymentToken);
 
-    event NftWhitelistAdd(address nft);
-    event NftWhitelistRemove(address nft);
+    event NftAllowListAdd(address nft);
+    event NftAllowListRemove(address nft);
 
     event ItemListed(
         address seller,
@@ -137,10 +137,10 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
         require(listedItem.pricePerItem > 0, "listing price invalid");
         _;
     }
-    /// @dev check if NFT is whitelisted
+    /// @dev check if NFT is on the allow list
     /// @param _nft address of the NFT
-    modifier onlyWhitelisted(address _nft) {
-        require(nftWhitelist[_nft], "nft not whitelisted");
+    modifier onlyOnAllowList(address _nft) {
+        require(nftAllowList[_nft], "nft not on the allow list");
         _;
     }
 
@@ -174,7 +174,7 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
         external
         whenNotPaused
         notListed(_nftAddress, _tokenId, _msgSender())
-        onlyWhitelisted(_nftAddress)
+        onlyOnAllowList(_nftAddress)
     {
         if (_expirationTime == 0) _expirationTime = type(uint256).max;
         require(_expirationTime > block.timestamp, "invalid expiration time");
@@ -403,19 +403,19 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
         emit UpdatePaymentToken(_paymentToken);
     }
 
-    /// @dev Whitelists NFT address
-    /// @param _nft address of the NFT to be whitelisted
-    function addToWhitelist(address _nft) external onlyOwner {
-        require(!nftWhitelist[_nft], "nft already whitelisted");
-        nftWhitelist[_nft] = true;
-        emit NftWhitelistAdd(_nft);
+    /// @dev Adds NFT address to allow list
+    /// @param _nft address of the NFT to add to the allow list
+    function addToAllowList(address _nft) external onlyOwner {
+        require(!nftAllowList[_nft], "nft already on allow list");
+        nftAllowList[_nft] = true;
+        emit NftAllowListAdd(_nft);
     }
 
-    /// @dev Removes NFT address from whitelist
+    /// @dev Removes NFT address from allow list
     /// @param _nft address of the NFT to be removed
-    function removeFromWhitelist(address _nft) external onlyOwner onlyWhitelisted(_nft) {
-        nftWhitelist[_nft] = false;
-        emit NftWhitelistRemove(_nft);
+    function removeFromAllowList(address _nft) external onlyOwner onlyOnAllowList(_nft) {
+        nftAllowList[_nft] = false;
+        emit NftAllowListRemove(_nft);
     }
 
     /// @dev Pauses marketplace. Creating, updating, canceling and buying is paused.

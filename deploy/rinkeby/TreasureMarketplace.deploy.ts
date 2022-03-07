@@ -15,7 +15,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const feeRecipient = deployer;
     const oracle = (await deployments.get("TreasureNFTOracle")).address;
     const paymentToken = magicToken.address;
-    const nftWhitelist = []
+    const nftAllowList = [];
 
     const treasureMarketplace = await deploy('TreasureMarketplace', {
       from: deployer,
@@ -23,12 +23,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       args: [fee, feeRecipient, oracle, magicArbitrum]
     })
 
-    for (const nft of nftWhitelist) {
-      if ((await read('TreasureMarketplace', 'nftWhitelist', nft)) == false) {
+    for (const nft of nftAllowList) {
+      if ((await read('TreasureMarketplace', 'nftAllowList', nft)) == false) {
         await execute(
           'TreasureMarketplace',
           { from: deployer, log: true },
-          'addToWhitelist',
+          'addToAllowList',
           nft
         );
       }

@@ -116,7 +116,7 @@ describe('TreasureMarketplace', function () {
       it('createListing()', async function () {
         const tokenId = 0;
         const pricePerItem = ethers.utils.parseUnits('1', 'ether');
-        const expirationTime = 0;
+        const expirationTime = ethers.BigNumber.from('4102462800'); // Midnight Jan 1, 2100
         expect(await nft.ownerOf(tokenId)).to.be.equal(seller);
 
         await nft.connect(sellerSigner).setApprovalForAll(marketplace.address, true);
@@ -178,13 +178,13 @@ describe('TreasureMarketplace', function () {
         const listing = await marketplace.listings(nft.address, tokenId, seller);
         expect(listing.quantity).to.be.equal(1);
         expect(listing.pricePerItem).to.be.equal(pricePerItem);
-        expect(listing.expirationTime).to.be.equal(ethers.constants.MaxUint256);
+        expect(listing.expirationTime).to.be.equal(expirationTime);
       });
 
       describe('with listing', function () {
         const tokenId = 0;
         const pricePerItem = ethers.utils.parseUnits('1', 'ether');
-        const expirationTime = 0;
+        const expirationTime = ethers.BigNumber.from('4102462800'); // Midnight Jan 1, 2100
 
         beforeEach(async function () {
           expect(await nft.ownerOf(tokenId)).to.be.equal(seller);
@@ -345,7 +345,7 @@ describe('TreasureMarketplace', function () {
       const tokenId = 0;
       const quantity = 10;
       const pricePerItem = ethers.utils.parseUnits('1', 'ether');
-      const expirationTime = 0;
+      const expirationTime = ethers.BigNumber.from('4102462800'); // Midnight Jan 1, 2100
 
       beforeEach(async function () {
         await erc1155.functions['mint(address,uint256,uint256)'](seller, tokenId, quantity);
@@ -408,7 +408,7 @@ describe('TreasureMarketplace', function () {
         const listing = await marketplace.listings(erc1155.address, tokenId, seller);
         expect(listing.quantity).to.be.equal(quantity);
         expect(listing.pricePerItem).to.be.equal(pricePerItem);
-        expect(listing.expirationTime).to.be.equal(ethers.constants.MaxUint256);
+        expect(listing.expirationTime).to.be.equal(expirationTime);
       });
 
       describe('expirationTime', function () {
@@ -657,7 +657,7 @@ describe('TreasureMarketplace', function () {
             const listing = await marketplace.listings(erc1155.address, tokenId, seller);
             expect(listing.quantity).to.be.equal(quantity - buyQuantity);
             expect(listing.pricePerItem).to.be.equal(pricePerItem);
-            expect(listing.expirationTime).to.be.equal(ethers.constants.MaxUint256);
+            expect(listing.expirationTime).to.be.equal(expirationTime);
           });
         })
       })

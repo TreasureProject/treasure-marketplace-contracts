@@ -38,7 +38,7 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
         /// @dev timestamp after which the listing is invalid
         uint256 expirationTime;
     }
-    
+
     enum TokenApprovalStatus {NOT_APPROVED, ERC_721_APPROVED, ERC_1155_APPROVED}
 
     /// @dev mapping for listings, maps: nftAddress => tokenId => owner
@@ -331,10 +331,10 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
 
     // admin
 
-    /// @dev Sets fee in basis points. Callable by owner only.
+    /// @dev Sets fee in basis points. Callable by owner only. Max fee is 15%.
     /// @param _fee fee to be paid on each sale, in basis points
     function setFee(uint256 _fee) public onlyOwner {
-        require(_fee < BASIS_POINTS, "max fee");
+        require(_fee <= 1500, "max fee");
         fee = _fee;
         emit UpdateFee(_fee);
     }

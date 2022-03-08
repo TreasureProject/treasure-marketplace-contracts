@@ -73,16 +73,6 @@ describe('TreasureMarketplace', function () {
       expect(await marketplace.feeReceipient()).to.be.equal(newRecipient);
     });
 
-    it('setPaymentToken()', async function () {
-      expect(await marketplace.paymentToken()).to.be.equal(magicToken.address);
-      const newToken = seller;
-
-      await expect(marketplace.connect(staker3Signer).setPaymentToken(newToken)).to.be.revertedWith("Ownable: caller is not the owner");
-
-      await marketplace.setPaymentToken(newToken);
-      expect(await marketplace.paymentToken()).to.be.equal(newToken);
-    });
-
     it('addToWhitelist()', async function () {
       expect(await marketplace.nftWhitelist(nft.address)).to.be.false;
       await marketplace.addToWhitelist(nft.address);

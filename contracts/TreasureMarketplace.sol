@@ -50,7 +50,6 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
 
     event UpdateFee(uint256 fee);
     event UpdateFeeRecipient(address feeRecipient);
-    event UpdatePaymentToken(address paymentToken);
 
     event NftWhitelistAdd(address nft);
     event NftWhitelistRemove(address nft);
@@ -155,7 +154,7 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
 
         setFee(_fee);
         setFeeRecipient(_feeRecipient);
-        setPaymentToken(_paymentToken);
+        paymentToken = _paymentToken;
     }
 
     /// @dev Creates a NFT listing
@@ -394,13 +393,6 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
     function setFeeRecipient(address _feeRecipient) public onlyOwner {
         feeReceipient = _feeRecipient;
         emit UpdateFeeRecipient(_feeRecipient);
-    }
-
-    /// @dev Sets payment token address. Callable by owner only.
-    /// @param _paymentToken address of the token that is used for settlement
-    function setPaymentToken(address _paymentToken) public onlyOwner {
-        paymentToken = _paymentToken;
-        emit UpdatePaymentToken(_paymentToken);
     }
 
     /// @dev Whitelists NFT address

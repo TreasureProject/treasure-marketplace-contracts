@@ -231,7 +231,8 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
         );
     }
 
-    /// @dev Cancel existing listing
+    /// @notice Cancel any existing listing
+    /// @dev Even if no such listing currently exists, it is still cancelled and the event is emitted
     /// @param _nftAddress address of the NFT to be sold
     /// @param _tokenId token ID of the NFT to be sold
     function cancelListing(address _nftAddress, uint256 _tokenId)
@@ -241,7 +242,6 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
         delete (listings[_nftAddress][_tokenId][_msgSender()]);
         emit ItemCanceled(_msgSender(), _nftAddress, _tokenId);
     }
-
 
     /// @dev Buy listed NFT
     /// @param _nftAddress address of the NFT to be bought

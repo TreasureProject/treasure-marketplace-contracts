@@ -5,5 +5,11 @@
 - Takes fee on sale @ 5%
 - Supports ERC721 and ERC1155
 
-## test coverage
-`npx hardhat coverage --testfiles "contracts/TreasureMarketplace.sol"`
+## Build and test
+
+Use Node version 14 or 16.
+
+```sh
+npm install
+npm test # This performs tests and checks test coverage
+```

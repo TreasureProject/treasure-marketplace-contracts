@@ -11,6 +11,10 @@ import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 
 /// @title Treasure NFT marketplace
 /// @notice NFT marketplace contract for selling and buying ERC721 and ERC1155 token.
+/// ### <IMPORTANT> ###
+/// This contract uses proxy for development puproses.
+/// Proxy owner has been trasferred to multi-sig wallet controlled my multiple parties for enhanced security.
+/// ### </IMPORTANT> ###
 /// @dev This contract does not store any tokens at any time, it's only collects details
 /// of "the sale" and approvals from both parties and preforms non-custodial transaction
 /// by transfering NFT from owner to buying and payment token from buying to NFT owner.
@@ -38,7 +42,7 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
         /// @dev timestamp after which the listing is invalid
         uint256 expirationTime;
     }
-    
+
     enum TokenApprovalStatus {NOT_APPROVED, ERC_721_APPROVED, ERC_1155_APPROVED}
 
     /// @dev mapping for listings, maps: nftAddress => tokenId => owner

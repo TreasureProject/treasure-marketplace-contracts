@@ -147,7 +147,6 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
         whenNotPaused
         notListed(_nftAddress, _tokenId, _msgSender())
     {
-        if (_expirationTime == 0) _expirationTime = type(uint256).max;
         require(_expirationTime > block.timestamp, "invalid expiration time");
         require(_pricePerItem > 0, "cannot sell for 0");
 

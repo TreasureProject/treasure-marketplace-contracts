@@ -38,7 +38,7 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
         /// @dev timestamp after which the listing is invalid
         uint256 expirationTime;
     }
-    
+
     enum TokenApprovalStatus {NOT_APPROVED, ERC_721_APPROVED, ERC_1155_APPROVED}
 
     /// @dev mapping for listings, maps: nftAddress => tokenId => owner
@@ -119,7 +119,7 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
     /// @param _fee fee to be paid on each sale, in basis points
     /// @param _feeRecipient wallet to collets fees
     /// @param _paymentToken address of the token that is used for settlement
-    function init(uint256 _fee, address _feeRecipient, IERC20Upgradeable _paymentToken) external initializer {
+    function initialize(uint256 _fee, address _feeRecipient, IERC20Upgradeable _paymentToken) external initializer {
         __Ownable_init_unchained();
         __Pausable_init_unchained();
         __ReentrancyGuard_init_unchained();

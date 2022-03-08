@@ -47,12 +47,12 @@ describe('TreasureMarketplace', function () {
     const TreasureMarketplace = await ethers.getContractFactory('TreasureMarketplace')
     marketplace = await TreasureMarketplace.deploy()
     await marketplace.deployed();
-    await marketplace.init(100, feeRecipient, magicToken.address);
+    await marketplace.initialize(100, feeRecipient, magicToken.address);
   });
 
   describe('init', function () {
-    it('init()', async function () {
-      await expect(marketplace.init(100, feeRecipient, magicToken.address)).to.be.revertedWith("Initializable: contract is already initialized");
+    it('initialize()', async function () {
+      await expect(marketplace.initialize(100, feeRecipient, magicToken.address)).to.be.revertedWith("Initializable: contract is already initialized");
     });
 
     it('setFee()', async function () {

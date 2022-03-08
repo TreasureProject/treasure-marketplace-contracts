@@ -2,7 +2,6 @@
 pragma solidity 0.8.7;
 
 import '@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol';
-import '@openzeppelin/contracts-upgradeable/interfaces/IERC165Upgradeable.sol';
 import '@openzeppelin/contracts-upgradeable/token/ERC1155/IERC1155Upgradeable.sol';
 import '@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol';
 import '@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol';
@@ -18,14 +17,11 @@ import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, ReentrancyGuardUpgradeable {
     using SafeERC20Upgradeable for IERC20Upgradeable;
 
-    bytes4 private constant INTERFACE_ID_ERC721 = 0x80ac58cd;
-    bytes4 private constant INTERFACE_ID_ERC1155 = 0xd9b67a26;
-
     /// @dev basis point constant for fee calcualtion
     uint256 public constant BASIS_POINTS = 10000;
 
     /// @dev token used for payments
-    address public paymentToken;
+    IERC20Upgradeable public paymentToken;
 
     /// @dev fee taken on each sale in basis points,
     /// for example 100 is 100 basis points => 100/10000 = 1/100 = 1%
@@ -42,18 +38,19 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
         /// @dev timestamp after which the listing is invalid
         uint256 expirationTime;
     }
+    
+    enum TokenApprovalStatus {NOT_APPROVED, ERC_721_APPROVED, ERC_1155_APPROVED}
 
     /// @dev mapping for listings, maps: nftAddress => tokenId => owner
     mapping(address => mapping(uint256 => mapping(address => Listing))) public listings;
     /// @dev nfts that are allowed to be sold on the marketplace, maps: nftAddress => bool
-    mapping(address => bool) public nftWhitelist;
+    mapping(address => TokenApprovalStatus) public tokenApprovals;
 
     event UpdateFee(uint256 fee);
     event UpdateFeeRecipient(address feeRecipient);
-    event UpdatePaymentToken(address paymentToken);
+    event UpdatePaymentToken(IERC20Upgradeable paymentToken);
 
-    event NftWhitelistAdd(address nft);
-    event NftWhitelistRemove(address nft);
+    event TokenApprovalStatusUpdated(address nft, TokenApprovalStatus status);
 
     event ItemListed(
         address seller,
@@ -112,35 +109,10 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
         _;
     }
 
-    /// @dev validates listing, checks if seller still owns the token,
-    /// checks if expirations date is not past, checks if quantity is above 0 and so is price
-    /// @param _nftAddress address of the NFT
-    /// @param _tokenId token ID of the NFT
-    /// @param _owner owner of the NFT
-    modifier validListing(
-        address _nftAddress,
-        uint256 _tokenId,
-        address _owner
-    ) {
-        Listing memory listedItem = listings[_nftAddress][_tokenId][_owner];
-        if (IERC165Upgradeable(_nftAddress).supportsInterface(INTERFACE_ID_ERC721)) {
-            IERC721Upgradeable nft = IERC721Upgradeable(_nftAddress);
-            require(nft.ownerOf(_tokenId) == _owner, "not owning item");
-        } else if (IERC165Upgradeable(_nftAddress).supportsInterface(INTERFACE_ID_ERC1155)) {
-            IERC1155Upgradeable nft = IERC1155Upgradeable(_nftAddress);
-            require(nft.balanceOf(_owner, _tokenId) >= listedItem.quantity, "not owning item");
-        } else {
-            revert("invalid nft address");
-        }
-        require(listedItem.expirationTime >= block.timestamp, "listing expired");
-        require(listedItem.quantity > 0, "listing quantity invalid");
-        require(listedItem.pricePerItem > 0, "listing price invalid");
-        _;
-    }
-    /// @dev check if NFT is whitelisted
+    /// @dev check if NFT is approved
     /// @param _nft address of the NFT
-    modifier onlyWhitelisted(address _nft) {
-        require(nftWhitelist[_nft], "nft not whitelisted");
+    modifier onlyApprovedToken(address _nft) {
+        require(tokenApprovals[_nft] != TokenApprovalStatus.NOT_APPROVED, "token is not approved for trading");
         _;
     }
 
@@ -148,7 +120,7 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
     /// @param _fee fee to be paid on each sale, in basis points
     /// @param _feeRecipient wallet to collets fees
     /// @param _paymentToken address of the token that is used for settlement
-    function init(uint256 _fee, address _feeRecipient, address _paymentToken) external initializer {
+    function init(uint256 _fee, address _feeRecipient, IERC20Upgradeable _paymentToken) external initializer {
         __Ownable_init_unchained();
         __Pausable_init_unchained();
         __ReentrancyGuard_init_unchained();
@@ -174,18 +146,16 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
         external
         whenNotPaused
         notListed(_nftAddress, _tokenId, _msgSender())
-        onlyWhitelisted(_nftAddress)
     {
-        if (_expirationTime == 0) _expirationTime = type(uint256).max;
         require(_expirationTime > block.timestamp, "invalid expiration time");
         require(_pricePerItem > 0, "cannot sell for 0");
 
-        if (IERC165Upgradeable(_nftAddress).supportsInterface(INTERFACE_ID_ERC721)) {
+        if (tokenApprovals[_nftAddress] == TokenApprovalStatus.ERC_721_APPROVED) {
             IERC721Upgradeable nft = IERC721Upgradeable(_nftAddress);
             require(nft.ownerOf(_tokenId) == _msgSender(), "not owning item");
             require(nft.isApprovedForAll(_msgSender(), address(this)), "item not approved");
             require(_quantity == 1, "cannot list multiple ERC721");
-        } else if (IERC165Upgradeable(_nftAddress).supportsInterface(INTERFACE_ID_ERC1155)) {
+        } else if (tokenApprovals[_nftAddress] == TokenApprovalStatus.ERC_1155_APPROVED) {
             IERC1155Upgradeable nft = IERC1155Upgradeable(_nftAddress);
             require(nft.balanceOf(_msgSender(), _tokenId) >= _quantity, "must hold enough nfts");
             require(nft.isApprovedForAll(_msgSender(), address(this)), "item not approved");
@@ -235,11 +205,11 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
         Listing storage listedItem = listings[_nftAddress][_tokenId][_msgSender()];
         require(_newPricePerItem <= listedItem.pricePerItem, "Cannot increase price");
 
-        if (IERC165Upgradeable(_nftAddress).supportsInterface(INTERFACE_ID_ERC721)) {
+        if (tokenApprovals[_nftAddress] == TokenApprovalStatus.ERC_721_APPROVED) {
             IERC721Upgradeable nft = IERC721Upgradeable(_nftAddress);
             require(nft.ownerOf(_tokenId) == _msgSender(), "not owning item");
             require(_newQuantity == 1, "Cannot list multiple ERC721");
-        } else if (IERC165Upgradeable(_nftAddress).supportsInterface(INTERFACE_ID_ERC1155)) {
+        } else if (tokenApprovals[_nftAddress] == TokenApprovalStatus.ERC_1155_APPROVED) {
             IERC1155Upgradeable nft = IERC1155Upgradeable(_nftAddress);
             require(nft.balanceOf(_msgSender(), _tokenId) >= _newQuantity, "must hold enough nfts");
             require(_newQuantity > 0, "cannot update quantity to 0");
@@ -292,18 +262,22 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
         nonReentrant
         whenNotPaused
         isListed(_nftAddress, _tokenId, _owner)
-        validListing(_nftAddress, _tokenId, _owner)
+        onlyApprovedToken(_nftAddress)
     {
         require(_msgSender() != _owner, "Cannot buy your own item");
 
         Listing storage listedItem = listings[_nftAddress][_tokenId][_owner];
-        uint256 pricePerItem = listedItem.pricePerItem;
+
+        // Validate listing
+        require(listedItem.expirationTime >= block.timestamp, "listing expired");
+        require(listedItem.quantity > 0, "listing quantity invalid");
+        require(listedItem.pricePerItem > 0, "listing price invalid");
 
         require(_quantity > 0, "Nothing to buy");
         require(listedItem.quantity >= _quantity, "not enough quantity");
-        require(pricePerItem <= _maxPricePerItem, "price increased");
+        require(listedItem.pricePerItem <= _maxPricePerItem, "price increased");
 
-        _buyItem(_nftAddress, _tokenId, _owner, _quantity, pricePerItem);
+        _buyItem(_nftAddress, _tokenId, _owner, _quantity, listedItem.pricePerItem);
     }
 
     /// @dev Transfers ERC721 or number of ERC1155, deletes listing if there's nothing else
@@ -325,12 +299,14 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
     ) internal {
         Listing storage listedItem = listings[_nftAddress][_tokenId][_owner];
 
-        // Transfer NFT to buyer
-        if (IERC165Upgradeable(_nftAddress).supportsInterface(INTERFACE_ID_ERC721)) {
+        // Transfer NFT to buyer, also validates owner owns it
+        if (tokenApprovals[_nftAddress] == TokenApprovalStatus.ERC_721_APPROVED) {
             require(_quantity == 1, "Cannot buy multiple ERC721");
             IERC721Upgradeable(_nftAddress).safeTransferFrom(_owner, _msgSender(), _tokenId);
-        } else {
+        } else if (tokenApprovals[_nftAddress] == TokenApprovalStatus.ERC_1155_APPROVED) {
             IERC1155Upgradeable(_nftAddress).safeTransferFrom(_owner, _msgSender(), _tokenId, _quantity, bytes(""));
+        } else {
+            revert("invalid nft address");
         }
 
         if (listedItem.quantity == _quantity) {
@@ -350,8 +326,8 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
 
         uint256 totalPrice = _pricePerItem * _quantity;
         uint256 feeAmount = totalPrice * fee / BASIS_POINTS;
-        IERC20Upgradeable(paymentToken).safeTransferFrom(_msgSender(), feeReceipient, feeAmount);
-        IERC20Upgradeable(paymentToken).safeTransferFrom(_msgSender(), _owner, totalPrice - feeAmount);
+        paymentToken.safeTransferFrom(_msgSender(), feeReceipient, feeAmount);
+        paymentToken.safeTransferFrom(_msgSender(), _owner, totalPrice - feeAmount);
     }
 
     // admin
@@ -373,24 +349,17 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
 
     /// @dev Sets payment token address. Callable by owner only.
     /// @param _paymentToken address of the token that is used for settlement
-    function setPaymentToken(address _paymentToken) public onlyOwner {
+    function setPaymentToken(IERC20Upgradeable _paymentToken) public onlyOwner {
         paymentToken = _paymentToken;
         emit UpdatePaymentToken(_paymentToken);
     }
 
-    /// @dev Whitelists NFT address
-    /// @param _nft address of the NFT to be whitelisted
-    function addToWhitelist(address _nft) external onlyOwner {
-        require(!nftWhitelist[_nft], "nft already whitelisted");
-        nftWhitelist[_nft] = true;
-        emit NftWhitelistAdd(_nft);
-    }
-
-    /// @dev Removes NFT address from whitelist
-    /// @param _nft address of the NFT to be removed
-    function removeFromWhitelist(address _nft) external onlyOwner onlyWhitelisted(_nft) {
-        nftWhitelist[_nft] = false;
-        emit NftWhitelistRemove(_nft);
+    /// @notice Sets a token as an approved kind of NFT or as ineligible for trading
+    /// @param _nft address of the NFT to be approved
+    /// @param _status the kind of NFT approved
+    function setTokenApprovalStatus(address _nft, TokenApprovalStatus _status) external onlyOwner {
+        tokenApprovals[_nft] = _status;
+        emit TokenApprovalStatusUpdated(_nft, _status);
     }
 
     /// @dev Pauses marketplace. Creating, updating, canceling and buying is paused.

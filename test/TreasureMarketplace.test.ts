@@ -11,6 +11,10 @@ describe('TreasureMarketplace', function () {
   let seller: any, buyer: any, staker3: any, feeRecipient: any, deployer: any;
   let sellerSigner: any, buyerSigner: any, staker3Signer: any, feeRecipientSigner: any, deployerSigner: any;
 
+  const TOKEN_APPROVAL_STATUS_NOT_APPROVED = 0;
+  const TOKEN_APPROVAL_STATUS_ERC_721_APPROVED = 1;
+  const TOKEN_APPROVAL_STATUS_ERC_1155_APPROVED = 2;
+
   before(async function () {
     const namedAccounts = await getNamedAccounts();
     seller = namedAccounts.staker1;
@@ -83,19 +87,23 @@ describe('TreasureMarketplace', function () {
       expect(await marketplace.paymentToken()).to.be.equal(newToken);
     });
 
-    it('addToWhitelist()', async function () {
-      expect(await marketplace.nftWhitelist(nft.address)).to.be.false;
-      await marketplace.addToWhitelist(nft.address);
-      expect(await marketplace.nftWhitelist(nft.address)).to.be.true;
-      await expect(marketplace.addToWhitelist(nft.address)).to.be.revertedWith("nft already whitelisted");
+    it('approve token', async function () {
+      expect(await marketplace.tokenApprovals(nft.address)).to.equal(TOKEN_APPROVAL_STATUS_NOT_APPROVED);
+      await marketplace.setTokenApprovalStatus(nft.address, TOKEN_APPROVAL_STATUS_ERC_721_APPROVED);
+      expect(await marketplace.tokenApprovals(nft.address)).to.equal(TOKEN_APPROVAL_STATUS_ERC_721_APPROVED);
+      // Allow to approve twice
+      await marketplace.setTokenApprovalStatus(nft.address, TOKEN_APPROVAL_STATUS_ERC_721_APPROVED);
+      expect(await marketplace.tokenApprovals(nft.address)).to.equal(TOKEN_APPROVAL_STATUS_ERC_721_APPROVED);
     });
 
-    it('removeFromWhitelist()', async function () {
-      await marketplace.addToWhitelist(nft.address);
-      expect(await marketplace.nftWhitelist(nft.address)).to.be.true;
-      await marketplace.removeFromWhitelist(nft.address);
-      expect(await marketplace.nftWhitelist(nft.address)).to.be.false;
-      await expect(marketplace.removeFromWhitelist(nft.address)).to.be.revertedWith("nft not whitelisted");
+    it('unapprove token', async function () {
+      await marketplace.setTokenApprovalStatus(nft.address, TOKEN_APPROVAL_STATUS_ERC_721_APPROVED);
+      expect(await marketplace.tokenApprovals(nft.address)).to.equal(TOKEN_APPROVAL_STATUS_ERC_721_APPROVED);
+      await marketplace.setTokenApprovalStatus(nft.address, TOKEN_APPROVAL_STATUS_NOT_APPROVED);
+      expect(await marketplace.tokenApprovals(nft.address)).to.equal(TOKEN_APPROVAL_STATUS_NOT_APPROVED);
+      // Allow to remove twice
+      await marketplace.setTokenApprovalStatus(nft.address, TOKEN_APPROVAL_STATUS_NOT_APPROVED);
+      expect(await marketplace.tokenApprovals(nft.address)).to.equal(TOKEN_APPROVAL_STATUS_NOT_APPROVED);
     });
 
     it('pause() & unpause()', async function () {
@@ -116,7 +124,7 @@ describe('TreasureMarketplace', function () {
       it('createListing()', async function () {
         const tokenId = 0;
         const pricePerItem = ethers.utils.parseUnits('1', 'ether');
-        const expirationTime = 0;
+        const expirationTime = ethers.BigNumber.from('4102462800'); // Midnight Jan 1, 2100
         expect(await nft.ownerOf(tokenId)).to.be.equal(seller);
 
         await nft.connect(sellerSigner).setApprovalForAll(marketplace.address, true);
@@ -127,9 +135,9 @@ describe('TreasureMarketplace', function () {
             1,
             pricePerItem,
             expirationTime
-        )).to.be.revertedWith("nft not whitelisted")
+        )).to.be.revertedWith("invalid nft address")
 
-        await marketplace.addToWhitelist(nft.address);
+        await marketplace.setTokenApprovalStatus(nft.address, TOKEN_APPROVAL_STATUS_ERC_721_APPROVED);
 
         await expect(marketplace.connect(sellerSigner).createListing(
             nft.address,
@@ -178,19 +186,19 @@ describe('TreasureMarketplace', function () {
         const listing = await marketplace.listings(nft.address, tokenId, seller);
         expect(listing.quantity).to.be.equal(1);
         expect(listing.pricePerItem).to.be.equal(pricePerItem);
-        expect(listing.expirationTime).to.be.equal(ethers.constants.MaxUint256);
+        expect(listing.expirationTime).to.be.equal(expirationTime);
       });
 
       describe('with listing', function () {
         const tokenId = 0;
         const pricePerItem = ethers.utils.parseUnits('1', 'ether');
-        const expirationTime = 0;
+        const expirationTime = ethers.BigNumber.from('4102462800'); // Midnight Jan 1, 2100
 
         beforeEach(async function () {
           expect(await nft.ownerOf(tokenId)).to.be.equal(seller);
 
           await nft.connect(sellerSigner).setApprovalForAll(marketplace.address, true);
-          await marketplace.addToWhitelist(nft.address);
+          await marketplace.setTokenApprovalStatus(nft.address, TOKEN_APPROVAL_STATUS_ERC_721_APPROVED);
           await marketplace.connect(sellerSigner).createListing(
               nft.address,
               tokenId,
@@ -255,17 +263,8 @@ describe('TreasureMarketplace', function () {
         });
 
         it('cancelListing()', async function () {
-          await marketplace.connect(sellerSigner).cancelListing(nft.address, tokenId);
-
-          const listing = await marketplace.listings(nft.address, tokenId, seller);
-          expect(listing.quantity).to.be.equal(0);
-          expect(listing.pricePerItem).to.be.equal(0);
-          expect(listing.expirationTime).to.be.equal(0);
-        });
-
-        it('cancelListing() even if paused', async function () {
-          await marketplace.pause();
-          expect(await marketplace.paused()).to.be.true;
+          // Can cancel even if not listed
+          marketplace.connect(buyerSigner).cancelListing(nft.address, tokenId);
 
           await marketplace.connect(sellerSigner).cancelListing(nft.address, tokenId);
 
@@ -353,7 +352,7 @@ describe('TreasureMarketplace', function () {
       const tokenId = 0;
       const quantity = 10;
       const pricePerItem = ethers.utils.parseUnits('1', 'ether');
-      const expirationTime = 0;
+      const expirationTime = ethers.BigNumber.from('4102462800'); // Midnight Jan 1, 2100
 
       beforeEach(async function () {
         await erc1155.functions['mint(address,uint256,uint256)'](seller, tokenId, quantity);
@@ -363,7 +362,7 @@ describe('TreasureMarketplace', function () {
         expect(await erc1155.balanceOf(seller, tokenId)).to.be.equal(quantity);
 
         await erc1155.connect(sellerSigner).setApprovalForAll(marketplace.address, true);
-        await marketplace.addToWhitelist(erc1155.address);
+        await marketplace.setTokenApprovalStatus(erc1155.address, TOKEN_APPROVAL_STATUS_ERC_1155_APPROVED);
         await expect(marketplace.connect(sellerSigner).createListing(
           erc1155.address,
           tokenId,
@@ -416,7 +415,7 @@ describe('TreasureMarketplace', function () {
         const listing = await marketplace.listings(erc1155.address, tokenId, seller);
         expect(listing.quantity).to.be.equal(quantity);
         expect(listing.pricePerItem).to.be.equal(pricePerItem);
-        expect(listing.expirationTime).to.be.equal(ethers.constants.MaxUint256);
+        expect(listing.expirationTime).to.be.equal(expirationTime);
       });
 
       describe('expirationTime', function () {
@@ -426,7 +425,7 @@ describe('TreasureMarketplace', function () {
           expirationTime = await getCurrentTime() + timedelta;
 
           expect(await erc1155.balanceOf(seller, tokenId)).to.be.equal(quantity);
-          await marketplace.addToWhitelist(erc1155.address);
+          await marketplace.setTokenApprovalStatus(erc1155.address, TOKEN_APPROVAL_STATUS_ERC_1155_APPROVED);
 
           await erc1155.connect(sellerSigner).setApprovalForAll(marketplace.address, true);
           await marketplace.connect(sellerSigner).createListing(
@@ -496,7 +495,7 @@ describe('TreasureMarketplace', function () {
           expect(await erc1155.balanceOf(seller, tokenId)).to.be.equal(quantity);
 
           await erc1155.connect(sellerSigner).setApprovalForAll(marketplace.address, true);
-          await marketplace.addToWhitelist(erc1155.address);
+          await marketplace.setTokenApprovalStatus(erc1155.address, TOKEN_APPROVAL_STATUS_ERC_1155_APPROVED);
           await marketplace.connect(sellerSigner).createListing(
               erc1155.address,
               tokenId,
@@ -566,17 +565,16 @@ describe('TreasureMarketplace', function () {
         });
 
         it('cancelListing()', async function () {
-          await expect(marketplace.connect(buyerSigner).cancelListing(erc1155.address, tokenId))
-            .to.be.revertedWith("not listed item");
+          // Can cancel if not listed
+          marketplace.connect(buyerSigner).cancelListing(erc1155.address, tokenId);
 
-          await expect(
-            marketplace.connect(buyerSigner).cancelListing(erc1155.address, tokenId)
-          ).to.be.revertedWith("not listed item");
+          // Can cancel if not listed
+          marketplace.connect(buyerSigner).cancelListing(erc1155.address, tokenId);
 
           await marketplace.connect(sellerSigner).cancelListing(erc1155.address, tokenId);
 
-          await expect(marketplace.connect(sellerSigner).cancelListing(erc1155.address, tokenId))
-            .to.be.revertedWith("not listed item");
+          // Can cancel if not listed
+          marketplace.connect(sellerSigner).cancelListing(erc1155.address, tokenId);
 
           const listing = await marketplace.listings(erc1155.address, tokenId, seller);
           expect(listing.quantity).to.be.equal(0);
@@ -608,7 +606,7 @@ describe('TreasureMarketplace', function () {
               seller,
               quantity,
               pricePerItem
-            )).to.be.revertedWith("not owning item");
+            )).to.be.reverted;
 
             await erc1155.connect(staker3Signer).safeTransferFrom(staker3, seller, tokenId, 1, "0x");
 
@@ -665,7 +663,7 @@ describe('TreasureMarketplace', function () {
             const listing = await marketplace.listings(erc1155.address, tokenId, seller);
             expect(listing.quantity).to.be.equal(quantity - buyQuantity);
             expect(listing.pricePerItem).to.be.equal(pricePerItem);
-            expect(listing.expirationTime).to.be.equal(ethers.constants.MaxUint256);
+            expect(listing.expirationTime).to.be.equal(expirationTime);
           });
         })
       })

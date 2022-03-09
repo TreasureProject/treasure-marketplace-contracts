@@ -23,6 +23,9 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
     /// @dev basis point constant for fee calcualtion
     uint256 public constant BASIS_POINTS = 10000;
 
+    /// @dev maximum fee in basis points
+    uint256 public constant MAX_FEE = 1500;
+
     /// @dev token used for payments
     IERC20Upgradeable public paymentToken;
 

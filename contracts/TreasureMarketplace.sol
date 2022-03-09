@@ -351,7 +351,7 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
         emit TokenApprovalStatusUpdated(nft, status);
     }
 
-    /// @notice Pauses the marketplace, creatisgn and executing listings is paused
+    /// @notice Pauses the marketplace, creating and executing listings is paused
     /// @dev    This is callable only by the owner. Canceling listings is not paused.
     function pause() external onlyOwner {
         _pause();

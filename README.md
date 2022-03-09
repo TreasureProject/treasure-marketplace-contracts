@@ -19,9 +19,10 @@ npm test # This performs tests and checks test coverage
 Style guide
 
 - 120 hard limit line length
+- Function parameters start with an underscore (_)
 - NatSpec
   - Align whitespace for tags
-  - Asign whitespace for parameters
+  - Align whitespace for `@param`s
   - `@param` (and state variable `@dev`) are sentence case without capitalization for the first letter
   - Events
     - `@notice` sentence case without a period like "XXX was update"

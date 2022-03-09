@@ -17,6 +17,9 @@ import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, ReentrancyGuardUpgradeable {
     using SafeERC20Upgradeable for IERC20Upgradeable;
 
+    /// @dev maximum fee that can be charged, denominated in basis points
+    uint256 public constant MAX_FEE = 1500;
+
     /// @dev basis point constant for fee calcualtion
     uint256 public constant BASIS_POINTS = 10000;
 
@@ -334,7 +337,7 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
     /// @dev Sets fee in basis points. Callable by owner only. Max fee is 15%.
     /// @param _fee fee to be paid on each sale, in basis points
     function setFee(uint256 _fee) public onlyOwner {
-        require(_fee <= 1500, "max fee");
+        require(_fee <= MAX_FEE, "max fee");
         fee = _fee;
         emit UpdateFee(_fee);
     }

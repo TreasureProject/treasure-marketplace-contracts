@@ -188,6 +188,7 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
         whenNotPaused
     {
         require(listings[_nftAddress][_tokenId][_msgSender()].quantity > 0, "not listed item");
+        require(listings[_nftAddress][_tokenId][_msgSender()].pricePerItem >= _newPricePerItem, "new price must not be higher");
         _createListingWithoutEvent(_nftAddress, _tokenId, _newQuantity, _newPricePerItem, _newExpirationTime);
         emit ItemUpdated(
             _msgSender(),

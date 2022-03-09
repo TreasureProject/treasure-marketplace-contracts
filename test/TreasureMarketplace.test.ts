@@ -217,13 +217,13 @@ describe('TreasureMarketplace', function () {
           await marketplace.unpause();
 
           // Can increase price
-          marketplace.connect(sellerSigner).updateListing(
+          await expect(marketplace.connect(sellerSigner).updateListing(
               nft.address,
               tokenId,
               1,
               pricePerItem.add(1),
               newExpirationTime
-          );
+          )).to.be.revertedWith("new price must not be higher");
 
           await marketplace.connect(sellerSigner).updateListing(
               nft.address,
@@ -558,13 +558,13 @@ describe('TreasureMarketplace', function () {
           )).to.be.revertedWith("cannot sell for 0");
 
           // Can increase price
-          marketplace.connect(sellerSigner).updateListing(
+          await expect(marketplace.connect(sellerSigner).updateListing(
               erc1155.address,
               tokenId,
               newQuantity,
               pricePerItem.add(1),
               newExpirationTime
-          );
+          )).to.be.revertedWith("new price must not be higher");
 
           await marketplace.connect(sellerSigner).updateListing(
               erc1155.address,

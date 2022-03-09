@@ -28,7 +28,7 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
         /// @dev timestamp after which the listing is invalid
         uint64 expirationTime;
     }
-    
+
     enum TokenApprovalStatus {NOT_APPROVED, ERC_721_APPROVED, ERC_1155_APPROVED}
 
     /// @notice the denominator for portion calculation, i.e. how many basis points are in 100%
@@ -271,7 +271,7 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
         require(_quantity > 0, "Nothing to buy");
 
         // Validate listing
-        Listing storage listedItem = listings[_nftAddress][_tokenId][_owner];
+        Listing memory listedItem = listings[_nftAddress][_tokenId][_owner];
         require(listedItem.quantity > 0, "not listed item");
         require(listedItem.expirationTime >= block.timestamp, "listing expired");
         require(listedItem.pricePerItem > 0, "listing price invalid");

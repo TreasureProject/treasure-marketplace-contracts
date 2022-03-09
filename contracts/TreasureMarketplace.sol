@@ -89,13 +89,6 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
 
     event ItemCanceled(address seller, address nftAddress, uint256 tokenId);
 
-    /// @dev check if NFT is approved
-    /// @param _nft address of the NFT
-    modifier onlyApprovedToken(address _nft) {
-        require(tokenApprovals[_nft] != TokenApprovalStatus.NOT_APPROVED, "token is not approved for trading");
-        _;
-    }
-
     /// @dev initializer
     /// @param _fee fee to be paid on each sale, in basis points
     /// @param _feeRecipient wallet to collets fees
@@ -198,7 +191,7 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
             require(nft.isApprovedForAll(_msgSender(), address(this)), "item not approved");
             require(_quantity > 0, "nothing to list");
         } else {
-            revert("invalid nft address");
+            revert("token is not approved for trading");
         }
 
         listings[_nftAddress][_tokenId][_msgSender()] = Listing(
@@ -238,7 +231,6 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
         external
         nonReentrant
         whenNotPaused
-        onlyApprovedToken(_nftAddress)
     {
         require(_msgSender() != _owner, "Cannot buy your own item");
 
@@ -282,7 +274,7 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
         } else if (tokenApprovals[_nftAddress] == TokenApprovalStatus.ERC_1155_APPROVED) {
             IERC1155Upgradeable(_nftAddress).safeTransferFrom(_owner, _msgSender(), _tokenId, _quantity, bytes(""));
         } else {
-            revert("invalid nft address");
+            revert("token is not approved for trading");
         }
 
         if (listedItem.quantity == _quantity) {

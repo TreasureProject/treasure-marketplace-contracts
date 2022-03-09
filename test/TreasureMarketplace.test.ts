@@ -127,7 +127,7 @@ describe('TreasureMarketplace', function () {
             1,
             pricePerItem,
             expirationTime
-        )).to.be.revertedWith("invalid nft address")
+        )).to.be.revertedWith("token is not approved for trading")
 
         await marketplace.setTokenApprovalStatus(nft.address, TOKEN_APPROVAL_STATUS_ERC_721_APPROVED);
 
@@ -335,6 +335,28 @@ describe('TreasureMarketplace', function () {
           expect(listing.pricePerItem).to.be.equal(0);
           expect(listing.expirationTime).to.be.equal(0);
         });
+
+        describe('token approval revoked', function () {
+          beforeEach(async function () {
+            await marketplace.setTokenApprovalStatus(nft.address, TOKEN_APPROVAL_STATUS_NOT_APPROVED);
+          });
+  
+          it('buyItem()', async function () {
+            expect(await nft.ownerOf(tokenId)).to.be.equal(seller);
+            await magicToken.mint(buyer, pricePerItem);
+            await magicToken.connect(buyerSigner).approve(marketplace.address, pricePerItem);
+            expect(await magicToken.balanceOf(marketplace.address)).to.be.equal(0);
+            expect(await magicToken.balanceOf(seller)).to.be.equal(0);
+  
+            await expect(marketplace.connect(buyerSigner).buyItem(
+              nft.address,
+              tokenId,
+              seller,
+              1,
+              pricePerItem
+            )).to.be.revertedWith("token is not approved for trading");
+          });
+        });  
       })
     })
   })

@@ -20,6 +20,9 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
     /// @dev basis point constant for fee calcualtion
     uint256 public constant BASIS_POINTS = 10000;
 
+    /// @dev maximum fee in basis points
+    uint256 public constant MAX_FEE = 1500;
+
     /// @dev token used for payments
     IERC20Upgradeable public paymentToken;
 
@@ -334,7 +337,7 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
     /// @dev Sets fee in basis points. Callable by owner only.
     /// @param _fee fee to be paid on each sale, in basis points
     function setFee(uint256 _fee) public onlyOwner {
-        require(_fee < BASIS_POINTS, "max fee");
+        require(_fee < MAX_FEE, "max fee");
         fee = _fee;
         emit UpdateFee(_fee);
     }

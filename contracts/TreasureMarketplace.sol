@@ -11,6 +11,9 @@ import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 
 /// @title Treasure NFT marketplace
 /// @notice NFT marketplace contract for selling and buying ERC721 and ERC1155 token.
+/// Please note that this contract is upgradeable. In the event of a compromised ProxyAdmin
+/// contract owner, collectable tokens and payments may be at risk. To prevent this,
+/// the ProxyAdmin is owned by a multi-sig governed by the TreasureDAO council.
 /// @dev This contract does not store any tokens at any time, it's only collects details
 /// of "the sale" and approvals from both parties and preforms non-custodial transaction
 /// by transfering NFT from owner to buying and payment token from buying to NFT owner.

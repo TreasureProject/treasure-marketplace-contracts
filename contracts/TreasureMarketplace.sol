@@ -80,34 +80,6 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
 
     event ItemCanceled(address seller, address nftAddress, uint256 tokenId);
 
-    /// @dev checks if token is listed, if not reverts
-    /// @param _nftAddress address of the NFT
-    /// @param _tokenId token ID of the NFT
-    /// @param _owner owner of the NFT
-    modifier isListed(
-        address _nftAddress,
-        uint256 _tokenId,
-        address _owner
-    ) {
-        Listing memory listing = listings[_nftAddress][_tokenId][_owner];
-        require(listing.quantity > 0, "not listed item");
-        _;
-    }
-
-    /// @dev checks if token is not listed, if it is, reverts
-    /// @param _nftAddress address of the NFT
-    /// @param _tokenId token ID of the NFT
-    /// @param _owner owner of the NFT
-    modifier notListed(
-        address _nftAddress,
-        uint256 _tokenId,
-        address _owner
-    ) {
-        Listing memory listing = listings[_nftAddress][_tokenId][_owner];
-        require(listing.quantity == 0, "already listed");
-        _;
-    }
-
     /// @dev check if NFT is approved
     /// @param _nft address of the NFT
     modifier onlyApprovedToken(address _nft) {
@@ -129,7 +101,7 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
         paymentToken = _paymentToken;
     }
 
-    /// @dev Creates a NFT listing
+    /// @dev Creates an NFT listing
     /// @param _nftAddress address of the NFT to be sold
     /// @param _tokenId token ID of the NFT to be sold
     /// @param _quantity number of tokens to be sold, for ERC721 must be 1
@@ -144,31 +116,9 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
     )
         external
         whenNotPaused
-        notListed(_nftAddress, _tokenId, _msgSender())
     {
-        require(_expirationTime > block.timestamp, "invalid expiration time");
-        require(_pricePerItem > 0, "cannot sell for 0");
-
-        if (tokenApprovals[_nftAddress] == TokenApprovalStatus.ERC_721_APPROVED) {
-            IERC721Upgradeable nft = IERC721Upgradeable(_nftAddress);
-            require(nft.ownerOf(_tokenId) == _msgSender(), "not owning item");
-            require(nft.isApprovedForAll(_msgSender(), address(this)), "item not approved");
-            require(_quantity == 1, "cannot list multiple ERC721");
-        } else if (tokenApprovals[_nftAddress] == TokenApprovalStatus.ERC_1155_APPROVED) {
-            IERC1155Upgradeable nft = IERC1155Upgradeable(_nftAddress);
-            require(nft.balanceOf(_msgSender(), _tokenId) >= _quantity, "must hold enough nfts");
-            require(nft.isApprovedForAll(_msgSender(), address(this)), "item not approved");
-            require(_quantity > 0, "nothing to list");
-        } else {
-            revert("invalid nft address");
-        }
-
-        listings[_nftAddress][_tokenId][_msgSender()] = Listing(
-            _quantity,
-            _pricePerItem,
-            _expirationTime
-        );
-
+        require(listings[_nftAddress][_tokenId][_msgSender()].quantity == 0, "already listed");
+        _createListingWithoutEvent(_nftAddress, _tokenId, _quantity, _pricePerItem, _expirationTime);
         emit ItemListed(
             _msgSender(),
             _nftAddress,
@@ -196,30 +146,9 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
         external
         nonReentrant
         whenNotPaused
-        isListed(_nftAddress, _tokenId, _msgSender())
     {
-        require(_newExpirationTime > block.timestamp, "invalid expiration time");
-        require(_newPricePerItem > 0, "cannot sell for 0");
-
-        Listing storage listedItem = listings[_nftAddress][_tokenId][_msgSender()];
-        require(_newPricePerItem <= listedItem.pricePerItem, "Cannot increase price");
-
-        if (tokenApprovals[_nftAddress] == TokenApprovalStatus.ERC_721_APPROVED) {
-            IERC721Upgradeable nft = IERC721Upgradeable(_nftAddress);
-            require(nft.ownerOf(_tokenId) == _msgSender(), "not owning item");
-            require(_newQuantity == 1, "Cannot list multiple ERC721");
-        } else if (tokenApprovals[_nftAddress] == TokenApprovalStatus.ERC_1155_APPROVED) {
-            IERC1155Upgradeable nft = IERC1155Upgradeable(_nftAddress);
-            require(nft.balanceOf(_msgSender(), _tokenId) >= _newQuantity, "must hold enough nfts");
-            require(_newQuantity > 0, "cannot update quantity to 0");
-        } else {
-            revert("invalid nft address");
-        }
-
-        listedItem.quantity = _newQuantity;
-        listedItem.pricePerItem = _newPricePerItem;
-        listedItem.expirationTime = _newExpirationTime;
-
+        require(listings[_nftAddress][_tokenId][_msgSender()].quantity > 0, "not listed item");
+        _createListingWithoutEvent(_nftAddress, _tokenId, _newQuantity, _newPricePerItem, _newExpirationTime);
         emit ItemUpdated(
             _msgSender(),
             _nftAddress,
@@ -227,6 +156,45 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
             _newQuantity,
             _newPricePerItem,
             _newExpirationTime
+        );
+    }
+
+    /// @dev Performs the listing and does not send the event
+    /// @param _nftAddress address of the NFT to be sold
+    /// @param _tokenId token ID of the NFT to be sold
+    /// @param _quantity number of tokens to be sold, for ERC721 must be 1
+    /// @param _pricePerItem amount of payment token (ERC20) chrged for each sold token (ERC1155) or for 1 NFT (ERC721)
+    /// @param _expirationTime timestamp after which listing is invalid
+    function _createListingWithoutEvent(
+        address _nftAddress,
+        uint256 _tokenId,
+        uint256 _quantity,
+        uint256 _pricePerItem,
+        uint256 _expirationTime
+    )
+        internal
+    {
+        require(_expirationTime > block.timestamp, "invalid expiration time");
+        require(_pricePerItem > 0, "cannot sell for 0");
+
+        if (tokenApprovals[_nftAddress] == TokenApprovalStatus.ERC_721_APPROVED) {
+            IERC721Upgradeable nft = IERC721Upgradeable(_nftAddress);
+            require(nft.ownerOf(_tokenId) == _msgSender(), "not owning item");
+            require(nft.isApprovedForAll(_msgSender(), address(this)), "item not approved");
+            require(_quantity == 1, "cannot list multiple ERC721");
+        } else if (tokenApprovals[_nftAddress] == TokenApprovalStatus.ERC_1155_APPROVED) {
+            IERC1155Upgradeable nft = IERC1155Upgradeable(_nftAddress);
+            require(nft.balanceOf(_msgSender(), _tokenId) >= _quantity, "must hold enough nfts");
+            require(nft.isApprovedForAll(_msgSender(), address(this)), "item not approved");
+            require(_quantity > 0, "nothing to list");
+        } else {
+            revert("invalid nft address");
+        }
+
+        listings[_nftAddress][_tokenId][_msgSender()] = Listing(
+            _quantity,
+            _pricePerItem,
+            _expirationTime
         );
     }
 
@@ -260,7 +228,6 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
         external
         nonReentrant
         whenNotPaused
-        isListed(_nftAddress, _tokenId, _owner)
         onlyApprovedToken(_nftAddress)
     {
         require(_msgSender() != _owner, "Cannot buy your own item");
@@ -268,8 +235,8 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
         Listing storage listedItem = listings[_nftAddress][_tokenId][_owner];
 
         // Validate listing
+        require(listedItem.quantity > 0, "not listed item");
         require(listedItem.expirationTime >= block.timestamp, "listing expired");
-        require(listedItem.quantity > 0, "listing quantity invalid");
         require(listedItem.pricePerItem > 0, "listing price invalid");
 
         require(_quantity > 0, "Nothing to buy");

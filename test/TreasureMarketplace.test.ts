@@ -214,13 +214,14 @@ describe('TreasureMarketplace', function () {
 
           await marketplace.unpause();
 
-          await expect(marketplace.connect(sellerSigner).updateListing(
+          // Can increase price
+          marketplace.connect(sellerSigner).updateListing(
               nft.address,
               tokenId,
               1,
               pricePerItem.add(1),
               newExpirationTime
-          )).to.be.revertedWith("Cannot increase price")
+          );
 
           await marketplace.connect(sellerSigner).updateListing(
               nft.address,
@@ -244,7 +245,7 @@ describe('TreasureMarketplace', function () {
               0,
               newPricePerItem,
               newExpirationTime
-          )).to.be.revertedWith("Cannot list multiple ERC721");
+          )).to.be.revertedWith("cannot list multiple ERC721");
 
           const listing = await marketplace.listings(nft.address, tokenId, seller);
           expect(listing.quantity).to.be.equal(1);
@@ -522,7 +523,7 @@ describe('TreasureMarketplace', function () {
               0,
               newPricePerItem,
               newExpirationTime
-          )).to.be.revertedWith("cannot update quantity to 0");
+          )).to.be.revertedWith("nothing to list");
 
           await expect(marketplace.connect(sellerSigner).updateListing(
               erc1155.address,
@@ -532,13 +533,14 @@ describe('TreasureMarketplace', function () {
               newExpirationTime
           )).to.be.revertedWith("cannot sell for 0");
 
-          await expect(marketplace.connect(sellerSigner).updateListing(
+          // Can increase price
+          marketplace.connect(sellerSigner).updateListing(
               erc1155.address,
               tokenId,
               newQuantity,
               pricePerItem.add(1),
               newExpirationTime
-          )).to.be.revertedWith("Cannot increase price");
+          );
 
           await marketplace.connect(sellerSigner).updateListing(
               erc1155.address,

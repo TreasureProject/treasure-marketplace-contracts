@@ -57,11 +57,11 @@ describe('TreasureMarketplace', function () {
 
     it('setFee()', async function () {
       expect(await marketplace.fee()).to.be.equal(100);
-      const newFee = 100;
+      const newFee = 1500;
 
       await expect(marketplace.connect(staker3Signer).setFee(newFee)).to.be.revertedWith("Ownable: caller is not the owner");
 
-      await expect(marketplace.setFee(100000)).to.be.revertedWith("max fee");
+      await expect(marketplace.setFee(1501)).to.be.revertedWith("max fee");
 
       await marketplace.setFee(newFee);
       expect(await marketplace.fee()).to.be.equal(newFee);

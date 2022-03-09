@@ -340,14 +340,14 @@ describe('TreasureMarketplace', function () {
           beforeEach(async function () {
             await marketplace.setTokenApprovalStatus(nft.address, TOKEN_APPROVAL_STATUS_NOT_APPROVED);
           });
-  
+
           it('buyItem()', async function () {
             expect(await nft.ownerOf(tokenId)).to.be.equal(seller);
             await magicToken.mint(buyer, pricePerItem);
             await magicToken.connect(buyerSigner).approve(marketplace.address, pricePerItem);
             expect(await magicToken.balanceOf(marketplace.address)).to.be.equal(0);
             expect(await magicToken.balanceOf(seller)).to.be.equal(0);
-  
+
             await expect(marketplace.connect(buyerSigner).buyItem(
               nft.address,
               tokenId,
@@ -356,7 +356,7 @@ describe('TreasureMarketplace', function () {
               pricePerItem
             )).to.be.revertedWith("token is not approved for trading");
           });
-        });  
+        });
       })
     })
   })

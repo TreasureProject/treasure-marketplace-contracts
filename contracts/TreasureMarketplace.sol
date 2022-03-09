@@ -261,38 +261,19 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
         nonReentrant
         whenNotPaused
     {
+        // Validate buy order
         require(_msgSender() != owner, "Cannot buy your own item");
-
-        Listing storage listedItem = listings[nftAddress][tokenId][owner];
+        require(quantity > 0, "Nothing to buy");
 
         // Validate listing
+        Listing storage listedItem = listings[nftAddress][tokenId][owner];
         require(listedItem.quantity > 0, "not listed item");
         require(listedItem.expirationTime >= block.timestamp, "listing expired");
         require(listedItem.pricePerItem > 0, "listing price invalid");
-
-        require(quantity > 0, "Nothing to buy");
         require(listedItem.quantity >= quantity, "not enough quantity");
         require(listedItem.pricePerItem <= maxPricePerItem, "price increased");
 
-        _buyItem(nftAddress, tokenId, owner, quantity, listedItem.pricePerItem);
-    }
-
-    /// @dev Process sale for a listed item
-    /// @param  nftAddress   which token contract holds the offered token
-    /// @param  tokenId      the identifier for the token to be bought
-    /// @param  owner        current owner of the item(s) to be bought
-    /// @param  quantity     how many of this token identifier to be bought (or 1 for a ERC-721 token)
-    /// @param  pricePerItem the maximum price (in units of the paymentToken) for each token offered
-    function _buyItem(
-        address nftAddress,
-        uint256 tokenId,
-        address owner,
-        uint256 quantity,
-        uint256 pricePerItem
-    ) internal {
-        Listing storage listedItem = listings[nftAddress][tokenId][owner];
-
-        // Transfer NFT to buyer, also validates owner owns it
+        // Transfer NFT to buyer, also validates owner owns it, and token is approved for trading
         if (tokenApprovals[nftAddress] == TokenApprovalStatus.ERC_721_APPROVED) {
             require(quantity == 1, "Cannot buy multiple ERC721");
             IERC721Upgradeable(nftAddress).safeTransferFrom(owner, _msgSender(), tokenId);
@@ -302,25 +283,28 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
             revert("token is not approved for trading");
         }
 
-        if (listedItem.quantity == quantity) {
-            delete (listings[nftAddress][tokenId][owner]);
-        } else {
-            listings[nftAddress][tokenId][owner].quantity -= quantity;
-        }
+        // Handle purchase price payment
+        uint256 totalPrice = listedItem.pricePerItem * quantity;
+        uint256 feeAmount = totalPrice * fee / BASIS_POINTS;
+        paymentToken.safeTransferFrom(_msgSender(), feeReceipient, feeAmount);
+        paymentToken.safeTransferFrom(_msgSender(), owner, totalPrice - feeAmount);
 
+        // Announce sale
         emit ItemSold(
             owner,
             _msgSender(),
             nftAddress,
             tokenId,
             quantity,
-            pricePerItem
+            listedItem.pricePerItem // this is deleted below in "Deplete or cancel listing"
         );
 
-        uint256 totalPrice = pricePerItem * quantity;
-        uint256 feeAmount = totalPrice * fee / BASIS_POINTS;
-        paymentToken.safeTransferFrom(_msgSender(), feeReceipient, feeAmount);
-        paymentToken.safeTransferFrom(_msgSender(), owner, totalPrice - feeAmount);
+        // Deplete or cancel listing
+        if (listedItem.quantity == quantity) {
+            delete listings[nftAddress][tokenId][owner];
+        } else {
+            listings[nftAddress][tokenId][owner].quantity -= quantity;
+        }
     }
 
     // Owner administration ////////////////////////////////////////////////////////////////////////////////////////////

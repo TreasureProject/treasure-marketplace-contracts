@@ -20,13 +20,10 @@ import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, ReentrancyGuardUpgradeable {
     using SafeERC20Upgradeable for IERC20Upgradeable;
 
-    /// @dev maximum fee that can be charged, denominated in basis points
-    uint256 public constant MAX_FEE = 1500;
-
     /// @dev basis point constant for fee calcualtion
     uint256 public constant BASIS_POINTS = 10000;
 
-    /// @dev maximum fee in basis points
+    /// @dev maximum fee that can be charged, denominated in basis points
     uint256 public constant MAX_FEE = 1500;
 
     /// @dev token used for payments
@@ -40,12 +37,12 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
 
     struct Listing {
         /// @dev amount of tokens for sale. For ERC721 it's always 1.
-        uint256 quantity;
+        uint64 quantity;
         /// @dev price for each token listed. For ERC721 it's the price of sale,
         /// for ERC1155 this price is multiplied by amount of tokens being bought
-        uint256 pricePerItem;
+        uint128 pricePerItem;
         /// @dev timestamp after which the listing is invalid
-        uint256 expirationTime;
+        uint64 expirationTime;
     }
 
     enum TokenApprovalStatus {NOT_APPROVED, ERC_721_APPROVED, ERC_1155_APPROVED}
@@ -64,18 +61,18 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
         address seller,
         address nftAddress,
         uint256 tokenId,
-        uint256 quantity,
-        uint256 pricePerItem,
-        uint256 expirationTime
+        uint64 quantity,
+        uint128 pricePerItem,
+        uint64 expirationTime
     );
 
     event ItemUpdated(
         address seller,
         address nftAddress,
         uint256 tokenId,
-        uint256 quantity,
-        uint256 pricePerItem,
-        uint256 expirationTime
+        uint64 quantity,
+        uint128 pricePerItem,
+        uint64 expirationTime
     );
 
     event ItemSold(
@@ -83,8 +80,8 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
         address buyer,
         address nftAddress,
         uint256 tokenId,
-        uint256 quantity,
-        uint256 pricePerItem
+        uint64 quantity,
+        uint128 pricePerItem
     );
 
     event ItemCanceled(address seller, address nftAddress, uint256 tokenId);
@@ -112,9 +109,9 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
     function createListing(
         address _nftAddress,
         uint256 _tokenId,
-        uint256 _quantity,
-        uint256 _pricePerItem,
-        uint256 _expirationTime
+        uint64 _quantity,
+        uint128 _pricePerItem,
+        uint64 _expirationTime
     )
         external
         nonReentrant
@@ -142,9 +139,9 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
     function updateListing(
         address _nftAddress,
         uint256 _tokenId,
-        uint256 _newQuantity,
-        uint256 _newPricePerItem,
-        uint256 _newExpirationTime
+        uint64 _newQuantity,
+        uint128 _newPricePerItem,
+        uint64 _newExpirationTime
     )
         external
         nonReentrant
@@ -171,9 +168,9 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
     function _createListingWithoutEvent(
         address _nftAddress,
         uint256 _tokenId,
-        uint256 _quantity,
-        uint256 _pricePerItem,
-        uint256 _expirationTime
+        uint64 _quantity,
+        uint128 _pricePerItem,
+        uint64 _expirationTime
     )
         internal
     {
@@ -225,8 +222,8 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
         address _nftAddress,
         uint256 _tokenId,
         address _owner,
-        uint256 _quantity,
-        uint256 _maxPricePerItem
+        uint64 _quantity,
+        uint128 _maxPricePerItem
     )
         external
         nonReentrant
@@ -262,8 +259,8 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
         address _nftAddress,
         uint256 _tokenId,
         address _owner,
-        uint256 _quantity,
-        uint256 _pricePerItem
+        uint64 _quantity,
+        uint128 _pricePerItem
     ) internal {
         Listing storage listedItem = listings[_nftAddress][_tokenId][_owner];
 

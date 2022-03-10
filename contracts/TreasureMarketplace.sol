@@ -2,6 +2,7 @@
 pragma solidity 0.8.7;
 
 import '@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol';
+import '@openzeppelin/contracts-upgradeable/interfaces/IERC165Upgradeable.sol';
 import '@openzeppelin/contracts-upgradeable/token/ERC1155/IERC1155Upgradeable.sol';
 import '@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol';
 import '@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol';
@@ -19,6 +20,9 @@ import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 ///         token from buying to NFT owner.
 contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, ReentrancyGuardUpgradeable {
     using SafeERC20Upgradeable for IERC20Upgradeable;
+
+    bytes4 private constant INTERFACE_ID_ERC721 = 0x80ac58cd;
+    bytes4 private constant INTERFACE_ID_ERC1155 = 0xd9b67a26;
 
     struct Listing {
         /// @dev number of tokens for sale (1 if ERC-721 token is active for sale)
@@ -336,6 +340,12 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
     /// @param  _nft    address of the NFT to be approved
     /// @param  _status the kind of NFT approved, or NOT_APPROVED to remove approval
     function setTokenApprovalStatus(address _nft, TokenApprovalStatus _status) external onlyOwner {
+        if (_status == TokenApprovalStatus.ERC_721_APPROVED) {
+            require(IERC165Upgradeable(_nft).supportsInterface(INTERFACE_ID_ERC721), "not an ERC721 contract");
+        } else if (_status == TokenApprovalStatus.ERC_1155_APPROVED) {
+            require(IERC165Upgradeable(_nft).supportsInterface(INTERFACE_ID_ERC1155), "not an ERC1155 contract");
+        }
+
         tokenApprovals[_nft] = _status;
         emit TokenApprovalStatusUpdated(_nft, _status);
     }

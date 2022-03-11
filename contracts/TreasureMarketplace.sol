@@ -3,7 +3,7 @@ pragma solidity 0.8.7;
 
 import '@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol';
 import '@openzeppelin/contracts-upgradeable/access/AccessControlEnumerableUpgradeable.sol';
-
+import '@openzeppelin/contracts-upgradeable/interfaces/IERC165Upgradeable.sol';
 import '@openzeppelin/contracts-upgradeable/token/ERC1155/IERC1155Upgradeable.sol';
 import '@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol';
 import '@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol';
@@ -35,6 +35,10 @@ contract TreasureMarketplace is AccessControlEnumerableUpgradeable, PausableUpgr
 
     /// @notice TREASURE_MARKETPLACE_ADMIN_ROLE role hash
     bytes32 public constant TREASURE_MARKETPLACE_ADMIN_ROLE = keccak256("TREASURE_MARKETPLACE_ADMIN_ROLE");
+
+    /// @notice ERC165 interface signatures
+    bytes4 private constant INTERFACE_ID_ERC721 = 0x80ac58cd;
+    bytes4 private constant INTERFACE_ID_ERC1155 = 0xd9b67a26;
 
     /// @notice the denominator for portion calculation, i.e. how many basis points are in 100%
     uint256 public constant BASIS_POINTS = 10000;
@@ -351,6 +355,12 @@ contract TreasureMarketplace is AccessControlEnumerableUpgradeable, PausableUpgr
     /// @param  _nft    address of the NFT to be approved
     /// @param  _status the kind of NFT approved, or NOT_APPROVED to remove approval
     function setTokenApprovalStatus(address _nft, TokenApprovalStatus _status) external onlyRole(TREASURE_MARKETPLACE_ADMIN_ROLE) {
+        if (_status == TokenApprovalStatus.ERC_721_APPROVED) {
+            require(IERC165Upgradeable(_nft).supportsInterface(INTERFACE_ID_ERC721), "not an ERC721 contract");
+        } else if (_status == TokenApprovalStatus.ERC_1155_APPROVED) {
+            require(IERC165Upgradeable(_nft).supportsInterface(INTERFACE_ID_ERC1155), "not an ERC1155 contract");
+        }
+
         tokenApprovals[_nft] = _status;
         emit TokenApprovalStatusUpdated(_nft, _status);
     }

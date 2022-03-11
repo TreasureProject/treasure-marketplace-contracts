@@ -356,6 +356,22 @@ describe('TreasureMarketplace', function () {
           expect(listing.expirationTime).to.be.equal(0);
         });
 
+        it('buyItem() with quantity 0', async function () {
+          expect(await nft.ownerOf(tokenId)).to.be.equal(seller);
+          await magicToken.mint(buyer, pricePerItem);
+          await magicToken.connect(buyerSigner).approve(marketplace.address, pricePerItem);
+          expect(await magicToken.balanceOf(marketplace.address)).to.be.equal(0);
+          expect(await magicToken.balanceOf(seller)).to.be.equal(0);
+
+          await expect(marketplace.connect(buyerSigner).buyItem(
+            nft.address,
+            tokenId,
+            seller,
+            0,
+            pricePerItem
+          )).to.be.revertedWith("Nothing to buy");
+        });
+
         describe('token approval revoked', function () {
           beforeEach(async function () {
             await marketplace.setTokenApprovalStatus(nft.address, TOKEN_APPROVAL_STATUS_NOT_APPROVED);

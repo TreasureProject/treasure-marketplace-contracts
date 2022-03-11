@@ -132,6 +132,8 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
     )
         external initializer
     {
+        require(address(_initialPaymentToken) != address(0), "TreasureMarketplace: cannot set address(0)");
+
         __Ownable_init_unchained();
         __Pausable_init_unchained();
         __ReentrancyGuard_init_unchained();

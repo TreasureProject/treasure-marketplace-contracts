@@ -22,8 +22,6 @@ import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 contract TreasureMarketplace is AccessControlEnumerableUpgradeable, PausableUpgradeable, ReentrancyGuardUpgradeable {
     using SafeERC20Upgradeable for IERC20Upgradeable;
 
-    bytes32 public constant TREASURE_MARKETPLACE_ADMIN_ROLE = keccak256("TREASURE_MARKETPLACE_ADMIN_ROLE");
-
     struct Listing {
         /// @dev number of tokens for sale (1 if ERC-721 token is active for sale)
         uint64 quantity;
@@ -34,6 +32,9 @@ contract TreasureMarketplace is AccessControlEnumerableUpgradeable, PausableUpgr
     }
 
     enum TokenApprovalStatus {NOT_APPROVED, ERC_721_APPROVED, ERC_1155_APPROVED}
+
+    /// @notice TREASURE_MARKETPLACE_ADMIN_ROLE role hash
+    bytes32 public constant TREASURE_MARKETPLACE_ADMIN_ROLE = keccak256("TREASURE_MARKETPLACE_ADMIN_ROLE");
 
     /// @notice the denominator for portion calculation, i.e. how many basis points are in 100%
     uint256 public constant BASIS_POINTS = 10000;

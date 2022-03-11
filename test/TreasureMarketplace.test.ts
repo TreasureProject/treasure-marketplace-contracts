@@ -2,7 +2,7 @@ import hre from 'hardhat';
 import {expect} from 'chai';
 import {getCurrentTime, mineBlock} from './utils';
 
-const {ethers, deployments, getNamedAccounts} = hre;
+const {ethers, deployments, artifacts ,getNamedAccounts} = hre;
 const { deploy } = deployments;
 
 describe('TreasureMarketplace', function () {
@@ -43,11 +43,18 @@ describe('TreasureMarketplace', function () {
     erc1155 = await ERC1155Mintable.deploy()
     await erc1155.deployed();
 
-    const newOwner = deployer;
     const TreasureMarketplace = await ethers.getContractFactory('TreasureMarketplace')
-    marketplace = await TreasureMarketplace.deploy()
-    await marketplace.deployed();
-    await marketplace.initialize(100, feeRecipient, magicToken.address);
+    const marketplaceImpl = await TreasureMarketplace.deploy();
+
+    const TreasureMarketplaceAbi = (await artifacts.readArtifact('TreasureMarketplace')).abi;
+    const iface = new ethers.utils.Interface(TreasureMarketplaceAbi);
+    const data = iface.encodeFunctionData("initialize", [100, feeRecipient, magicToken.address]);
+
+    const EIP173Proxy = await ethers.getContractFactory('EIP173Proxy')
+    const proxy = await EIP173Proxy.deploy(marketplaceImpl.address, deployer, data)
+    await proxy.deployed();
+
+    marketplace = new ethers.Contract(proxy.address, TreasureMarketplaceAbi, deployerSigner);
   });
 
   describe('init', function () {
@@ -59,7 +66,7 @@ describe('TreasureMarketplace', function () {
       expect(await marketplace.fee()).to.be.equal(100);
       const newFee = 1500;
 
-      await expect(marketplace.connect(staker3Signer).setFee(newFee)).to.be.revertedWith("Ownable: caller is not the owner");
+      await expect(marketplace.connect(staker3Signer).setFee(newFee)).to.be.revertedWith("AccessControl: account 0x90f79bf6eb2c4f870365e785982e1f101e93b906 is missing role 0x34d5e892b0a7ec1561fc4a5fdcb31b798cf623590906b938d356c9619e539958");
 
       const tooHighFee = (await marketplace.MAX_FEE()).add(1);
 
@@ -73,7 +80,7 @@ describe('TreasureMarketplace', function () {
       expect(await marketplace.feeReceipient()).to.be.equal(feeRecipient);
       const newRecipient = seller;
 
-      await expect(marketplace.connect(staker3Signer).setFeeRecipient(newRecipient)).to.be.revertedWith("Ownable: caller is not the owner");
+      await expect(marketplace.connect(staker3Signer).setFeeRecipient(newRecipient)).to.be.revertedWith("AccessControl: account 0x90f79bf6eb2c4f870365e785982e1f101e93b906 is missing role 0x34d5e892b0a7ec1561fc4a5fdcb31b798cf623590906b938d356c9619e539958");
 
       await marketplace.setFeeRecipient(newRecipient);
       expect(await marketplace.feeReceipient()).to.be.equal(newRecipient);

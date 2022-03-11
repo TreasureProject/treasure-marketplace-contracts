@@ -2,6 +2,8 @@
 pragma solidity 0.8.7;
 
 import '@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol';
+import '@openzeppelin/contracts-upgradeable/access/AccessControlEnumerableUpgradeable.sol';
+
 import '@openzeppelin/contracts-upgradeable/token/ERC1155/IERC1155Upgradeable.sol';
 import '@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol';
 import '@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol';
@@ -17,8 +19,10 @@ import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 /// @dev    This contract does not store any tokens at any time, it's only collects details "the sale" and approvals
 ///         from both parties and preforms non-custodial transaction by transfering NFT from owner to buying and payment
 ///         token from buying to NFT owner.
-contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, ReentrancyGuardUpgradeable {
+contract TreasureMarketplace is AccessControlEnumerableUpgradeable, PausableUpgradeable, ReentrancyGuardUpgradeable {
     using SafeERC20Upgradeable for IERC20Upgradeable;
+
+    bytes32 public constant TREASURE_MARKETPLACE_ADMIN_ROLE = keccak256("TREASURE_MARKETPLACE_ADMIN_ROLE");
 
     struct Listing {
         /// @dev number of tokens for sale (1 if ERC-721 token is active for sale)
@@ -119,6 +123,9 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
         uint128 pricePerItem
     );
 
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() initializer {}
+
     /// @notice Perform initial contract setup
     /// @dev    The initializer modifier ensures this is only called once, the owner should confirm this was properly
     ///         performed before publishing this contract address.
@@ -130,11 +137,15 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
         address _initialFeeRecipient,
         IERC20Upgradeable _initialPaymentToken
     )
-        external initializer
+        external
+        initializer
     {
-        __Ownable_init_unchained();
+        __AccessControl_init_unchained();
         __Pausable_init_unchained();
         __ReentrancyGuard_init_unchained();
+
+        _setRoleAdmin(TREASURE_MARKETPLACE_ADMIN_ROLE, TREASURE_MARKETPLACE_ADMIN_ROLE);
+        _grantRole(TREASURE_MARKETPLACE_ADMIN_ROLE, msg.sender);
 
         setFee(_initialFee);
         setFeeRecipient(_initialFeeRecipient);
@@ -317,7 +328,7 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
     /// @notice Updates the fee amount which is collected during sales
     /// @dev    This is callable only by the owner. Fee may not exceed MAX_FEE
     /// @param  _newFee the updated fee amount is basis points
-    function setFee(uint256 _newFee) public onlyOwner {
+    function setFee(uint256 _newFee) public onlyRole(TREASURE_MARKETPLACE_ADMIN_ROLE) {
         require(_newFee <= MAX_FEE, "max fee");
         fee = _newFee;
         emit UpdateFee(_newFee);
@@ -326,7 +337,7 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
     /// @notice Updates the fee recipient which receives fees during sales
     /// @dev    This is callable only by the owner.
     /// @param  _newFeeRecipient the wallet to receive fees
-    function setFeeRecipient(address _newFeeRecipient) public onlyOwner {
+    function setFeeRecipient(address _newFeeRecipient) public onlyRole(TREASURE_MARKETPLACE_ADMIN_ROLE) {
         feeReceipient = _newFeeRecipient;
         emit UpdateFeeRecipient(_newFeeRecipient);
     }
@@ -335,20 +346,20 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
     /// @dev    This is callable only by the owner.
     /// @param  _nft    address of the NFT to be approved
     /// @param  _status the kind of NFT approved, or NOT_APPROVED to remove approval
-    function setTokenApprovalStatus(address _nft, TokenApprovalStatus _status) external onlyOwner {
+    function setTokenApprovalStatus(address _nft, TokenApprovalStatus _status) external onlyRole(TREASURE_MARKETPLACE_ADMIN_ROLE) {
         tokenApprovals[_nft] = _status;
         emit TokenApprovalStatusUpdated(_nft, _status);
     }
 
     /// @notice Pauses the marketplace, creatisgn and executing listings is paused
     /// @dev    This is callable only by the owner. Canceling listings is not paused.
-    function pause() external onlyOwner {
+    function pause() external onlyRole(TREASURE_MARKETPLACE_ADMIN_ROLE) {
         _pause();
     }
 
     /// @notice Unpauses the marketplace, all functionality is restored
     /// @dev    This is callable only by the owner.
-    function unpause() external onlyOwner {
+    function unpause() external onlyRole(TREASURE_MARKETPLACE_ADMIN_ROLE) {
         _unpause();
     }
 }

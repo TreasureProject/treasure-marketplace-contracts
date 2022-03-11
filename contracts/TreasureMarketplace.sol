@@ -179,7 +179,7 @@ contract TreasureMarketplace is AccessControlEnumerableUpgradeable, PausableUpgr
         nonReentrant
         whenNotPaused
     {
-        require(listings[_nftAddress][_tokenId][_msgSender()].quantity == 0, "already listed");
+        require(listings[_nftAddress][_tokenId][_msgSender()].quantity == 0, "TreasureMarketplace: already listed");
         _createListingWithoutEvent(_nftAddress, _tokenId, _quantity, _pricePerItem, _expirationTime);
         emit ItemListed(
             _msgSender(),
@@ -208,7 +208,7 @@ contract TreasureMarketplace is AccessControlEnumerableUpgradeable, PausableUpgr
         nonReentrant
         whenNotPaused
     {
-        require(listings[_nftAddress][_tokenId][_msgSender()].quantity > 0, "not listed item");
+        require(listings[_nftAddress][_tokenId][_msgSender()].quantity > 0, "TreasureMarketplace: not listed item");
         _createListingWithoutEvent(_nftAddress, _tokenId, _newQuantity, _newPricePerItem, _newExpirationTime);
         emit ItemUpdated(
             _msgSender(),
@@ -235,21 +235,21 @@ contract TreasureMarketplace is AccessControlEnumerableUpgradeable, PausableUpgr
     )
         internal
     {
-        require(_expirationTime > block.timestamp, "invalid expiration time");
+        require(_expirationTime > block.timestamp, "TreasureMarketplace: invalid expiration time");
         require(_pricePerItem >= MIN_PRICE, "TreasureMarketplace: below min price");
 
         if (tokenApprovals[_nftAddress] == TokenApprovalStatus.ERC_721_APPROVED) {
             IERC721Upgradeable nft = IERC721Upgradeable(_nftAddress);
-            require(nft.ownerOf(_tokenId) == _msgSender(), "not owning item");
-            require(nft.isApprovedForAll(_msgSender(), address(this)), "item not approved");
-            require(_quantity == 1, "cannot list multiple ERC721");
+            require(nft.ownerOf(_tokenId) == _msgSender(), "TreasureMarketplace: not owning item");
+            require(nft.isApprovedForAll(_msgSender(), address(this)), "TreasureMarketplace: item not approved");
+            require(_quantity == 1, "TreasureMarketplace: cannot list multiple ERC721");
         } else if (tokenApprovals[_nftAddress] == TokenApprovalStatus.ERC_1155_APPROVED) {
             IERC1155Upgradeable nft = IERC1155Upgradeable(_nftAddress);
-            require(nft.balanceOf(_msgSender(), _tokenId) >= _quantity, "must hold enough nfts");
-            require(nft.isApprovedForAll(_msgSender(), address(this)), "item not approved");
-            require(_quantity > 0, "nothing to list");
+            require(nft.balanceOf(_msgSender(), _tokenId) >= _quantity, "TreasureMarketplace: must hold enough nfts");
+            require(nft.isApprovedForAll(_msgSender(), address(this)), "TreasureMarketplace: item not approved");
+            require(_quantity > 0, "TreasureMarketplace: nothing to list");
         } else {
-            revert("token is not approved for trading");
+            revert("TreasureMarketplace: token is not approved for trading");
         }
 
         listings[_nftAddress][_tokenId][_msgSender()] = Listing(
@@ -288,25 +288,25 @@ contract TreasureMarketplace is AccessControlEnumerableUpgradeable, PausableUpgr
         whenNotPaused
     {
         // Validate buy order
-        require(_msgSender() != _owner, "Cannot buy your own item");
-        require(_quantity > 0, "Nothing to buy");
+        require(_msgSender() != _owner, "TreasureMarketplace: Cannot buy your own item");
+        require(_quantity > 0, "TreasureMarketplace: Nothing to buy");
 
         // Validate listing
         Listing memory listedItem = listings[_nftAddress][_tokenId][_owner];
-        require(listedItem.quantity > 0, "not listed item");
-        require(listedItem.expirationTime >= block.timestamp, "listing expired");
-        require(listedItem.pricePerItem > 0, "listing price invalid");
-        require(listedItem.quantity >= _quantity, "not enough quantity");
-        require(listedItem.pricePerItem <= _maxPricePerItem, "price increased");
+        require(listedItem.quantity > 0, "TreasureMarketplace: not listed item");
+        require(listedItem.expirationTime >= block.timestamp, "TreasureMarketplace: listing expired");
+        require(listedItem.pricePerItem > 0, "TreasureMarketplace: listing price invalid");
+        require(listedItem.quantity >= _quantity, "TreasureMarketplace: not enough quantity");
+        require(listedItem.pricePerItem <= _maxPricePerItem, "TreasureMarketplace: price increased");
 
         // Transfer NFT to buyer, also validates owner owns it, and token is approved for trading
         if (tokenApprovals[_nftAddress] == TokenApprovalStatus.ERC_721_APPROVED) {
-            require(_quantity == 1, "Cannot buy multiple ERC721");
+            require(_quantity == 1, "TreasureMarketplace: Cannot buy multiple ERC721");
             IERC721Upgradeable(_nftAddress).safeTransferFrom(_owner, _msgSender(), _tokenId);
         } else if (tokenApprovals[_nftAddress] == TokenApprovalStatus.ERC_1155_APPROVED) {
             IERC1155Upgradeable(_nftAddress).safeTransferFrom(_owner, _msgSender(), _tokenId, _quantity, bytes(""));
         } else {
-            revert("token is not approved for trading");
+            revert("TreasureMarketplace: token is not approved for trading");
         }
 
         // Handle purchase price payment
@@ -339,7 +339,7 @@ contract TreasureMarketplace is AccessControlEnumerableUpgradeable, PausableUpgr
     /// @dev    This is callable only by the owner. Fee may not exceed MAX_FEE
     /// @param  _newFee the updated fee amount is basis points
     function setFee(uint256 _newFee) public onlyRole(TREASURE_MARKETPLACE_ADMIN_ROLE) {
-        require(_newFee <= MAX_FEE, "max fee");
+        require(_newFee <= MAX_FEE, "TreasureMarketplace: max fee");
         fee = _newFee;
         emit UpdateFee(_newFee);
     }
@@ -359,9 +359,9 @@ contract TreasureMarketplace is AccessControlEnumerableUpgradeable, PausableUpgr
     /// @param  _status the kind of NFT approved, or NOT_APPROVED to remove approval
     function setTokenApprovalStatus(address _nft, TokenApprovalStatus _status) external onlyRole(TREASURE_MARKETPLACE_ADMIN_ROLE) {
         if (_status == TokenApprovalStatus.ERC_721_APPROVED) {
-            require(IERC165Upgradeable(_nft).supportsInterface(INTERFACE_ID_ERC721), "not an ERC721 contract");
+            require(IERC165Upgradeable(_nft).supportsInterface(INTERFACE_ID_ERC721), "TreasureMarketplace: not an ERC721 contract");
         } else if (_status == TokenApprovalStatus.ERC_1155_APPROVED) {
-            require(IERC165Upgradeable(_nft).supportsInterface(INTERFACE_ID_ERC1155), "not an ERC1155 contract");
+            require(IERC165Upgradeable(_nft).supportsInterface(INTERFACE_ID_ERC1155), "TreasureMarketplace: not an ERC1155 contract");
         }
 
         tokenApprovals[_nft] = _status;

@@ -37,6 +37,9 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
     /// @notice the maximum fee which the owner may set (in units of basis points)
     uint256 public constant MAX_FEE = 1500;
 
+    /// @notice the minimum price for which any item can be sold
+    uint256 public constant MIN_PRICE = 1e9;
+
     /// @notice which token is used for marketplace sales and fee payments
     IERC20Upgradeable public paymentToken;
 
@@ -215,7 +218,7 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
         internal
     {
         require(_expirationTime > block.timestamp, "invalid expiration time");
-        require(_pricePerItem > 0, "cannot sell for 0");
+        require(_pricePerItem > MIN_PRICE, "TreasureMarketplace: below min price");
 
         if (tokenApprovals[_nftAddress] == TokenApprovalStatus.ERC_721_APPROVED) {
             IERC721Upgradeable nft = IERC721Upgradeable(_nftAddress);

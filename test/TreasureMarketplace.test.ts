@@ -87,6 +87,10 @@ describe('TreasureMarketplace', function () {
       // Allow to approve twice
       await marketplace.setTokenApprovalStatus(nft.address, TOKEN_APPROVAL_STATUS_ERC_721_APPROVED);
       expect(await marketplace.tokenApprovals(nft.address)).to.equal(TOKEN_APPROVAL_STATUS_ERC_721_APPROVED);
+
+      await expect(
+        marketplace.setTokenApprovalStatus(nft.address, TOKEN_APPROVAL_STATUS_ERC_1155_APPROVED)
+      ).to.be.revertedWith("not an ERC1155 contract");
     });
 
     it('unapprove token', async function () {

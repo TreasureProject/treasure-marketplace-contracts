@@ -73,6 +73,7 @@ describe('TreasureMarketplace', function () {
       expect(await marketplace.feeReceipient()).to.be.equal(feeRecipient);
       const newRecipient = seller;
 
+      await expect(marketplace.setFeeRecipient(ethers.constants.AddressZero)).to.be.revertedWith("TreasureMarketplace: cannot set 0x0 address");
       await expect(marketplace.connect(staker3Signer).setFeeRecipient(newRecipient)).to.be.revertedWith("Ownable: caller is not the owner");
 
       await marketplace.setFeeRecipient(newRecipient);

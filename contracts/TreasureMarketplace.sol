@@ -327,6 +327,7 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
     /// @dev    This is callable only by the owner.
     /// @param  _newFeeRecipient the wallet to receive fees
     function setFeeRecipient(address _newFeeRecipient) public onlyOwner {
+        require(_newFeeRecipient != address(0), "TreasureMarketplace: cannot set 0x0 address");
         feeReceipient = _newFeeRecipient;
         emit UpdateFeeRecipient(_newFeeRecipient);
     }

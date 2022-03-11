@@ -9,8 +9,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const magicArbitrum = "0x539bdE0d7Dbd336b79148AA742883198BBF60342";
     const fee = 500; // 5%
     const feeRecipient = "0xDb6Ab450178bAbCf0e467c1F3B436050d907E233";
-    const newOwner = feeRecipient;
-    const newProxyOwner = feeRecipient;
+    const newOwner = "0xB013ABD83F0bD173E9F14ce7d6e420Ad711483b4";
+    const newProxyOwner = "0xB013ABD83F0bD173E9F14ce7d6e420Ad711483b4";
     const nftApprovedList = [
       // consumable
       {

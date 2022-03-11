@@ -81,6 +81,7 @@ describe('TreasureMarketplace', function () {
       const newRecipient = seller;
 
       await expect(marketplace.connect(staker3Signer).setFeeRecipient(newRecipient)).to.be.revertedWith("AccessControl: account 0x90f79bf6eb2c4f870365e785982e1f101e93b906 is missing role 0x34d5e892b0a7ec1561fc4a5fdcb31b798cf623590906b938d356c9619e539958");
+      await expect(marketplace.setFeeRecipient(ethers.constants.AddressZero)).to.be.revertedWith("TreasureMarketplace: cannot set 0x0 address");
 
       await marketplace.setFeeRecipient(newRecipient);
       expect(await marketplace.feeReceipient()).to.be.equal(newRecipient);

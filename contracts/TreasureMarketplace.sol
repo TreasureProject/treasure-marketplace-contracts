@@ -140,6 +140,8 @@ contract TreasureMarketplace is AccessControlEnumerableUpgradeable, PausableUpgr
         external
         initializer
     {
+        require(address(_initialPaymentToken) != address(0), "TreasureMarketplace: cannot set address(0)");
+
         __AccessControl_init_unchained();
         __Pausable_init_unchained();
         __ReentrancyGuard_init_unchained();
@@ -338,6 +340,7 @@ contract TreasureMarketplace is AccessControlEnumerableUpgradeable, PausableUpgr
     /// @dev    This is callable only by the owner.
     /// @param  _newFeeRecipient the wallet to receive fees
     function setFeeRecipient(address _newFeeRecipient) public onlyRole(TREASURE_MARKETPLACE_ADMIN_ROLE) {
+        require(_newFeeRecipient != address(0), "TreasureMarketplace: cannot set 0x0 address");
         feeReceipient = _newFeeRecipient;
         emit UpdateFeeRecipient(_newFeeRecipient);
     }

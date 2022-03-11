@@ -14,6 +14,19 @@ npm install
 npm test # This performs tests and checks test coverage
 ```
 
+## Deployment
+
+Check settings for `fee`, `feeRecipient`, `newOwner`, `newProxyOwner` and `nftApprovedList` in `TreasureMarketplace.deploy.ts`.
+
+Run
+```
+npx hardhat deploy --network <network>
+```
+
+Confirm on-chain values in deployed contracts for `fee`, `feeRecipient`, `newOwner`, `newProxyOwner` and `nftApprovedList`.
+
+Make sure that ownership of deployment wallet has been renounced.
+
 ## Contributing
 
 Style guide

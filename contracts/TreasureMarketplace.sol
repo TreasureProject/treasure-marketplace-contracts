@@ -218,7 +218,7 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
         internal
     {
         require(_expirationTime > block.timestamp, "invalid expiration time");
-        require(_pricePerItem > MIN_PRICE, "TreasureMarketplace: below min price");
+        require(_pricePerItem >= MIN_PRICE, "TreasureMarketplace: below min price");
 
         if (tokenApprovals[_nftAddress] == TokenApprovalStatus.ERC_721_APPROVED) {
             IERC721Upgradeable nft = IERC721Upgradeable(_nftAddress);

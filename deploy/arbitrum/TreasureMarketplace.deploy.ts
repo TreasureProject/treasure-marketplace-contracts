@@ -150,6 +150,21 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         deployer
       );
     }
+
+    const DefaultProxyAdmin = await deployments.get('DefaultProxyAdmin');
+
+    const entries = [
+      { name: 'DefaultProxyAdmin.address', value: DefaultProxyAdmin.address },
+      { name: 'DefaultProxyAdmin.getProxyAdmin("TreasureMarketplace")', value: await read('DefaultProxyAdmin', 'getProxyAdmin', treasureMarketplace.address) },
+      { name: 'DefaultProxyAdmin.owner()', value: await read('DefaultProxyAdmin', 'owner') },
+      { name: `TreasureMarketplace.hasRole(${newOwner})`, value: await read('TreasureMarketplace', 'hasRole', TREASURE_MARKETPLACE_ADMIN_ROLE, newOwner) },
+      { name: `TreasureMarketplace.hasRole(${deployer})`, value: await read('TreasureMarketplace', 'hasRole', TREASURE_MARKETPLACE_ADMIN_ROLE, deployer) },
+      { name: `TreasureMarketplace.feeReceipient()`, value: await read('TreasureMarketplace', 'feeReceipient') },
+      { name: `TreasureMarketplace.fee()`, value: (await read('TreasureMarketplace', 'fee')).toNumber() },
+    ];
+
+    console.log(`---- TreasureMarketplace Config ----`);
+    console.table(entries);
 };
 export default func;
 func.tags = ['marketplace'];

@@ -21,8 +21,7 @@ import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, ReentrancyGuardUpgradeable {
     using SafeERC20Upgradeable for IERC20Upgradeable;
 
-    bytes4 private constant INTERFACE_ID_ERC721 = 0x80ac58cd;
-    bytes4 private constant INTERFACE_ID_ERC1155 = 0xd9b67a26;
+
 
     struct Listing {
         /// @dev number of tokens for sale (1 if ERC-721 token is active for sale)
@@ -34,6 +33,10 @@ contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, Reentra
     }
 
     enum TokenApprovalStatus {NOT_APPROVED, ERC_721_APPROVED, ERC_1155_APPROVED}
+
+    /// @notice ERC165 interface signatures
+    bytes4 private constant INTERFACE_ID_ERC721 = 0x80ac58cd;
+    bytes4 private constant INTERFACE_ID_ERC1155 = 0xd9b67a26;
 
     /// @notice the denominator for portion calculation, i.e. how many basis points are in 100%
     uint256 public constant BASIS_POINTS = 10000;

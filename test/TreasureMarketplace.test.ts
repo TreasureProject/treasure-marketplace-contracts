@@ -2,7 +2,7 @@ import hre from 'hardhat';
 import {expect} from 'chai';
 import {getCurrentTime, mineBlock} from './utils';
 
-const {ethers, deployments, getNamedAccounts} = hre;
+const {ethers, deployments, artifacts ,getNamedAccounts} = hre;
 const { deploy } = deployments;
 
 describe('TreasureMarketplace', function () {
@@ -43,11 +43,18 @@ describe('TreasureMarketplace', function () {
     erc1155 = await ERC1155Mintable.deploy()
     await erc1155.deployed();
 
-    const newOwner = deployer;
     const TreasureMarketplace = await ethers.getContractFactory('TreasureMarketplace')
-    marketplace = await TreasureMarketplace.deploy()
-    await marketplace.deployed();
-    await marketplace.initialize(100, feeRecipient, magicToken.address);
+    const marketplaceImpl = await TreasureMarketplace.deploy();
+
+    const TreasureMarketplaceAbi = (await artifacts.readArtifact('TreasureMarketplace')).abi;
+    const iface = new ethers.utils.Interface(TreasureMarketplaceAbi);
+    const data = iface.encodeFunctionData("initialize", [100, feeRecipient, magicToken.address]);
+
+    const EIP173Proxy = await ethers.getContractFactory('EIP173Proxy')
+    const proxy = await EIP173Proxy.deploy(marketplaceImpl.address, deployer, data)
+    await proxy.deployed();
+
+    marketplace = new ethers.Contract(proxy.address, TreasureMarketplaceAbi, deployerSigner);
   });
 
   describe('init', function () {
@@ -59,7 +66,7 @@ describe('TreasureMarketplace', function () {
       expect(await marketplace.fee()).to.be.equal(100);
       const newFee = 1500;
 
-      await expect(marketplace.connect(staker3Signer).setFee(newFee)).to.be.revertedWith("Ownable: caller is not the owner");
+      await expect(marketplace.connect(staker3Signer).setFee(newFee)).to.be.revertedWith("AccessControl: account 0x90f79bf6eb2c4f870365e785982e1f101e93b906 is missing role 0x34d5e892b0a7ec1561fc4a5fdcb31b798cf623590906b938d356c9619e539958");
 
       const tooHighFee = (await marketplace.MAX_FEE()).add(1);
 
@@ -73,7 +80,8 @@ describe('TreasureMarketplace', function () {
       expect(await marketplace.feeReceipient()).to.be.equal(feeRecipient);
       const newRecipient = seller;
 
-      await expect(marketplace.connect(staker3Signer).setFeeRecipient(newRecipient)).to.be.revertedWith("Ownable: caller is not the owner");
+      await expect(marketplace.connect(staker3Signer).setFeeRecipient(newRecipient)).to.be.revertedWith("AccessControl: account 0x90f79bf6eb2c4f870365e785982e1f101e93b906 is missing role 0x34d5e892b0a7ec1561fc4a5fdcb31b798cf623590906b938d356c9619e539958");
+      await expect(marketplace.setFeeRecipient(ethers.constants.AddressZero)).to.be.revertedWith("TreasureMarketplace: cannot set 0x0 address");
 
       await marketplace.setFeeRecipient(newRecipient);
       expect(await marketplace.feeReceipient()).to.be.equal(newRecipient);
@@ -86,6 +94,10 @@ describe('TreasureMarketplace', function () {
       // Allow to approve twice
       await marketplace.setTokenApprovalStatus(nft.address, TOKEN_APPROVAL_STATUS_ERC_721_APPROVED);
       expect(await marketplace.tokenApprovals(nft.address)).to.equal(TOKEN_APPROVAL_STATUS_ERC_721_APPROVED);
+
+      await expect(
+        marketplace.setTokenApprovalStatus(nft.address, TOKEN_APPROVAL_STATUS_ERC_1155_APPROVED)
+      ).to.be.revertedWith("not an ERC1155 contract");
     });
 
     it('unapprove token', async function () {
@@ -137,7 +149,7 @@ describe('TreasureMarketplace', function () {
             1,
             0,
             expirationTime
-        )).to.be.revertedWith("cannot sell for 0")
+        )).to.be.revertedWith("TreasureMarketplace: below min price")
 
         await expect(marketplace.connect(sellerSigner).createListing(
             nft.address,
@@ -166,6 +178,14 @@ describe('TreasureMarketplace', function () {
         )).to.be.revertedWith("Pausable: paused");
 
         await marketplace.unpause();
+
+        await expect(marketplace.connect(sellerSigner).createListing(
+            nft.address,
+            tokenId,
+            1,
+            ethers.BigNumber.from('999999999'),
+            expirationTime
+        )).to.be.revertedWith("TreasureMarketplace: below min price");
 
         await marketplace.connect(sellerSigner).createListing(
             nft.address,
@@ -239,7 +259,7 @@ describe('TreasureMarketplace', function () {
               1,
               0,
               newExpirationTime
-          )).to.be.revertedWith("cannot sell for 0");
+          )).to.be.revertedWith("TreasureMarketplace: below min price");
 
           await expect(marketplace.connect(sellerSigner).updateListing(
               nft.address,
@@ -336,6 +356,22 @@ describe('TreasureMarketplace', function () {
           expect(listing.expirationTime).to.be.equal(0);
         });
 
+        it('buyItem() with quantity 0', async function () {
+          expect(await nft.ownerOf(tokenId)).to.be.equal(seller);
+          await magicToken.mint(buyer, pricePerItem);
+          await magicToken.connect(buyerSigner).approve(marketplace.address, pricePerItem);
+          expect(await magicToken.balanceOf(marketplace.address)).to.be.equal(0);
+          expect(await magicToken.balanceOf(seller)).to.be.equal(0);
+
+          await expect(marketplace.connect(buyerSigner).buyItem(
+            nft.address,
+            tokenId,
+            seller,
+            0,
+            pricePerItem
+          )).to.be.revertedWith("Nothing to buy");
+        });
+
         describe('token approval revoked', function () {
           beforeEach(async function () {
             await marketplace.setTokenApprovalStatus(nft.address, TOKEN_APPROVAL_STATUS_NOT_APPROVED);
@@ -392,7 +428,7 @@ describe('TreasureMarketplace', function () {
           quantity,
           0,
           expirationTime
-        )).to.be.revertedWith("cannot sell for 0");
+        )).to.be.revertedWith("TreasureMarketplace: below min price");
 
         await expect(marketplace.connect(sellerSigner).createListing(
           erc1155.address,
@@ -555,7 +591,7 @@ describe('TreasureMarketplace', function () {
               newQuantity,
               0,
               newExpirationTime
-          )).to.be.revertedWith("cannot sell for 0");
+          )).to.be.revertedWith("TreasureMarketplace: below min price");
 
           // Can increase price
           marketplace.connect(sellerSigner).updateListing(

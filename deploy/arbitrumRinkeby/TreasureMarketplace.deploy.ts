@@ -12,7 +12,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     })
 
     const fee = 500; // 5%
-    const feeRecipient = "0xDb6Ab450178bAbCf0e467c1F3B436050d907E233";
+    const feeReceipient = "0xDb6Ab450178bAbCf0e467c1F3B436050d907E233";
     const newOwner = "0xB013ABD83F0bD173E9F14ce7d6e420Ad711483b4";
     const newProxyOwner = "0xB013ABD83F0bD173E9F14ce7d6e420Ad711483b4";
     const nftApprovedList: any[] = [
@@ -32,7 +32,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         execute: {
           init: {
             methodName: "initialize",
-            args: [fee, feeRecipient, magicToken.address]
+            args: [fee, feeReceipient, magicToken.address]
           }
         }
       }
@@ -64,7 +64,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     }
 
     // if new owner is set, remove original owner
-    if(await read('TreasureMarketplace', 'hasRole', TREASURE_MARKETPLACE_ADMIN_ROLE, newOwner)) {
+    if(await read('TreasureMarketplace', 'hasRole', TREASURE_MARKETPLACE_ADMIN_ROLE, deployer)) {
       await execute(
         'TreasureMarketplace',
         { from: deployer, log: true },
@@ -73,6 +73,21 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         deployer
       );
     }
+
+    const DefaultProxyAdmin = await deployments.get('DefaultProxyAdmin');
+
+    const entries = [
+      { name: 'DefaultProxyAdmin.address', value: DefaultProxyAdmin.address },
+      { name: 'DefaultProxyAdmin.getProxyAdmin("TreasureMarketplace")', value: await read('DefaultProxyAdmin', 'getProxyAdmin', treasureMarketplace.address) },
+      { name: 'DefaultProxyAdmin.owner()', value: await read('DefaultProxyAdmin', 'owner') },
+      { name: `TreasureMarketplace.hasRole(${newOwner})`, value: await read('TreasureMarketplace', 'hasRole', TREASURE_MARKETPLACE_ADMIN_ROLE, newOwner) },
+      { name: `TreasureMarketplace.hasRole(${deployer})`, value: await read('TreasureMarketplace', 'hasRole', TREASURE_MARKETPLACE_ADMIN_ROLE, deployer) },
+      { name: `TreasureMarketplace.feeReceipient()`, value: await read('TreasureMarketplace', 'feeReceipient') },
+      { name: `TreasureMarketplace.fee()`, value: (await read('TreasureMarketplace', 'fee')).toNumber() },
+    ];
+
+    console.log(`---- TreasureMarketplace Config ----`);
+    console.table(entries);
 };
 export default func;
 func.tags = ['marketplace'];

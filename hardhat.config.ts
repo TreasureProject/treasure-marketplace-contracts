@@ -8,7 +8,6 @@ import 'hardhat-gas-reporter';
 import 'solidity-coverage';
 
 const privateKey = process.env.DEV_PRIVATE_KEY || "4201af59da6a5aed59c21cd6542f92d7a5e34e6c3b6f8e0903766ae4edb1f894"; // address: 0xA226293acbC7817d24c4b587Bc4568e4D624612E
-const INFURA_ID = process.env.INFURA_ID;
 const config: HardhatUserConfig = {
   defaultNetwork: "hardhat",
   networks: {
@@ -16,7 +15,7 @@ const config: HardhatUserConfig = {
       forking: {
         enabled: process.env.FORKING === "true",
         url: `https://eth-mainnet.alchemyapi.io/v2/${process.env.ALCHEMY_API_KEY}`,
-        blockNumber: 13334370
+        blockNumber: 7754848
       },
       live: false,
       saveDeployments: true,
@@ -80,10 +79,16 @@ const config: HardhatUserConfig = {
           }
         }
       },
+      {
+        version: "0.7.6",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 200
+          }
+        }
+      },
     ],
-  },
-  etherscan: {
-    apiKey: process.env.ETHERSCAN_API_KEY
   },
   namedAccounts: {
     deployer: 0,

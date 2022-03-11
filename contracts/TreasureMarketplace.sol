@@ -21,8 +21,6 @@ import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 contract TreasureMarketplace is OwnableUpgradeable, PausableUpgradeable, ReentrancyGuardUpgradeable {
     using SafeERC20Upgradeable for IERC20Upgradeable;
 
-
-
     struct Listing {
         /// @dev number of tokens for sale (1 if ERC-721 token is active for sale)
         uint64 quantity;

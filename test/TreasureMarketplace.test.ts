@@ -149,7 +149,7 @@ describe('TreasureMarketplace', function () {
             1,
             0,
             expirationTime
-        )).to.be.revertedWith("cannot sell for 0")
+        )).to.be.revertedWith("TreasureMarketplace: below min price")
 
         await expect(marketplace.connect(sellerSigner).createListing(
             nft.address,
@@ -178,6 +178,14 @@ describe('TreasureMarketplace', function () {
         )).to.be.revertedWith("Pausable: paused");
 
         await marketplace.unpause();
+
+        await expect(marketplace.connect(sellerSigner).createListing(
+            nft.address,
+            tokenId,
+            1,
+            ethers.BigNumber.from('999999999'),
+            expirationTime
+        )).to.be.revertedWith("TreasureMarketplace: below min price");
 
         await marketplace.connect(sellerSigner).createListing(
             nft.address,
@@ -251,7 +259,7 @@ describe('TreasureMarketplace', function () {
               1,
               0,
               newExpirationTime
-          )).to.be.revertedWith("cannot sell for 0");
+          )).to.be.revertedWith("TreasureMarketplace: below min price");
 
           await expect(marketplace.connect(sellerSigner).updateListing(
               nft.address,
@@ -404,7 +412,7 @@ describe('TreasureMarketplace', function () {
           quantity,
           0,
           expirationTime
-        )).to.be.revertedWith("cannot sell for 0");
+        )).to.be.revertedWith("TreasureMarketplace: below min price");
 
         await expect(marketplace.connect(sellerSigner).createListing(
           erc1155.address,
@@ -567,7 +575,7 @@ describe('TreasureMarketplace', function () {
               newQuantity,
               0,
               newExpirationTime
-          )).to.be.revertedWith("cannot sell for 0");
+          )).to.be.revertedWith("TreasureMarketplace: below min price");
 
           // Can increase price
           marketplace.connect(sellerSigner).updateListing(

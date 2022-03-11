@@ -104,7 +104,8 @@ const config: HardhatUserConfig = {
     staker1: 1,
     staker2: 2,
     staker3: 3,
-    hacker: 4
+    hacker: 4,
+    admin: 5
   },
   mocha: {
     timeout: 60000,

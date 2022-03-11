@@ -15,13 +15,20 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const feeRecipient = "0xDb6Ab450178bAbCf0e467c1F3B436050d907E233";
     const newOwner = "0xB013ABD83F0bD173E9F14ce7d6e420Ad711483b4";
     const newProxyOwner = "0xB013ABD83F0bD173E9F14ce7d6e420Ad711483b4";
-    const nftApprovedList: any[] = [];
+    const nftApprovedList: any[] = [
+      {
+        name: "smol_brains",
+        address: "0xFdA3f366B12eec68E187dbABDEC7bc5aEF49Bb31",
+        status: 1,
+      },
+    ];
 
     const treasureMarketplace = await deploy('TreasureMarketplace', {
       from: deployer,
       log: true,
       proxy: {
         owner: newProxyOwner,
+        proxyContract: 'OpenZeppelinTransparentProxy',
         execute: {
           init: {
             methodName: "initialize",

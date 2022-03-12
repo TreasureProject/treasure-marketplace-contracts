@@ -14,7 +14,7 @@ const config: HardhatUserConfig = {
     hardhat: {
       forking: {
         enabled: process.env.FORKING === "true",
-        url: `https://eth-mainnet.alchemyapi.io/v2/${process.env.ALCHEMY_API_KEY}`,
+        url: `https://arb-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`,
         blockNumber: 7754848
       },
       live: false,
@@ -66,6 +66,15 @@ const config: HardhatUserConfig = {
       saveDeployments: true,
       gasMultiplier: 2,
       deploy: ["deploy/arbitrum"]
+    },
+    arbitrumRinkeby: {
+      url: `https://arb-rinkeby.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`,
+      accounts: [`${privateKey}`],
+      chainId: 421611,
+      live: false,
+      saveDeployments: true,
+      gasMultiplier: 2,
+      deploy: ["deploy/arbitrumRinkeby"]
     }
   },
   solidity: {
@@ -95,7 +104,8 @@ const config: HardhatUserConfig = {
     staker1: 1,
     staker2: 2,
     staker3: 3,
-    hacker: 4
+    hacker: 4,
+    admin: 5
   },
   mocha: {
     timeout: 60000,

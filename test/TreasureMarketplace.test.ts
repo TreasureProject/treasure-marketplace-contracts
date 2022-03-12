@@ -8,8 +8,8 @@ const { deploy } = deployments;
 describe('TreasureMarketplace', function () {
   let marketplace: any, marketplaceBuyer: any, treasuryOracle: any;
   let magicToken: any, nft: any, erc1155: any;
-  let seller: any, buyer: any, staker3: any, feeRecipient: any, deployer: any;
-  let sellerSigner: any, buyerSigner: any, staker3Signer: any, feeRecipientSigner: any, deployerSigner: any;
+  let seller: any, buyer: any, staker3: any, feeRecipient: any, deployer: any, admin: any;
+  let sellerSigner: any, buyerSigner: any, staker3Signer: any, feeRecipientSigner: any, deployerSigner: any, adminSigner: any;
 
   const TOKEN_APPROVAL_STATUS_NOT_APPROVED = 0;
   const TOKEN_APPROVAL_STATUS_ERC_721_APPROVED = 1;
@@ -22,12 +22,14 @@ describe('TreasureMarketplace', function () {
     staker3 = namedAccounts.staker3;
     feeRecipient = namedAccounts.hacker;
     deployer = namedAccounts.deployer;
+    admin = namedAccounts.admin;
 
     sellerSigner = await ethers.provider.getSigner(seller);
     buyerSigner = await ethers.provider.getSigner(buyer);
     staker3Signer = await ethers.provider.getSigner(staker3);
     feeRecipientSigner = await ethers.provider.getSigner(feeRecipient);
     deployerSigner = await ethers.provider.getSigner(deployer);
+    adminSigner = await ethers.provider.getSigner(admin);
   });
 
   beforeEach(async function () {
@@ -50,8 +52,8 @@ describe('TreasureMarketplace', function () {
     const iface = new ethers.utils.Interface(TreasureMarketplaceAbi);
     const data = iface.encodeFunctionData("initialize", [100, feeRecipient, magicToken.address]);
 
-    const EIP173Proxy = await ethers.getContractFactory('EIP173Proxy')
-    const proxy = await EIP173Proxy.deploy(marketplaceImpl.address, deployer, data)
+    const OptimizedTransparentUpgradeableProxy = await ethers.getContractFactory('OptimizedTransparentUpgradeableProxy')
+    const proxy = await OptimizedTransparentUpgradeableProxy.deploy(marketplaceImpl.address, admin, data)
     await proxy.deployed();
 
     marketplace = new ethers.Contract(proxy.address, TreasureMarketplaceAbi, deployerSigner);

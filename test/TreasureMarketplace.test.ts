@@ -24,12 +24,12 @@ describe('TreasureMarketplace', function () {
     deployer = namedAccounts.deployer;
     admin = namedAccounts.admin;
 
-    sellerSigner = await ethers.provider.getSigner(seller);
-    buyerSigner = await ethers.provider.getSigner(buyer);
-    staker3Signer = await ethers.provider.getSigner(staker3);
-    feeRecipientSigner = await ethers.provider.getSigner(feeRecipient);
-    deployerSigner = await ethers.provider.getSigner(deployer);
-    adminSigner = await ethers.provider.getSigner(admin);
+    sellerSigner = ethers.provider.getSigner(seller);
+    buyerSigner = ethers.provider.getSigner(buyer);
+    staker3Signer = ethers.provider.getSigner(staker3);
+    feeRecipientSigner = ethers.provider.getSigner(feeRecipient);
+    deployerSigner = ethers.provider.getSigner(deployer);
+    adminSigner = ethers.provider.getSigner(admin);
   });
 
   beforeEach(async function () {
@@ -67,15 +67,17 @@ describe('TreasureMarketplace', function () {
     it('setFee()', async function () {
       expect(await marketplace.fee()).to.be.equal(100);
       const newFee = 1500;
+      const newFeeWithCollectionOwner = 750;
 
-      await expect(marketplace.connect(staker3Signer).setFee(newFee)).to.be.revertedWith("AccessControl: account 0x90f79bf6eb2c4f870365e785982e1f101e93b906 is missing role 0x34d5e892b0a7ec1561fc4a5fdcb31b798cf623590906b938d356c9619e539958");
+      await expect(marketplace.connect(staker3Signer).setFee(newFee, newFeeWithCollectionOwner)).to.be.revertedWith("AccessControl: account 0x90f79bf6eb2c4f870365e785982e1f101e93b906 is missing role 0x34d5e892b0a7ec1561fc4a5fdcb31b798cf623590906b938d356c9619e539958");
 
       const tooHighFee = (await marketplace.MAX_FEE()).add(1);
 
-      await expect(marketplace.setFee(tooHighFee)).to.be.revertedWith("max fee");
+      await expect(marketplace.setFee(tooHighFee, newFeeWithCollectionOwner)).to.be.revertedWith("max fee");
 
-      await marketplace.setFee(newFee);
+      await marketplace.setFee(newFee, newFeeWithCollectionOwner);
       expect(await marketplace.fee()).to.be.equal(newFee);
+      expect(await marketplace.feeWithCollectionOwner()).to.be.equal(newFeeWithCollectionOwner);
     });
 
     it('setFeeRecipient()', async function () {
@@ -87,6 +89,30 @@ describe('TreasureMarketplace', function () {
 
       await marketplace.setFeeRecipient(newRecipient);
       expect(await marketplace.feeReceipient()).to.be.equal(newRecipient);
+    });
+
+    it('setCollectionOwnerFee()', async function () {
+        expect(await marketplace.feeReceipient()).to.be.equal(feeRecipient);
+        const newRecipient = seller;
+
+        await(await marketplace.setTokenApprovalStatus(nft.address, TOKEN_APPROVAL_STATUS_ERC_721_APPROVED)).wait();
+
+        const collectionOwnerFee = {
+            "recipient": seller,
+            "fee": 500
+        };
+
+        await expect(marketplace
+            .connect(staker3Signer)
+            .setCollectionOwnerFee(nft.address, collectionOwnerFee))
+            .to.be.revertedWith("AccessControl: account 0x90f79bf6eb2c4f870365e785982e1f101e93b906 is missing role 0x34d5e892b0a7ec1561fc4a5fdcb31b798cf623590906b938d356c9619e539958");
+
+        await(await marketplace.setCollectionOwnerFee(nft.address, collectionOwnerFee)).wait();
+
+        expect((await marketplace.collectionToCollectionOwnerFee(nft.address)).recipient)
+            .to.be.equal(seller);
+        expect((await marketplace.collectionToCollectionOwnerFee(nft.address)).fee)
+            .to.be.equal(500);
     });
 
     it('approve token', async function () {
@@ -357,6 +383,38 @@ describe('TreasureMarketplace', function () {
           expect(listing.pricePerItem).to.be.equal(0);
           expect(listing.expirationTime).to.be.equal(0);
         });
+
+        it('buyItem() with collection owner fee', async function () {
+            await magicToken.mint(buyer, pricePerItem);
+            await magicToken.connect(buyerSigner).approve(marketplace.address, pricePerItem);
+
+            // When no collection owner, 5% fee. With collection owner, 2.5% fee to protocol.
+            await(await marketplace.setFee(500, 250)).wait();
+
+            // Admin owns this collection. 5% fee for collection.
+            const collectionOwnerFee = {
+                "recipient": admin,
+                "fee": 500
+            };
+
+            await(await marketplace.setCollectionOwnerFee(nft.address, collectionOwnerFee)).wait();
+
+            await(await marketplace.connect(buyerSigner).buyItem(
+              nft.address,
+              tokenId,
+              seller,
+              1,
+              pricePerItem
+            )).wait();
+
+            expect(await magicToken.balanceOf(await marketplace.feeReceipient()))
+                .to.be.equal(pricePerItem.mul(25).div(1000));
+            // Owner of collection.
+            expect(await magicToken.balanceOf(admin))
+                .to.be.equal(pricePerItem.mul(50).div(1000));
+            expect(await magicToken.balanceOf(seller))
+                .to.be.equal(pricePerItem.mul(925).div(1000));
+          });
 
         it('buyItem() with quantity 0', async function () {
           expect(await nft.ownerOf(tokenId)).to.be.equal(seller);

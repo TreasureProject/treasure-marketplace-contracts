@@ -12,6 +12,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     })
 
     const fee = 500; // 5%
+    const feeWithCollectionOwner = 250; // 2.5%
     const feeReceipient = "0xDb6Ab450178bAbCf0e467c1F3B436050d907E233";
     const newOwner = "0xB013ABD83F0bD173E9F14ce7d6e420Ad711483b4";
     const newProxyOwner = "0xB013ABD83F0bD173E9F14ce7d6e420Ad711483b4";
@@ -36,7 +37,19 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
           }
         }
       }
-    })
+    });
+
+    const feeFromContract = await read('TreasureMarketplace', 'fee');
+    const feeWithCollectionOwnerFromContrat = await read('TreasureMarketplace', 'feeWithCollectionOwner');
+    if(feeFromContract.toNumber() != fee || feeWithCollectionOwnerFromContrat.toNumber() != feeWithCollectionOwner) {
+        await execute(
+            'TreasureMarketplace',
+            { from: deployer, log: true },
+            'setFee',
+            fee,
+            feeWithCollectionOwner
+          );
+    }
 
     for (const nft of nftApprovedList) {
       if ((await read('TreasureMarketplace', 'tokenApprovals', nft.address)) == 0) {

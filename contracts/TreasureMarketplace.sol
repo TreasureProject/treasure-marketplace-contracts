@@ -194,12 +194,14 @@ contract TreasureMarketplace is AccessControlEnumerableUpgradeable, PausableUpgr
     /// @notice Updates an item listing
     /// @param  _nftAddress        which token contract holds the offered token
     /// @param  _tokenId           the identifier for the offered token
+    /// @param  _currentQuantity   expected current quantity, protection from front-running
     /// @param  _newQuantity       how many of this token identifier are offered (or 1 for a ERC-721 token)
     /// @param  _newPricePerItem   the price (in units of the paymentToken) for each token offered
     /// @param  _newExpirationTime UNIX timestamp after when this listing expires
     function updateListing(
         address _nftAddress,
         uint256 _tokenId,
+        uint64 _currentQuantity,
         uint64 _newQuantity,
         uint128 _newPricePerItem,
         uint64 _newExpirationTime
@@ -208,7 +210,10 @@ contract TreasureMarketplace is AccessControlEnumerableUpgradeable, PausableUpgr
         nonReentrant
         whenNotPaused
     {
-        require(listings[_nftAddress][_tokenId][_msgSender()].quantity > 0, "TreasureMarketplace: not listed item");
+        uint256 q = listings[_nftAddress][_tokenId][_msgSender()].quantity;
+        require(q > 0, "TreasureMarketplace: not listed item");
+        require(q == _currentQuantity, "TreasureMarketplace: item quantity changed");
+
         _createListingWithoutEvent(_nftAddress, _tokenId, _newQuantity, _newPricePerItem, _newExpirationTime);
         emit ItemUpdated(
             _msgSender(),

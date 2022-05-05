@@ -115,9 +115,6 @@ const config: HardhatUserConfig = {
     currency: 'USD',
     enabled: false,
   },
-  etherscan: {
-    apiKey: process.env.ETHERSCAN_API_KEY
-  },
   paths: {
     artifacts: "artifacts",
     cache: "cache",

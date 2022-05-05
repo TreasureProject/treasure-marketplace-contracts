@@ -95,7 +95,7 @@ describe('TreasureMarketplace', function () {
         expect(await marketplace.feeReceipient()).to.be.equal(feeRecipient);
         const newRecipient = seller;
 
-        await(await marketplace.setTokenApprovalStatus(nft.address, TOKEN_APPROVAL_STATUS_ERC_721_APPROVED)).wait();
+        await(await marketplace.setTokenApprovalStatus(nft.address, TOKEN_APPROVAL_STATUS_ERC_721_APPROVED, magicToken.address)).wait();
 
         const collectionOwnerFee = {
             "recipient": seller,
@@ -117,24 +117,24 @@ describe('TreasureMarketplace', function () {
 
     it('approve token', async function () {
       expect(await marketplace.tokenApprovals(nft.address)).to.equal(TOKEN_APPROVAL_STATUS_NOT_APPROVED);
-      await marketplace.setTokenApprovalStatus(nft.address, TOKEN_APPROVAL_STATUS_ERC_721_APPROVED);
+      await marketplace.setTokenApprovalStatus(nft.address, TOKEN_APPROVAL_STATUS_ERC_721_APPROVED, magicToken.address);
       expect(await marketplace.tokenApprovals(nft.address)).to.equal(TOKEN_APPROVAL_STATUS_ERC_721_APPROVED);
       // Allow to approve twice
-      await marketplace.setTokenApprovalStatus(nft.address, TOKEN_APPROVAL_STATUS_ERC_721_APPROVED);
+      await marketplace.setTokenApprovalStatus(nft.address, TOKEN_APPROVAL_STATUS_ERC_721_APPROVED, magicToken.address);
       expect(await marketplace.tokenApprovals(nft.address)).to.equal(TOKEN_APPROVAL_STATUS_ERC_721_APPROVED);
 
       await expect(
-        marketplace.setTokenApprovalStatus(nft.address, TOKEN_APPROVAL_STATUS_ERC_1155_APPROVED)
+        marketplace.setTokenApprovalStatus(nft.address, TOKEN_APPROVAL_STATUS_ERC_1155_APPROVED, magicToken.address)
       ).to.be.revertedWith("not an ERC1155 contract");
     });
 
     it('unapprove token', async function () {
-      await marketplace.setTokenApprovalStatus(nft.address, TOKEN_APPROVAL_STATUS_ERC_721_APPROVED);
+      await marketplace.setTokenApprovalStatus(nft.address, TOKEN_APPROVAL_STATUS_ERC_721_APPROVED, magicToken.address);
       expect(await marketplace.tokenApprovals(nft.address)).to.equal(TOKEN_APPROVAL_STATUS_ERC_721_APPROVED);
-      await marketplace.setTokenApprovalStatus(nft.address, TOKEN_APPROVAL_STATUS_NOT_APPROVED);
+      await marketplace.setTokenApprovalStatus(nft.address, TOKEN_APPROVAL_STATUS_NOT_APPROVED, magicToken.address);
       expect(await marketplace.tokenApprovals(nft.address)).to.equal(TOKEN_APPROVAL_STATUS_NOT_APPROVED);
       // Allow to remove twice
-      await marketplace.setTokenApprovalStatus(nft.address, TOKEN_APPROVAL_STATUS_NOT_APPROVED);
+      await marketplace.setTokenApprovalStatus(nft.address, TOKEN_APPROVAL_STATUS_NOT_APPROVED, magicToken.address);
       expect(await marketplace.tokenApprovals(nft.address)).to.equal(TOKEN_APPROVAL_STATUS_NOT_APPROVED);
     });
 
@@ -166,17 +166,19 @@ describe('TreasureMarketplace', function () {
             tokenId,
             1,
             pricePerItem,
-            expirationTime
+            expirationTime,
+            magicToken.address
         )).to.be.revertedWith("token is not approved for trading")
 
-        await marketplace.setTokenApprovalStatus(nft.address, TOKEN_APPROVAL_STATUS_ERC_721_APPROVED);
+        await marketplace.setTokenApprovalStatus(nft.address, TOKEN_APPROVAL_STATUS_ERC_721_APPROVED, magicToken.address);
 
         await expect(marketplace.connect(sellerSigner).createListing(
             nft.address,
             tokenId,
             1,
             0,
-            expirationTime
+            expirationTime,
+            magicToken.address
         )).to.be.revertedWith("TreasureMarketplace: below min price")
 
         await expect(marketplace.connect(sellerSigner).createListing(
@@ -184,7 +186,8 @@ describe('TreasureMarketplace', function () {
             tokenId,
             0,
             pricePerItem,
-            expirationTime
+            expirationTime,
+            magicToken.address
         )).to.be.revertedWith("cannot list multiple ERC721")
 
         await expect(marketplace.connect(buyerSigner).createListing(
@@ -192,7 +195,8 @@ describe('TreasureMarketplace', function () {
             tokenId,
             1,
             pricePerItem,
-            expirationTime
+            expirationTime,
+            magicToken.address
         )).to.be.revertedWith("not owning item")
 
         await marketplace.pause();
@@ -202,7 +206,8 @@ describe('TreasureMarketplace', function () {
             tokenId,
             1,
             pricePerItem,
-            expirationTime
+            expirationTime,
+            magicToken.address
         )).to.be.revertedWith("Pausable: paused");
 
         await marketplace.unpause();
@@ -212,7 +217,8 @@ describe('TreasureMarketplace', function () {
             tokenId,
             1,
             ethers.BigNumber.from('999999999'),
-            expirationTime
+            expirationTime,
+            magicToken.address
         )).to.be.revertedWith("TreasureMarketplace: below min price");
 
         await marketplace.connect(sellerSigner).createListing(
@@ -220,7 +226,8 @@ describe('TreasureMarketplace', function () {
             tokenId,
             1,
             pricePerItem,
-            expirationTime
+            expirationTime,
+            magicToken.address
         );
 
         const listing = await marketplace.listings(nft.address, tokenId, seller);
@@ -238,13 +245,14 @@ describe('TreasureMarketplace', function () {
           expect(await nft.ownerOf(tokenId)).to.be.equal(seller);
 
           await nft.connect(sellerSigner).setApprovalForAll(marketplace.address, true);
-          await marketplace.setTokenApprovalStatus(nft.address, TOKEN_APPROVAL_STATUS_ERC_721_APPROVED);
+          await marketplace.setTokenApprovalStatus(nft.address, TOKEN_APPROVAL_STATUS_ERC_721_APPROVED, magicToken.address);
           await marketplace.connect(sellerSigner).createListing(
               nft.address,
               tokenId,
               1,
               pricePerItem,
-              expirationTime
+              expirationTime,
+              magicToken.address
           );
         });
 
@@ -259,7 +267,8 @@ describe('TreasureMarketplace', function () {
               tokenId,
               1,
               newPricePerItem,
-              newExpirationTime
+              newExpirationTime,
+              magicToken.address
           )).to.be.revertedWith("Pausable: paused");
 
           await marketplace.unpause();
@@ -270,7 +279,8 @@ describe('TreasureMarketplace', function () {
               tokenId,
               1,
               pricePerItem.add(1),
-              newExpirationTime
+              newExpirationTime,
+              magicToken.address
           );
 
           await marketplace.connect(sellerSigner).updateListing(
@@ -278,7 +288,8 @@ describe('TreasureMarketplace', function () {
               tokenId,
               1,
               newPricePerItem,
-              newExpirationTime
+              newExpirationTime,
+              magicToken.address
           );
 
           await expect(marketplace.connect(sellerSigner).updateListing(
@@ -286,7 +297,8 @@ describe('TreasureMarketplace', function () {
               tokenId,
               1,
               0,
-              newExpirationTime
+              newExpirationTime,
+              magicToken.address
           )).to.be.revertedWith("TreasureMarketplace: below min price");
 
           await expect(marketplace.connect(sellerSigner).updateListing(
@@ -294,7 +306,8 @@ describe('TreasureMarketplace', function () {
               tokenId,
               0,
               newPricePerItem,
-              newExpirationTime
+              newExpirationTime,
+              magicToken.address
           )).to.be.revertedWith("cannot list multiple ERC721");
 
           const listing = await marketplace.listings(nft.address, tokenId, seller);
@@ -323,55 +336,61 @@ describe('TreasureMarketplace', function () {
           expect(await magicToken.balanceOf(seller)).to.be.equal(0);
 
           await expect(marketplace.connect(buyerSigner).buyItem(
-            nft.address,
+            [nft.address,
             tokenId,
             seller,
             0,
-            pricePerItem
+            pricePerItem,
+            magicToken.address]
           )).to.be.revertedWith("Nothing to buy");
 
           await expect(marketplace.connect(buyerSigner).buyItem(
-            nft.address,
+            [nft.address,
             tokenId,
             seller,
             2,
-            pricePerItem
+            pricePerItem,
+            magicToken.address]
           )).to.be.revertedWith("not enough quantity");
 
           await expect(marketplace.connect(buyerSigner).buyItem(
-            nft.address,
+            [nft.address,
             tokenId,
             seller,
             1,
-            pricePerItem.sub(1)
+            pricePerItem.sub(1),
+            magicToken.address]
           )).to.be.revertedWith("price increased");
 
           await expect(marketplace.connect(sellerSigner).buyItem(
-            nft.address,
+            [nft.address,
             tokenId,
             seller,
             1,
-            pricePerItem
+            pricePerItem,
+            magicToken.address]
           )).to.be.revertedWith("Cannot buy your own item");
 
           await marketplace.pause();
 
           await expect(marketplace.connect(buyerSigner).buyItem(
-            nft.address,
+            [nft.address,
             tokenId,
             seller,
             1,
-            pricePerItem
+            pricePerItem,
+            magicToken.address]
           )).to.be.revertedWith("Pausable: paused");
 
           await marketplace.unpause();
 
           await marketplace.connect(buyerSigner).buyItem(
-            nft.address,
+            [nft.address,
             tokenId,
             seller,
             1,
-            pricePerItem
+            pricePerItem,
+            magicToken.address]
           )
 
           expect(await magicToken.balanceOf(await marketplace.feeReceipient())).to.be.equal(pricePerItem.div(100));
@@ -400,11 +419,12 @@ describe('TreasureMarketplace', function () {
             await(await marketplace.setCollectionOwnerFee(nft.address, collectionOwnerFee)).wait();
 
             await(await marketplace.connect(buyerSigner).buyItem(
-              nft.address,
+              [nft.address,
               tokenId,
               seller,
               1,
-              pricePerItem
+              pricePerItem,
+              magicToken.address]
             )).wait();
 
             expect(await magicToken.balanceOf(await marketplace.feeReceipient()))
@@ -424,17 +444,18 @@ describe('TreasureMarketplace', function () {
           expect(await magicToken.balanceOf(seller)).to.be.equal(0);
 
           await expect(marketplace.connect(buyerSigner).buyItem(
-            nft.address,
+            [nft.address,
             tokenId,
             seller,
             0,
-            pricePerItem
+            pricePerItem,
+            magicToken.address]
           )).to.be.revertedWith("Nothing to buy");
         });
 
         describe('token approval revoked', function () {
           beforeEach(async function () {
-            await marketplace.setTokenApprovalStatus(nft.address, TOKEN_APPROVAL_STATUS_NOT_APPROVED);
+            await marketplace.setTokenApprovalStatus(nft.address, TOKEN_APPROVAL_STATUS_NOT_APPROVED, magicToken.address);
           });
 
           it('buyItem()', async function () {
@@ -445,11 +466,12 @@ describe('TreasureMarketplace', function () {
             expect(await magicToken.balanceOf(seller)).to.be.equal(0);
 
             await expect(marketplace.connect(buyerSigner).buyItem(
-              nft.address,
+              [nft.address,
               tokenId,
               seller,
               1,
-              pricePerItem
+              pricePerItem,
+              magicToken.address]
             )).to.be.revertedWith("token is not approved for trading");
           });
         });
@@ -473,13 +495,14 @@ describe('TreasureMarketplace', function () {
         expect(await erc1155.balanceOf(seller, tokenId)).to.be.equal(quantity);
 
         await erc1155.connect(sellerSigner).setApprovalForAll(marketplace.address, true);
-        await marketplace.setTokenApprovalStatus(erc1155.address, TOKEN_APPROVAL_STATUS_ERC_1155_APPROVED);
+        await marketplace.setTokenApprovalStatus(erc1155.address, TOKEN_APPROVAL_STATUS_ERC_1155_APPROVED, magicToken.address);
         await expect(marketplace.connect(sellerSigner).createListing(
           erc1155.address,
           tokenId,
           quantity,
           pricePerItem,
-          (await getCurrentTime()) - 1
+          (await getCurrentTime()) - 1,
+          magicToken.address
         )).to.be.revertedWith("invalid expiration time");
 
         await expect(marketplace.connect(sellerSigner).createListing(
@@ -487,7 +510,8 @@ describe('TreasureMarketplace', function () {
           tokenId,
           quantity,
           0,
-          expirationTime
+          expirationTime,
+          magicToken.address
         )).to.be.revertedWith("TreasureMarketplace: below min price");
 
         await expect(marketplace.connect(sellerSigner).createListing(
@@ -495,7 +519,8 @@ describe('TreasureMarketplace', function () {
           tokenId,
           0,
           pricePerItem,
-          expirationTime
+          expirationTime,
+          magicToken.address
         )).to.be.revertedWith("nothing to list");
 
 
@@ -504,7 +529,8 @@ describe('TreasureMarketplace', function () {
           tokenId,
           1,
           pricePerItem,
-          expirationTime
+          expirationTime,
+          magicToken.address
         )).to.be.revertedWith("must hold enough nfts");
 
         await marketplace.connect(sellerSigner).createListing(
@@ -512,7 +538,8 @@ describe('TreasureMarketplace', function () {
             tokenId,
             quantity,
             pricePerItem,
-            expirationTime
+            expirationTime,
+            magicToken.address
         );
 
         await expect(marketplace.connect(sellerSigner).createListing(
@@ -520,7 +547,8 @@ describe('TreasureMarketplace', function () {
           tokenId,
           quantity,
           pricePerItem,
-          expirationTime
+          expirationTime,
+          magicToken.address
         )).to.be.revertedWith("already listed");
 
         const listing = await marketplace.listings(erc1155.address, tokenId, seller);
@@ -536,7 +564,7 @@ describe('TreasureMarketplace', function () {
           expirationTime = await getCurrentTime() + timedelta;
 
           expect(await erc1155.balanceOf(seller, tokenId)).to.be.equal(quantity);
-          await marketplace.setTokenApprovalStatus(erc1155.address, TOKEN_APPROVAL_STATUS_ERC_1155_APPROVED);
+          await marketplace.setTokenApprovalStatus(erc1155.address, TOKEN_APPROVAL_STATUS_ERC_1155_APPROVED, magicToken.address);
 
           await erc1155.connect(sellerSigner).setApprovalForAll(marketplace.address, true);
           await marketplace.connect(sellerSigner).createListing(
@@ -544,7 +572,8 @@ describe('TreasureMarketplace', function () {
               tokenId,
               quantity,
               pricePerItem,
-              expirationTime
+              expirationTime,
+              magicToken.address
           );
         });
 
@@ -556,11 +585,12 @@ describe('TreasureMarketplace', function () {
           expect(await magicToken.balanceOf(seller)).to.be.equal(0);
 
           await marketplace.connect(buyerSigner).buyItem(
-            erc1155.address,
+            [erc1155.address,
             tokenId,
             seller,
             quantity,
-            pricePerItem
+            pricePerItem,
+            magicToken.address]
           )
 
           expect(await magicToken.balanceOf(await marketplace.feeReceipient())).to.be.equal(pricePerItem.mul(quantity).div(100));
@@ -584,11 +614,12 @@ describe('TreasureMarketplace', function () {
           expect(await magicToken.balanceOf(seller)).to.be.equal(0);
 
           await expect(marketplace.connect(buyerSigner).buyItem(
-            erc1155.address,
+            [erc1155.address,
             tokenId,
             seller,
             quantity,
-            pricePerItem
+            pricePerItem,
+            magicToken.address]
           )).to.be.revertedWith("listing expired");
 
           expect(await magicToken.balanceOf(buyer)).to.be.equal(pricePerItem.mul(quantity));
@@ -606,13 +637,14 @@ describe('TreasureMarketplace', function () {
           expect(await erc1155.balanceOf(seller, tokenId)).to.be.equal(quantity);
 
           await erc1155.connect(sellerSigner).setApprovalForAll(marketplace.address, true);
-          await marketplace.setTokenApprovalStatus(erc1155.address, TOKEN_APPROVAL_STATUS_ERC_1155_APPROVED);
+          await marketplace.setTokenApprovalStatus(erc1155.address, TOKEN_APPROVAL_STATUS_ERC_1155_APPROVED, magicToken.address);
           await marketplace.connect(sellerSigner).createListing(
               erc1155.address,
               tokenId,
               quantity,
               pricePerItem,
-              expirationTime
+              expirationTime,
+              magicToken.address
           );
         });
 
@@ -626,7 +658,8 @@ describe('TreasureMarketplace', function () {
             2,
             quantity,
             pricePerItem,
-            expirationTime
+            expirationTime,
+            magicToken.address
           )).to.be.revertedWith("not listed item");
 
           await expect(marketplace.connect(buyerSigner).updateListing(
@@ -634,7 +667,8 @@ describe('TreasureMarketplace', function () {
             tokenId,
             quantity,
             pricePerItem,
-            expirationTime
+            expirationTime,
+            magicToken.address
           )).to.be.revertedWith("not listed item");
 
           await expect(marketplace.connect(sellerSigner).updateListing(
@@ -642,7 +676,8 @@ describe('TreasureMarketplace', function () {
               tokenId,
               0,
               newPricePerItem,
-              newExpirationTime
+              newExpirationTime,
+              magicToken.address
           )).to.be.revertedWith("nothing to list");
 
           await expect(marketplace.connect(sellerSigner).updateListing(
@@ -650,7 +685,8 @@ describe('TreasureMarketplace', function () {
               tokenId,
               newQuantity,
               0,
-              newExpirationTime
+              newExpirationTime,
+              magicToken.address
           )).to.be.revertedWith("TreasureMarketplace: below min price");
 
           // Can increase price
@@ -659,7 +695,8 @@ describe('TreasureMarketplace', function () {
               tokenId,
               newQuantity,
               pricePerItem.add(1),
-              newExpirationTime
+              newExpirationTime,
+              magicToken.address
           );
 
           await marketplace.connect(sellerSigner).updateListing(
@@ -667,7 +704,8 @@ describe('TreasureMarketplace', function () {
               tokenId,
               newQuantity,
               newPricePerItem,
-              newExpirationTime
+              newExpirationTime,
+              magicToken.address
           );
 
           const listing = await marketplace.listings(erc1155.address, tokenId, seller);
@@ -703,39 +741,43 @@ describe('TreasureMarketplace', function () {
             expect(await magicToken.balanceOf(seller)).to.be.equal(0);
 
             await expect(marketplace.connect(buyerSigner).buyItem(
-              erc1155.address,
+              [erc1155.address,
               2,
               seller,
               quantity,
-              pricePerItem
+              pricePerItem,
+              magicToken.address]
             )).to.be.revertedWith("not listed item");
 
             await erc1155.connect(sellerSigner).safeTransferFrom(seller, staker3, tokenId, 1, "0x");
 
             await expect(marketplace.connect(buyerSigner).buyItem(
-              erc1155.address,
+              [erc1155.address,
               tokenId,
               seller,
               quantity,
-              pricePerItem
+              pricePerItem,
+              magicToken.address]
             )).to.be.reverted;
 
             await erc1155.connect(staker3Signer).safeTransferFrom(staker3, seller, tokenId, 1, "0x");
 
             await expect(marketplace.connect(buyerSigner).buyItem(
-              erc1155.address,
+              [erc1155.address,
               tokenId,
               seller,
               0,
-              pricePerItem
+              pricePerItem,
+              magicToken.address]
             )).to.be.revertedWith("Nothing to buy")
 
             await marketplace.connect(buyerSigner).buyItem(
-              erc1155.address,
+              [erc1155.address,
               tokenId,
               seller,
               quantity,
-              pricePerItem
+              pricePerItem,
+              magicToken.address]
             )
 
             expect(await magicToken.balanceOf(await marketplace.feeReceipient())).to.be.equal(pricePerItem.mul(quantity).div(100));
@@ -759,11 +801,12 @@ describe('TreasureMarketplace', function () {
             expect(await magicToken.balanceOf(seller)).to.be.equal(0);
 
             await marketplace.connect(buyerSigner).buyItem(
-              erc1155.address,
+              [erc1155.address,
               tokenId,
               seller,
               buyQuantity,
-              pricePerItem
+              pricePerItem,
+              magicToken.address]
             )
 
             expect(await magicToken.balanceOf(await marketplace.feeReceipient())).to.be.equal(pricePerItem.mul(buyQuantity).div(100));

@@ -7,6 +7,7 @@ import 'hardhat-deploy';
 import 'hardhat-deploy-ethers';
 import 'hardhat-gas-reporter';
 import 'solidity-coverage';
+import 'hardhat-contract-sizer';
 
 const privateKey = process.env.DEV_PRIVATE_KEY || "4201af59da6a5aed59c21cd6542f92d7a5e34e6c3b6f8e0903766ae4edb1f894"; // address: 0xA226293acbC7817d24c4b587Bc4568e4D624612E
 const config: HardhatUserConfig = {
@@ -123,6 +124,9 @@ const config: HardhatUserConfig = {
     imports: "imports",
     sources: "contracts",
     tests: "test",
+  },
+  contractSizer: {
+    runOnCompile: true
   }
 };
 

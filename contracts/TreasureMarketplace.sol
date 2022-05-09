@@ -348,7 +348,7 @@ contract TreasureMarketplace is AccessControlEnumerableUpgradeable, PausableUpgr
         }
 
         address _paymentTokenForCollection = getPaymentTokenForCollection(_nftAddress);
-        require(_paymentTokenForCollection == _paymentToken, "TreasureMarketplace: Bad payment token");
+        require(_paymentTokenForCollection == _paymentToken, "TreasureMarketplace: Wrong payment token");
 
         listings[_nftAddress][_tokenId][_msgSender()] = ListingOrBid(
             _quantity,

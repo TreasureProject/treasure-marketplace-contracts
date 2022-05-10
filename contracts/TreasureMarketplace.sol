@@ -469,7 +469,7 @@ contract TreasureMarketplace is AccessControlEnumerableUpgradeable, PausableUpgr
         uint256 _totalAmountNeeded = _pricePerItem * _quantity;
 
         require(_token.allowance(_msgSender(), address(this)) >= _totalAmountNeeded && _token.balanceOf(_msgSender()) >= _totalAmountNeeded,
-            "TreasureMarketplace: Not enough token owner or allowed for bid");
+            "TreasureMarketplace: Not enough tokens owned or allowed for bid");
 
         _bidStorage.quantity = _quantity;
         _bidStorage.pricePerItem = _pricePerItem;

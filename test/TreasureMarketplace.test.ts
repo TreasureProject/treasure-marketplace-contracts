@@ -63,7 +63,8 @@ describe('TreasureMarketplace', function () {
 
         marketplace = new ethers.Contract(proxy.address, TreasureMarketplaceAbi, deployerSigner);
 
-        await (await marketplace.setWeth(weth.address)).wait();
+        await(await marketplace.setWeth(weth.address)).wait();
+        await(await marketplace.toggleAreBidsActive()).wait();
     });
 
     describe('init', function () {
@@ -513,7 +514,6 @@ describe('TreasureMarketplace', function () {
         })
     })
 
-
     describe('ERC1155', function () {
         describe('with NFT minted', function () {
             const tokenId = 0;
@@ -858,4 +858,283 @@ describe('TreasureMarketplace', function () {
             })
         })
     })
+
+    it('Should be able to list/buy in weth', async function () {
+        await marketplace.setTokenApprovalStatus(nft.address, TOKEN_APPROVAL_STATUS_ERC_721_APPROVED, weth.address);
+
+        await(await nft.connect(sellerSigner).setApprovalForAll(marketplace.address, true)).wait();
+        await(await nft.mint(seller)).wait();
+        let tokenId = 0;
+
+        let pricePerItem = ethers.utils.parseEther("1");
+
+        await expect(marketplace
+            .connect(sellerSigner)
+            .createListing(
+                nft.address,
+                tokenId,
+                1,
+                pricePerItem,
+                1000000000000,
+                magicToken.address)
+            ).to.be.revertedWith("TreasureMarketplace: Wrong payment token");
+
+        await(await marketplace
+            .connect(sellerSigner)
+            .createListing(
+                nft.address,
+                tokenId,
+                1,
+                pricePerItem,
+                1000000000000,
+                weth.address)
+            ).wait();
+
+        const listing = await marketplace.listings(nft.address, tokenId, seller);
+        expect(listing.paymentTokenAddress)
+            .to.equal(weth.address);
+
+        await(await weth.connect(buyerSigner).approve(marketplace.address, pricePerItem)).wait();
+
+        await(await weth
+            .connect(buyerSigner)
+            .deposit({value: pricePerItem})
+            ).wait();
+
+        expect(await weth.balanceOf(buyer))
+            .to.eq(pricePerItem);
+
+        await(await marketplace
+            .connect(buyerSigner)
+            .buyItem(
+                [
+                    nft.address,
+                    tokenId,
+                    seller,
+                    1,
+                    pricePerItem,
+                    weth.address
+                ]
+            )).wait();
+
+        expect(await nft.ownerOf(tokenId))
+            .to.equal(buyer);
+        // 1% fees are transferred
+        expect(await weth.balanceOf(seller))
+            .to.eq(pricePerItem.sub(ethers.utils.parseEther("0.01")));
+    });
+
+    it('Should be able to buy in ETH for listings in weth', async function () {
+        await marketplace.setTokenApprovalStatus(nft.address, TOKEN_APPROVAL_STATUS_ERC_721_APPROVED, weth.address);
+
+        await(await nft.connect(sellerSigner).setApprovalForAll(marketplace.address, true)).wait();
+        await(await nft.mint(seller)).wait();
+        let tokenId = 0;
+
+        let pricePerItem = ethers.utils.parseEther("1");
+
+        await(await marketplace
+            .connect(sellerSigner)
+            .createListing(
+                nft.address,
+                tokenId,
+                1,
+                pricePerItem,
+                1000000000000,
+                weth.address)
+            ).wait();
+
+        const listing = await marketplace.listings(nft.address, tokenId, seller);
+        expect(listing.paymentTokenAddress)
+            .to.equal(weth.address);
+
+        await expect(marketplace
+            .connect(buyerSigner)
+            .buyItemWithEth(
+                [
+                    nft.address,
+                    tokenId,
+                    seller,
+                    1,
+                    pricePerItem,
+                    weth.address
+                ]
+            )).to.be.revertedWith("TreasureMarketplace: Bad ETH value")
+
+        await expect(marketplace
+            .connect(buyerSigner)
+            .buyItemWithEth(
+                [
+                    nft.address,
+                    tokenId,
+                    seller,
+                    1,
+                    pricePerItem,
+                    weth.address
+                ]
+                , { value: pricePerItem.add(1) }
+            )).to.be.revertedWith("TreasureMarketplace: Bad ETH value")
+
+        await expect(marketplace
+            .connect(buyerSigner)
+            .buyItemWithEth(
+                [
+                    nft.address,
+                    tokenId,
+                    seller,
+                    1,
+                    pricePerItem,
+                    weth.address
+                ]
+                , { value: pricePerItem.sub(1) }
+            )).to.be.revertedWith("TreasureMarketplace: Bad ETH value")
+
+        await expect(await marketplace
+            .connect(buyerSigner)
+            .buyItemWithEth(
+                [
+                    nft.address,
+                    tokenId,
+                    seller,
+                    1,
+                    pricePerItem,
+                    weth.address
+                ]
+                , { value: pricePerItem }
+            )).to.changeEtherBalances([buyerSigner, sellerSigner], [pricePerItem.mul(-1), pricePerItem.sub(ethers.utils.parseEther("0.01"))]);
+
+        expect(await nft.ownerOf(tokenId))
+            .to.equal(buyer);
+    });
+
+    it('Should be able to create a valid 721/1155 token bid', async function () {
+
+        let tokenId = 0;
+
+        let pricePerItem = ethers.utils.parseEther("1");
+
+        await expect(marketplace
+            .connect(buyerSigner)
+            .createOrUpdateTokenBid(
+                nft.address,
+                tokenId,
+                1,
+                pricePerItem,
+                1000000000000,
+                magicToken.address)
+            ).to.be.revertedWith("TreasureMarketplace: token is not approved for trading");
+
+        await(await marketplace.setTokenApprovalStatus(nft.address, TOKEN_APPROVAL_STATUS_ERC_721_APPROVED, magicToken.address)).wait();
+        await(await marketplace.setTokenApprovalStatus(erc1155.address, TOKEN_APPROVAL_STATUS_ERC_1155_APPROVED, magicToken.address)).wait();
+
+        await(await nft.connect(sellerSigner).setApprovalForAll(marketplace.address, true)).wait();
+        await(await nft.mint(seller)).wait();
+
+        await expect(marketplace
+            .connect(buyerSigner)
+            .createOrUpdateTokenBid(
+                nft.address,
+                tokenId,
+                2,
+                pricePerItem,
+                1000000000000,
+                magicToken.address)
+            ).to.be.revertedWith("TreasureMarketplace: token bid quantity 1 for ERC721");
+
+        await expect(marketplace
+            .connect(buyerSigner)
+            .createOrUpdateTokenBid(
+                nft.address,
+                tokenId,
+                0,
+                pricePerItem,
+                1000000000000,
+                magicToken.address)
+            ).to.be.revertedWith("TreasureMarketplace: token bid quantity 1 for ERC721");
+
+        await expect(marketplace
+            .connect(buyerSigner)
+            .createOrUpdateTokenBid(
+                nft.address,
+                tokenId,
+                1,
+                pricePerItem,
+                1,
+                magicToken.address)
+            ).to.be.revertedWith("TreasureMarketplace: invalid expiration time");
+
+        await expect(marketplace
+            .connect(buyerSigner)
+            .createOrUpdateTokenBid(
+                nft.address,
+                tokenId,
+                1,
+                1,
+                1000000000000,
+                magicToken.address)
+            ).to.be.revertedWith("TreasureMarketplace: below min price");
+
+        await expect(marketplace
+            .connect(buyerSigner)
+            .createOrUpdateTokenBid(
+                nft.address,
+                tokenId,
+                1,
+                pricePerItem,
+                1000000000000,
+                weth.address)
+            ).to.be.revertedWith("TreasureMarketplace: Bad payment token");
+
+        await expect(marketplace
+            .connect(buyerSigner)
+            .createOrUpdateTokenBid(
+                nft.address,
+                tokenId,
+                1,
+                pricePerItem,
+                1000000000000,
+                magicToken.address)
+            ).to.be.revertedWith("TreasureMarketplace: Not enough tokens owned or allowed for bid");
+
+        await(await magicToken.mint(buyer, pricePerItem)).wait();
+
+        // Hasn't approved enough so the same error will occur
+        await expect(marketplace
+            .connect(buyerSigner)
+            .createOrUpdateTokenBid(
+                nft.address,
+                tokenId,
+                1,
+                pricePerItem,
+                1000000000000,
+                magicToken.address)
+            ).to.be.revertedWith("TreasureMarketplace: Not enough tokens owned or allowed for bid");
+
+        await(await magicToken
+            .connect(buyerSigner)
+            .approve(marketplace.address, pricePerItem))
+            .wait();
+
+        await(await marketplace
+            .connect(buyerSigner)
+            .createOrUpdateTokenBid(
+                nft.address,
+                tokenId,
+                1,
+                pricePerItem,
+                1000000000000,
+                magicToken.address)
+            ).wait();
+
+        await(await marketplace
+            .connect(buyerSigner)
+            .createOrUpdateTokenBid(
+                erc1155.address,
+                tokenId,
+                1,
+                pricePerItem,
+                1000000000000,
+                magicToken.address)
+            ).wait();
+    });
 });

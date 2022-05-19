@@ -39,6 +39,17 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       }
     });
 
+    const testnetWethAddress = "0xB47e6A5f8b33b3F17603C83a0535A9dcD7E32681";
+    const wethAddressFromContract = await read('TreasureMarketplace', 'weth');
+    if(testnetWethAddress !== wethAddressFromContract) {
+        await execute(
+            'TreasureMarketplace',
+            { from: deployer, log: true },
+            'setWeth',
+            testnetWethAddress
+          );
+    }
+
     const feeFromContract = await read('TreasureMarketplace', 'fee');
     const feeWithCollectionOwnerFromContrat = await read('TreasureMarketplace', 'feeWithCollectionOwner');
     if(feeFromContract.toNumber() != fee || feeWithCollectionOwnerFromContrat.toNumber() != feeWithCollectionOwner) {

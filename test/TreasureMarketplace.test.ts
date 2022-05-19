@@ -361,71 +361,78 @@ describe('TreasureMarketplace', function () {
                     expect(await magicToken.balanceOf(marketplace.address)).to.be.equal(0);
                     expect(await magicToken.balanceOf(seller)).to.be.equal(0);
 
-                    await expect(marketplace.connect(buyerSigner).buyItem(
-                        [nft.address,
+                    await expect(marketplace.connect(buyerSigner).buyItems(
+                        [[nft.address,
                             tokenId,
                             seller,
                             0,
                             pricePerItem,
-                        magicToken.address]
+                        magicToken.address,
+                        false]]
                     )).to.be.revertedWith("Nothing to buy");
 
-                    await expect(marketplace.connect(buyerSigner).buyItem(
-                        [nft.address,
+                    await expect(marketplace.connect(buyerSigner).buyItems(
+                        [[nft.address,
                             tokenId,
                             seller,
                             2,
                             pricePerItem,
-                        magicToken.address]
+                        magicToken.address,
+                        false]]
                     )).to.be.revertedWith("not enough quantity");
 
-                    await expect(marketplace.connect(buyerSigner).buyItem(
-                        [nft.address,
+                    await expect(marketplace.connect(buyerSigner).buyItems(
+                        [[nft.address,
                             tokenId,
                             seller,
                             1,
                         pricePerItem.sub(1),
-                        magicToken.address]
+                        magicToken.address,
+                        false]]
                     )).to.be.revertedWith("price increased");
 
-                    await expect(marketplace.connect(sellerSigner).buyItem(
-                        [nft.address,
+                    await expect(marketplace.connect(sellerSigner).buyItems(
+                        [[nft.address,
                             tokenId,
                             seller,
                             1,
                             pricePerItem,
-                        magicToken.address]
+                        magicToken.address,
+                        false]]
                     )).to.be.revertedWith("Cannot buy your own item");
 
                     await marketplace.pause();
 
-                    await expect(marketplace.connect(buyerSigner).buyItem(
-                        [nft.address,
+                    await expect(marketplace.connect(buyerSigner).buyItems(
+                        [[nft.address,
                             tokenId,
                             seller,
                             1,
                             pricePerItem,
-                        magicToken.address]
+                        magicToken.address,
+                        false]]
                     )).to.be.revertedWith("Pausable: paused");
 
                     await marketplace.unpause();
 
-                    await expect(marketplace.connect(buyerSigner).buyItem(
-                        [nft.address,
+                    await expect(marketplace.connect(buyerSigner).buyItems(
+                        [[nft.address,
                             tokenId,
                             seller,
                             1,
                             pricePerItem,
-                        weth.address]
+                        weth.address,
+                        false]]
                     )).to.be.revertedWith("TreasureMarketplace: Wrong payment token");
 
-                    await marketplace.connect(buyerSigner).buyItem(
-                        [nft.address,
+                    await marketplace.connect(buyerSigner).buyItems(
+                        [[nft.address,
                             tokenId,
                             seller,
                             1,
                             pricePerItem,
-                        magicToken.address]
+                        magicToken.address,
+                        false]]
                     )
 
                     expect(await magicToken.balanceOf(await marketplace.feeReceipient())).to.be.equal(pricePerItem.div(100));
@@ -453,13 +460,14 @@ describe('TreasureMarketplace', function () {
 
                     await (await marketplace.setCollectionOwnerFee(nft.address, collectionOwnerFee)).wait();
 
-                    await (await marketplace.connect(buyerSigner).buyItem(
-                        [nft.address,
+                    await (await marketplace.connect(buyerSigner).buyItems(
+                        [[nft.address,
                             tokenId,
                             seller,
                             1,
                             pricePerItem,
-                        magicToken.address]
+                        magicToken.address,
+                        false]]
                     )).wait();
 
                     expect(await magicToken.balanceOf(await marketplace.feeReceipient()))
@@ -478,13 +486,14 @@ describe('TreasureMarketplace', function () {
                     expect(await magicToken.balanceOf(marketplace.address)).to.be.equal(0);
                     expect(await magicToken.balanceOf(seller)).to.be.equal(0);
 
-                    await expect(marketplace.connect(buyerSigner).buyItem(
-                        [nft.address,
+                    await expect(marketplace.connect(buyerSigner).buyItems(
+                        [[nft.address,
                             tokenId,
                             seller,
                             0,
                             pricePerItem,
-                        magicToken.address]
+                        magicToken.address,
+                        false]]
                     )).to.be.revertedWith("Nothing to buy");
                 });
 
@@ -500,13 +509,14 @@ describe('TreasureMarketplace', function () {
                         expect(await magicToken.balanceOf(marketplace.address)).to.be.equal(0);
                         expect(await magicToken.balanceOf(seller)).to.be.equal(0);
 
-                        await expect(marketplace.connect(buyerSigner).buyItem(
-                            [nft.address,
+                        await expect(marketplace.connect(buyerSigner).buyItems(
+                            [[nft.address,
                                 tokenId,
                                 seller,
                                 1,
                                 pricePerItem,
-                            magicToken.address]
+                            magicToken.address,
+                            false]]
                         )).to.be.revertedWith("token is not approved for trading");
                     });
                 });
@@ -618,13 +628,14 @@ describe('TreasureMarketplace', function () {
                     expect(await magicToken.balanceOf(marketplace.address)).to.be.equal(0);
                     expect(await magicToken.balanceOf(seller)).to.be.equal(0);
 
-                    await marketplace.connect(buyerSigner).buyItem(
-                        [erc1155.address,
+                    await marketplace.connect(buyerSigner).buyItems(
+                        [[erc1155.address,
                             tokenId,
                             seller,
                             quantity,
                             pricePerItem,
-                        magicToken.address]
+                        magicToken.address,
+                        false]]
                     )
 
                     expect(await magicToken.balanceOf(await marketplace.feeReceipient())).to.be.equal(pricePerItem.mul(quantity).div(100));
@@ -647,13 +658,14 @@ describe('TreasureMarketplace', function () {
                     expect(await magicToken.balanceOf(marketplace.address)).to.be.equal(0);
                     expect(await magicToken.balanceOf(seller)).to.be.equal(0);
 
-                    await expect(marketplace.connect(buyerSigner).buyItem(
-                        [erc1155.address,
+                    await expect(marketplace.connect(buyerSigner).buyItems(
+                        [[erc1155.address,
                             tokenId,
                             seller,
                             quantity,
                             pricePerItem,
-                        magicToken.address]
+                        magicToken.address,
+                        false]]
                     )).to.be.revertedWith("listing expired");
 
                     expect(await magicToken.balanceOf(buyer)).to.be.equal(pricePerItem.mul(quantity));
@@ -774,44 +786,48 @@ describe('TreasureMarketplace', function () {
                         expect(await magicToken.balanceOf(marketplace.address)).to.be.equal(0);
                         expect(await magicToken.balanceOf(seller)).to.be.equal(0);
 
-                        await expect(marketplace.connect(buyerSigner).buyItem(
-                            [erc1155.address,
+                        await expect(marketplace.connect(buyerSigner).buyItems(
+                            [[erc1155.address,
                                 2,
                                 seller,
                                 quantity,
                                 pricePerItem,
-                            magicToken.address]
+                            magicToken.address,
+                            false]]
                         )).to.be.revertedWith("not listed item");
 
                         await erc1155.connect(sellerSigner).safeTransferFrom(seller, staker3, tokenId, 1, "0x");
 
-                        await expect(marketplace.connect(buyerSigner).buyItem(
-                            [erc1155.address,
+                        await expect(marketplace.connect(buyerSigner).buyItems(
+                            [[erc1155.address,
                                 tokenId,
                                 seller,
                                 quantity,
                                 pricePerItem,
-                            magicToken.address]
+                            magicToken.address,
+                            false]]
                         )).to.be.reverted;
 
                         await erc1155.connect(staker3Signer).safeTransferFrom(staker3, seller, tokenId, 1, "0x");
 
-                        await expect(marketplace.connect(buyerSigner).buyItem(
-                            [erc1155.address,
+                        await expect(marketplace.connect(buyerSigner).buyItems(
+                            [[erc1155.address,
                                 tokenId,
                                 seller,
                                 0,
                                 pricePerItem,
-                            magicToken.address]
+                            magicToken.address,
+                            false]]
                         )).to.be.revertedWith("Nothing to buy")
 
-                        await marketplace.connect(buyerSigner).buyItem(
-                            [erc1155.address,
+                        await marketplace.connect(buyerSigner).buyItems(
+                            [[erc1155.address,
                                 tokenId,
                                 seller,
                                 quantity,
                                 pricePerItem,
-                            magicToken.address]
+                            magicToken.address,
+                            false]]
                         )
 
                         expect(await magicToken.balanceOf(await marketplace.feeReceipient())).to.be.equal(pricePerItem.mul(quantity).div(100));
@@ -834,13 +850,14 @@ describe('TreasureMarketplace', function () {
                         expect(await magicToken.balanceOf(marketplace.address)).to.be.equal(0);
                         expect(await magicToken.balanceOf(seller)).to.be.equal(0);
 
-                        await marketplace.connect(buyerSigner).buyItem(
-                            [erc1155.address,
+                        await marketplace.connect(buyerSigner).buyItems(
+                            [[erc1155.address,
                                 tokenId,
                                 seller,
                                 buyQuantity,
                                 pricePerItem,
-                            magicToken.address]
+                            magicToken.address,
+                            false]]
                         )
 
                         expect(await magicToken.balanceOf(await marketplace.feeReceipient())).to.be.equal(pricePerItem.mul(buyQuantity).div(100));
@@ -906,15 +923,16 @@ describe('TreasureMarketplace', function () {
 
         await(await marketplace
             .connect(buyerSigner)
-            .buyItem(
-                [
+            .buyItems(
+                [[
                     nft.address,
                     tokenId,
                     seller,
                     1,
                     pricePerItem,
-                    weth.address
-                ]
+                    weth.address,
+                    false
+                ]]
             )).wait();
 
         expect(await nft.ownerOf(tokenId))
@@ -950,56 +968,61 @@ describe('TreasureMarketplace', function () {
 
         await expect(marketplace
             .connect(buyerSigner)
-            .buyItemWithEth(
-                [
+            .buyItems(
+                [[
                     nft.address,
                     tokenId,
                     seller,
                     1,
                     pricePerItem,
-                    weth.address
-                ]
-            )).to.be.revertedWith("TreasureMarketplace: Bad ETH value")
+                    weth.address,
+                    true
+                ]]
+            )).to.be.revertedWith("TreasureMarketplace: Sending eth was not successful")
 
         await expect(marketplace
             .connect(buyerSigner)
-            .buyItemWithEth(
-                [
+            .buyItems(
+                [[
                     nft.address,
                     tokenId,
                     seller,
                     1,
                     pricePerItem,
-                    weth.address
-                ]
+                    weth.address,
+                    true
+                ]]
                 , { value: pricePerItem.add(1) }
             )).to.be.revertedWith("TreasureMarketplace: Bad ETH value")
 
+        // Contract doesn't have enough eth to process
         await expect(marketplace
             .connect(buyerSigner)
-            .buyItemWithEth(
-                [
+            .buyItems(
+                [[
                     nft.address,
                     tokenId,
                     seller,
                     1,
                     pricePerItem,
-                    weth.address
-                ]
+                    weth.address,
+                    true
+                ]]
                 , { value: pricePerItem.sub(1) }
-            )).to.be.revertedWith("TreasureMarketplace: Bad ETH value")
+            )).to.be.revertedWith("TreasureMarketplace: Sending eth was not successful")
 
         await expect(await marketplace
             .connect(buyerSigner)
-            .buyItemWithEth(
-                [
+            .buyItems(
+                [[
                     nft.address,
                     tokenId,
                     seller,
                     1,
                     pricePerItem,
-                    weth.address
-                ]
+                    weth.address,
+                    true
+                ]]
                 , { value: pricePerItem }
             )).to.changeEtherBalances([buyerSigner, sellerSigner], [pricePerItem.mul(-1), pricePerItem.sub(ethers.utils.parseEther("0.01"))]);
 

@@ -158,7 +158,8 @@ contract TreasureMarketplace is AccessControlEnumerableUpgradeable, PausableUpgr
         uint256 tokenId,
         uint64 quantity,
         uint128 pricePerItem,
-        address paymentToken
+        address paymentToken,
+        BidType bidType
     );
 
     /// @notice An item was listed for sale
@@ -497,13 +498,13 @@ contract TreasureMarketplace is AccessControlEnumerableUpgradeable, PausableUpgr
         _acceptBid(_acceptBidParams, BidType.TOKEN);
     }
 
-    function _acceptBid(AcceptBidParams calldata _acceptBidParams, BidType bidType) private {
+    function _acceptBid(AcceptBidParams calldata _acceptBidParams, BidType _bidType) private {
         // Validate buy order
         require(_msgSender() != _acceptBidParams.bidder, "TreasureMarketplace: Cannot supply own bid");
         require(_acceptBidParams.quantity > 0, "TreasureMarketplace: Nothing to supply to bidder");
 
         // Validate bid
-        ListingOrBid storage _bid = bidType == BidType.COLLECTION
+        ListingOrBid storage _bid = _bidType == BidType.COLLECTION
             ? collectionBids[_acceptBidParams.nftAddress][_acceptBidParams.bidder]
             : tokenBids[_acceptBidParams.nftAddress][_acceptBidParams.tokenId][_acceptBidParams.bidder];
 
@@ -542,34 +543,32 @@ contract TreasureMarketplace is AccessControlEnumerableUpgradeable, PausableUpgr
             _acceptBidParams.tokenId,
             _acceptBidParams.quantity,
             _acceptBidParams.pricePerItem,
-            _acceptBidParams.paymentToken
+            _acceptBidParams.paymentToken,
+            _bidType
         );
 
         // Deplete or cancel listing
         _bid.quantity -= _acceptBidParams.quantity;
     }
 
-    /// @notice Buy a listed item. You must authorize this marketplace with your payment token to completed the buy.
-    function buyItem(
-        BuyItemParams calldata _buyItemParams)
-    external
-    nonReentrant
-    whenNotPaused
-    {
-        _buyItem(_buyItemParams, false);
-    }
-
-    function buyItemWithEth(
-        BuyItemParams calldata _buyItemParams)
+    /// @notice Buy multiple listed items. You must authorize this marketplace with your payment token to completed the buy or purchase with eth if it is a weth collection.
+    function buyItems(
+        BuyItemParams[] calldata _buyItemParams)
     external
     payable
     nonReentrant
     whenNotPaused
     {
-        _buyItem(_buyItemParams, true);
+        uint256 _ethAmountRequired;
+        for(uint256 i = 0; i < _buyItemParams.length; i++) {
+            _ethAmountRequired += _buyItem(_buyItemParams[i]);
+        }
+
+        require(msg.value == _ethAmountRequired, "TreasureMarketplace: Bad ETH value");
     }
 
-    function _buyItem(BuyItemParams calldata _buyItemParams, bool _usingEth) private {
+    // Returns the amount of eth a user must have sent.
+    function _buyItem(BuyItemParams calldata _buyItemParams) private returns(uint256) {
         // Validate buy order
         require(_msgSender() != _buyItemParams.owner, "TreasureMarketplace: Cannot buy your own item");
         require(_buyItemParams.quantity > 0, "TreasureMarketplace: Nothing to buy");
@@ -590,7 +589,7 @@ contract TreasureMarketplace is AccessControlEnumerableUpgradeable, PausableUpgr
 
         require(_paymentTokenForListing == _buyItemParams.paymentToken && _buyItemParams.paymentToken == _paymentTokenForCollection, "TreasureMarketplace: Wrong payment token");
 
-        if(_usingEth) {
+        if(_buyItemParams.usingEth) {
             require(_paymentTokenForListing == address(weth), "TreasureMarketplace: ETH only used with weth collection");
         }
 
@@ -604,7 +603,7 @@ contract TreasureMarketplace is AccessControlEnumerableUpgradeable, PausableUpgr
             revert("TreasureMarketplace: token is not approved for trading");
         }
 
-        _payFees(listedItem, _buyItemParams.quantity, _buyItemParams.nftAddress, _msgSender(), _buyItemParams.owner, _buyItemParams.paymentToken, _usingEth);
+        _payFees(listedItem, _buyItemParams.quantity, _buyItemParams.nftAddress, _msgSender(), _buyItemParams.owner, _buyItemParams.paymentToken, _buyItemParams.usingEth);
 
         // Announce sale
         emit ItemSold(
@@ -623,6 +622,12 @@ contract TreasureMarketplace is AccessControlEnumerableUpgradeable, PausableUpgr
         } else {
             listings[_buyItemParams.nftAddress][_buyItemParams.tokenId][_buyItemParams.owner].quantity -= _buyItemParams.quantity;
         }
+
+        if(_buyItemParams.usingEth) {
+            return _buyItemParams.quantity * listedItem.pricePerItem;
+        } else {
+            return 0;
+        }
     }
 
     /// @dev pays the fees to the marketplace fee recipient, the collection recipient if one exists, and to the seller of the item.
@@ -634,10 +639,6 @@ contract TreasureMarketplace is AccessControlEnumerableUpgradeable, PausableUpgr
 
         // Handle purchase price payment
         uint256 _totalPrice = _listOrBid.pricePerItem * _quantity;
-
-        if(_usingEth) {
-            require(msg.value == _totalPrice, "TreasureMarketplace: Bad ETH value");
-        }
 
         address _collectionFeeRecipient = collectionToCollectionOwnerFee[_collectionAddress].recipient;
 
@@ -787,6 +788,8 @@ struct BuyItemParams {
     uint128 maxPricePerItem;
     /// the payment token to be used
     address paymentToken;
+    /// indicates if the user is purchasing this item with eth.
+    bool usingEth;
 }
 
 struct AcceptBidParams {

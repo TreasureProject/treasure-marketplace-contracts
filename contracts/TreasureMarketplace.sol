@@ -456,7 +456,7 @@ contract TreasureMarketplace is AccessControlEnumerableUpgradeable, PausableUpgr
         uint128 _pricePerItem,
         uint64 _expirationTime,
         address _paymentToken,
-        ListingOrBid storage _bidStorage)
+        ListingOrBid storage _bid)
     private
     {
         require(_expirationTime > block.timestamp, "TreasureMarketplace: invalid expiration time");
@@ -472,10 +472,10 @@ contract TreasureMarketplace is AccessControlEnumerableUpgradeable, PausableUpgr
         require(_token.allowance(_msgSender(), address(this)) >= _totalAmountNeeded && _token.balanceOf(_msgSender()) >= _totalAmountNeeded,
             "TreasureMarketplace: Not enough tokens owned or allowed for bid");
 
-        _bidStorage.quantity = _quantity;
-        _bidStorage.pricePerItem = _pricePerItem;
-        _bidStorage.expirationTime = _expirationTime;
-        _bidStorage.paymentTokenAddress = _paymentToken;
+        _bid.quantity = _quantity;
+        _bid.pricePerItem = _pricePerItem;
+        _bid.expirationTime = _expirationTime;
+        _bid.paymentTokenAddress = _paymentToken;
     }
 
     function acceptCollectionBid(

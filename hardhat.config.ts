@@ -61,8 +61,8 @@ const config: HardhatUserConfig = {
       gasMultiplier: 2,
     },
     arbitrum: {
-      url: "https://arb1.arbitrum.io/rpc",
-      accounts: [`${privateKey}`],
+      url: process.env.ARBITRUM_MAINNET_URL,
+      accounts: [`${process.env.ARBITRUM_MAINNET_PK}`],
       chainId: 42161,
       live: true,
       saveDeployments: true,
@@ -127,7 +127,10 @@ const config: HardhatUserConfig = {
   },
   contractSizer: {
     runOnCompile: true
-  }
+  },
+  etherscan: {
+    apiKey: process.env.ARBIMAINNET_API_KEY
+  },
 };
 
 export default config;

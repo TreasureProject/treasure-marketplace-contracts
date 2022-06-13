@@ -118,7 +118,7 @@ contract OptimizedTransparentUpgradeableProxy is UpgradeableProxy {
     /**
      * @dev Returns the current admin.
      */
-    function _admin() internal view returns (address adm) {
+    function _admin() internal view returns (address) {
         return _ADMIN;
     }
 

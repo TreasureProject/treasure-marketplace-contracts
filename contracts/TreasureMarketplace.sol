@@ -56,7 +56,7 @@ contract TreasureMarketplace is AccessControlEnumerableUpgradeable, PausableUpgr
     uint256 public constant MAX_FEE = 1500;
 
     /// @notice the maximum fee which the collection owner may set
-    uint256 public constant MAX_COLLECTION_FEE = 750;
+    uint256 public constant MAX_COLLECTION_FEE = 2000;
 
     /// @notice the minimum price for which any item can be sold
     uint256 public constant MIN_PRICE = 1e9;

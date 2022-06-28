@@ -315,6 +315,43 @@ contract TreasureMarketplace is AccessControlEnumerableUpgradeable, PausableUpgr
         );
     }
 
+    function createOrUpdateListing(
+        address _nftAddress,
+        uint256 _tokenId,
+        uint64 _quantity,
+        uint128 _pricePerItem,
+        uint64 _expirationTime,
+        address _paymentToken)
+    external
+    nonReentrant
+    whenNotPaused
+    {
+        bool _existingListing = listings[_nftAddress][_tokenId][_msgSender()].quantity > 0;
+        _createListingWithoutEvent(_nftAddress, _tokenId, _quantity, _pricePerItem, _expirationTime, _paymentToken);
+        // Keep the events the same as they were before.
+        if(_existingListing) {
+            emit ItemUpdated(
+                _msgSender(),
+                _nftAddress,
+                _tokenId,
+                _quantity,
+                _pricePerItem,
+                _expirationTime,
+                _paymentToken
+            );
+        } else {
+            emit ItemListed(
+                _msgSender(),
+                _nftAddress,
+                _tokenId,
+                _quantity,
+                _pricePerItem,
+                _expirationTime,
+                _paymentToken
+            );
+        }
+    }
+
     /// @notice Performs the listing and does not emit the event
     /// @param  _nftAddress     which token contract holds the offered token
     /// @param  _tokenId        the identifier for the offered token

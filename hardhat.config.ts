@@ -70,8 +70,8 @@ const config: HardhatUserConfig = {
       deploy: ["deploy/arbitrum"]
     },
     arbitrumRinkeby: {
-      url: `https://arb-rinkeby.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`,
-      accounts: [`${privateKey}`],
+      url: process.env.ARBITRUM_TESTNET_URL,
+      accounts: [`${process.env.ARBITRUM_MAINNET_PK}`],
       chainId: 421611,
       live: false,
       saveDeployments: true,

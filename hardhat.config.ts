@@ -50,7 +50,8 @@ const config: HardhatUserConfig = {
       chainId: 1,
       live: true,
       saveDeployments: true,
-      gasMultiplier: 2
+      gasMultiplier: 2,
+      deploy: ["deploy/mainnet"]
     },
     polygon: {
       url: `https://polygon-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`,

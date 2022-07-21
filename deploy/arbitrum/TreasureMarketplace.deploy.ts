@@ -114,19 +114,38 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
           }
         }
       }
-    })
+    });
+
+    const wethAddress = "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1";
+    const wethFromContract = await read('TreasureMarketplace', 'weth');
+    if(wethAddress !== wethFromContract) {
+        await execute(
+            'TreasureMarketplace',
+            { from: deployer, log: true },
+            'setWeth',
+            wethAddress
+          );
+    }
 
     for (const nft of nftApprovedList) {
-      if ((await read('TreasureMarketplace', 'tokenApprovals', nft.address)) == 0) {
-        console.log('setting:', nft.name, nft.address);
+    //   if ((await read('TreasureMarketplace', 'tokenApprovals', nft.address)) == 0) {
+    //     console.log('setting:', nft.name, nft.address);
+    //     await execute(
+    //       'TreasureMarketplace',
+    //       { from: deployer, log: true },
+    //       'setTokenApprovalStatus',
+    //       nft.address,
+    //       nft.status
+    //     );
+    //   }
+    }
+
+    if(!(await read('TreasureMarketplace', 'areBidsActive'))) {
         await execute(
-          'TreasureMarketplace',
-          { from: deployer, log: true },
-          'setTokenApprovalStatus',
-          nft.address,
-          nft.status
-        );
-      }
+            'TreasureMarketplace',
+            { from: deployer, log: true },
+            'toggleAreBidsActive'
+          );
     }
 
     const TREASURE_MARKETPLACE_ADMIN_ROLE = await read('TreasureMarketplace', 'TREASURE_MARKETPLACE_ADMIN_ROLE');

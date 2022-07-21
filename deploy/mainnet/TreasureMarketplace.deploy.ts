@@ -13,7 +13,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const newOwner = "0xB013ABD83F0bD173E9F14ce7d6e420Ad711483b4";
     const newProxyOwner = "0xB013ABD83F0bD173E9F14ce7d6e420Ad711483b4";
     const wethAddress = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"; // L1 WETH address
-    const nftApprovedList = [
+    const nftApprovedList: {
+        name: string,
+        address: string,
+        status: number,
+    }[] = [
     //   {
     //     name: "treasurebags",
     //     address: "0xf3DFbE887D81C442557f7a59e3a0aEcf5e39F6aa",

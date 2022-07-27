@@ -11,6 +11,8 @@ import '@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeab
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 
+import "./interfaces/ITreasureNFTPriceTracker.sol";
+
 /// @title  Treasure NFT marketplace
 /// @notice This contract allows you to buy and sell NFTs from token contracts that are approved by the contract owner.
 ///         Please note that this contract is upgradeable. In the event of a compromised ProxyAdmin contract owner,
@@ -97,6 +99,9 @@ contract TreasureMarketplace is AccessControlEnumerableUpgradeable, PausableUpgr
     /// @notice Indicates if bid related functions are active.
     bool public areBidsActive;
 
+    /// @notice Address of the contract that tracks sales and prices of collections.
+    address public priceTrackerAddress;
+
     /// @notice The fee portion was updated
     /// @param  fee new fee amount (in units of basis points)
     event UpdateFee(uint256 fee);
@@ -114,6 +119,7 @@ contract TreasureMarketplace is AccessControlEnumerableUpgradeable, PausableUpgr
     /// @notice The fee recipient was updated
     /// @param  feeRecipient the new recipient to get fees
     event UpdateFeeRecipient(address feeRecipient);
+
 
     /// @notice The approval status for a token was updated
     /// @param  nft    which token contract was updated
@@ -221,6 +227,10 @@ contract TreasureMarketplace is AccessControlEnumerableUpgradeable, PausableUpgr
         uint128 pricePerItem,
         address paymentToken
     );
+    
+    /// @notice The sales tracker contract was update
+    /// @param  _priceTrackerAddress the new address to call for sales price tracking
+    event UpdateSalesTracker(address _priceTrackerAddress);
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() initializer {}
@@ -659,6 +669,10 @@ contract TreasureMarketplace is AccessControlEnumerableUpgradeable, PausableUpgr
         } else {
             listings[_buyItemParams.nftAddress][_buyItemParams.tokenId][_buyItemParams.owner].quantity -= _buyItemParams.quantity;
         }
+        
+        if(priceTrackerAddress != address(0)) {
+            ITreasureNFTPriceTracker(priceTrackerAddress).recordSale(_buyItemParams.nftAddress, _buyItemParams.tokenId, listedItem.pricePerItem);
+        }
 
         if(_buyItemParams.usingEth) {
             return _buyItemParams.quantity * listedItem.pricePerItem;
@@ -787,6 +801,15 @@ contract TreasureMarketplace is AccessControlEnumerableUpgradeable, PausableUpgr
         require(address(weth) == address(0), "WETH address already set");
 
         weth = IERC20Upgradeable(_wethAddress);
+    }
+
+    /// @notice Updates the fee recipient which receives fees during sales
+    /// @dev    This is callable only by the owner.
+    /// @param  _priceTrackerAddress the wallet to receive fees
+    function setPriceTracker(address _priceTrackerAddress) public onlyRole(TREASURE_MARKETPLACE_ADMIN_ROLE) {
+        require(_priceTrackerAddress != address(0), "TreasureMarketplace: cannot set 0x0 address");
+        priceTrackerAddress = _priceTrackerAddress;
+        emit UpdateSalesTracker(_priceTrackerAddress);
     }
 
     function toggleAreBidsActive() external onlyRole(TREASURE_MARKETPLACE_ADMIN_ROLE) {

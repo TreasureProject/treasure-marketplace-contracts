@@ -123,6 +123,18 @@ describe('TreasureMarketplace', function () {
                 .to.be.equal(500);
         });
 
+        it('setPriceTracker()', async function () {
+            const salesTrackerAddress = staker3;
+
+            await expect(marketplace.connect(staker3Signer).setPriceTracker(salesTrackerAddress))
+                .to.be.revertedWith("AccessControl: account 0x90f79bf6eb2c4f870365e785982e1f101e93b906 is missing role 0x34d5e892b0a7ec1561fc4a5fdcb31b798cf623590906b938d356c9619e539958");
+
+            await expect(marketplace.setPriceTracker(salesTrackerAddress))
+                .to.emit(marketplace, "UpdateSalesTracker")
+                .withArgs(salesTrackerAddress);
+            expect(await marketplace.salesTrackerAddress()).to.be.equal(salesTrackerAddress);
+        });
+
         it('approve token', async function () {
             expect(await marketplace.tokenApprovals(nft.address)).to.equal(TOKEN_APPROVAL_STATUS_NOT_APPROVED);
             await marketplace.setTokenApprovalStatus(nft.address, TOKEN_APPROVAL_STATUS_ERC_721_APPROVED, magicToken.address);

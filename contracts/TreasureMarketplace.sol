@@ -806,7 +806,7 @@ contract TreasureMarketplace is AccessControlEnumerableUpgradeable, PausableUpgr
     /// @notice Updates the fee recipient which receives fees during sales
     /// @dev    This is callable only by the owner.
     /// @param  _priceTrackerAddress the wallet to receive fees
-    function setSalesTracker(address _priceTrackerAddress) public onlyRole(TREASURE_MARKETPLACE_ADMIN_ROLE) {
+    function setPriceTracker(address _priceTrackerAddress) public onlyRole(TREASURE_MARKETPLACE_ADMIN_ROLE) {
         require(_priceTrackerAddress != address(0), "TreasureMarketplace: cannot set 0x0 address");
         priceTrackerAddress = _priceTrackerAddress;
         emit UpdateSalesTracker(_priceTrackerAddress);

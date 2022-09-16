@@ -78,6 +78,15 @@ const config: HardhatUserConfig = {
       saveDeployments: true,
       gasMultiplier: 2,
       deploy: ["deploy/arbitrumRinkeby"]
+    },
+    arbitrumGoerli: {
+      url: process.env.ARBITRUM_GOERLI_URL,
+      accounts: [`${privateKey}`],
+      chainId: 421613,
+      live: false,
+      saveDeployments: true,
+      gasMultiplier: 2,
+      deploy: ["deploy/arbitrumGoerli"]
     }
   },
   solidity: {
@@ -131,6 +140,16 @@ const config: HardhatUserConfig = {
   },
   etherscan: {
     apiKey: process.env.ETHERSCAN_API_KEY
+    customChains: [
+        {
+            network: 'arbitrumGoerli',
+            chainId: 421613,
+            urls: {
+                apiURL: 'https://goerli-rollup-explorer.arbitrum.io/api?module=contract&action=verifysourcecode',
+                browserURL: 'https://goerli-rollup-explorer.arbitrum.io',
+            },
+        },
+    ],
   },
 };
 

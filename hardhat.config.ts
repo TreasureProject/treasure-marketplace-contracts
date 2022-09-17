@@ -9,7 +9,9 @@ import 'hardhat-gas-reporter';
 import 'solidity-coverage';
 import 'hardhat-contract-sizer';
 
-const privateKey = process.env.DEV_PRIVATE_KEY || "4201af59da6a5aed59c21cd6542f92d7a5e34e6c3b6f8e0903766ae4edb1f894"; // address: 0xA226293acbC7817d24c4b587Bc4568e4D624612E
+// A 32-byte private key.
+const privateKey = process.env.DEV_PRIVATE_KEY;
+
 const config: HardhatUserConfig = {
   defaultNetwork: "hardhat",
   networks: {
@@ -63,7 +65,7 @@ const config: HardhatUserConfig = {
     },
     arbitrum: {
       url: process.env.ARBITRUM_MAINNET_URL,
-      accounts: [`${process.env.ARBITRUM_MAINNET_PK}`],
+      accounts: [`${privateKey}`],
       chainId: 42161,
       live: true,
       saveDeployments: true,
@@ -72,7 +74,7 @@ const config: HardhatUserConfig = {
     },
     arbitrumRinkeby: {
       url: process.env.ARBITRUM_TESTNET_URL,
-      accounts: [`${process.env.ARBITRUM_MAINNET_PK}`],
+      accounts: [`${privateKey}`],
       chainId: 421611,
       live: false,
       saveDeployments: true,
@@ -139,7 +141,9 @@ const config: HardhatUserConfig = {
     runOnCompile: true
   },
   etherscan: {
-    apiKey: process.env.ETHERSCAN_API_KEY
+    apiKey: {
+        arbitrumGoerli: process.env.ETHERSCAN_API_KEY,
+    },
     customChains: [
         {
             network: 'arbitrumGoerli',

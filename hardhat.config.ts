@@ -65,7 +65,7 @@ const config: HardhatUserConfig = {
     },
     arbitrum: {
       url: process.env.ARBITRUM_MAINNET_URL,
-      accounts: [`${privateKey}`],
+      accounts: [`${process.env.ARBITRUM_MAINNET_PK}`],
       chainId: 42161,
       live: true,
       saveDeployments: true,
@@ -74,7 +74,7 @@ const config: HardhatUserConfig = {
     },
     arbitrumRinkeby: {
       url: process.env.ARBITRUM_TESTNET_URL,
-      accounts: [`${privateKey}`],
+      accounts: [`${process.env.ARBITRUM_MAINNET_PK}`],
       chainId: 421611,
       live: false,
       saveDeployments: true,

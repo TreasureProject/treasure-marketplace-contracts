@@ -34,13 +34,5 @@
     "@openzeppelin/contracts-upgradeable": "4.5.2",
     "@prb/math": "^2.5.0",
     "solidity-coverage": "^0.7.20"
-  },
-  "prettier": {
-    "printWidth": 120,
-    "singleQuote": true,
-    "tabWidth": 4,
-    "trailingComma": "all",
-    "bracketSpacing": true,
-    "arrowParens": "always"
   }
 }

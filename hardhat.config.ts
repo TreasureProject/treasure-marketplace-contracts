@@ -141,9 +141,7 @@ const config: HardhatUserConfig = {
     runOnCompile: true
   },
   etherscan: {
-    apiKey: {
-        arbitrumGoerli: process.env.ETHERSCAN_API_KEY,
-    },
+    apiKey: process.env.ETHERSCAN_API_KEY,
     customChains: [
         {
             network: 'arbitrumGoerli',

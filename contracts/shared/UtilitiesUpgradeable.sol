@@ -13,14 +13,14 @@ contract UtilitiesUpgradeable is Initializable, AccessControlEnumerableUpgradeab
     bytes32 internal constant ADMIN_ROLE = keccak256("ADMIN");
     bytes32 internal constant ROLE_GRANTER_ROLE = keccak256("ROLE_GRANTER");
 
-    function __Utilities_init() internal onlyInitializing {
+    function __Utilities_init() internal initializer {
         AccessControlEnumerableUpgradeable.__AccessControlEnumerable_init();
         PausableUpgradeable.__Pausable_init();
 
         __Utilities_init_unchained();
     }
 
-    function __Utilities_init_unchained() internal onlyInitializing {
+    function __Utilities_init_unchained() internal initializer {
         _pause();
 
         _grantRole(OWNER_ROLE, msg.sender);

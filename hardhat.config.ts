@@ -147,8 +147,8 @@ const config: HardhatUserConfig = {
             network: 'arbitrumGoerli',
             chainId: 421613,
             urls: {
-                apiURL: 'https://goerli-rollup-explorer.arbitrum.io/api?module=contract&action=verifysourcecode',
-                browserURL: 'https://goerli-rollup-explorer.arbitrum.io',
+                apiURL: 'https://api-goerli.arbiscan.io/api?module=contract&action=verifysourcecode',
+                browserURL: 'https://goerli.arbitrum.io',
             },
         },
     ],

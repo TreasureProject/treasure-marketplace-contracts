@@ -3,10 +3,15 @@ import { DeployFunction } from 'hardhat-deploy/types';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const { deployments, getNamedAccounts } = hre;
-    const { deploy, execute, read } = deployments;
+    const { deploy, execute, read, get } = deployments;
     const { deployer } = await getNamedAccounts();
 
-    const badges = await deploy('TroveBadges', {
+    const badges = await get('TroveBadges');
+
+    // validator will be the AWS secured signer address for production
+    let validator = deployer;
+
+    const claimer = await deploy('TroveClaimer', {
         from: deployer,
         log: true,
         proxy: {
@@ -15,19 +20,20 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
             execute: {
                 init: {
                     methodName: 'initialize',
-                    args: [],
+                    args: [validator, badges.address],
                 },
             },
         },
     });
 
     const entries = [
-        { name: 'TroveBadges Address', value: badges.address },
-        { name: 'TroveBadgesImpl Address', value: badges.implementation },
+        { name: 'TroveClaimer Address', value: claimer.address },
+        { name: 'TroveClaimerImpl Address', value: claimer.implementation },
     ];
 
-    console.log(`---- TroveBadges Config ----`);
+    console.log(`---- TroveClaimer Config ----`);
     console.table(entries);
 };
 export default func;
-func.tags = ['TroveBadges'];
+func.tags = ['TroveClaimer'];
+func.dependencies = ['TroveBadges'];

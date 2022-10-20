@@ -89,7 +89,16 @@ const config: HardhatUserConfig = {
       saveDeployments: true,
       gasMultiplier: 2,
       deploy: ["deploy/arbitrumGoerli"]
-    }
+    },
+    arbitrumNova: {
+      url: process.env.ARBITRUM_NOVA_URL,
+      accounts: [`${process.env.ARBITRUM_MAINNET_PK}`],
+      chainId: 42170,
+      live: true,
+      saveDeployments: true,
+      gasMultiplier: 2,
+      deploy: ["deploy/arbitrumNova"]
+    },
   },
   solidity: {
     compilers: [
@@ -147,8 +156,16 @@ const config: HardhatUserConfig = {
             network: 'arbitrumGoerli',
             chainId: 421613,
             urls: {
-                apiURL: 'https://api-goerli.arbiscan.io/api?module=contract&action=verifysourcecode',
-                browserURL: 'https://goerli.arbitrum.io',
+                apiURL: 'https://api-goerli.arbiscan.io/api',
+                browserURL: 'https://goerli.arbiscan.io',
+            },
+        },
+        {
+            network: 'arbitrumNova',
+            chainId: 42170,
+            urls: {
+                apiURL: 'https://nova-explorer.arbitrum.io/api',
+                browserURL: 'https://nova-explorer.arbitrum.io',
             },
         },
     ],

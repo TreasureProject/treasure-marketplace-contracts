@@ -9,10 +9,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     // Constants for this deploy script.
     const fee = 500; // 5%
     const feeWithCollectionOwner = 250; // 2.5%
-    const feeReceipient = '0xDb6Ab450178bAbCf0e467c1F3B436050d907E233';
+    const feeReceipient = '0xDb6Ab450178bAbCf0e467c1F3B436050d907E233'; // TODO: replace w/ official Treasure marketplace treasury on Arbitrum Nova.
     const newOwner = '0x33117a2843495E4d103bE35fFFf926c4cd988e10';
     const newProxyOwner = '0x33117a2843495E4d103bE35fFFf926c4cd988e10';
-    const magicAddress = '0x55d0CF68a1Afe0932Aff6F36C87eFa703508191C';
+    const magicAddress = '0x55d0CF68a1Afe0932Aff6F36C87eFa703508191C'; // TODO: replace w/ actual Arbitrum Nova MAGIC in the future.
     const wethAddress = '0x722E8BdD2ce80A4422E880164f2079488e115365';
     const nftApprovedList: {
         name: string;

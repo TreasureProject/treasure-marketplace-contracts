@@ -10,8 +10,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const fee = 500; // 5%
     const feeWithCollectionOwner = 250; // 2.5%
     const feeReceipient = '0xDb6Ab450178bAbCf0e467c1F3B436050d907E233';
-    const newOwner = '0x89e98dEc2A5179a630394e10A4326674946E86fb';
-    const newProxyOwner = '0x89e98dEc2A5179a630394e10A4326674946E86fb';
+    const newOwner = '0x33117a2843495E4d103bE35fFFf926c4cd988e10';
+    const newProxyOwner = '0x33117a2843495E4d103bE35fFFf926c4cd988e10';
     const magicAddress = '0x88f9eFB3A7F728fdb2B8872fE994c84b1d148f65';
     const wethAddress = '0xe39Ab88f8A4777030A534146A9Ca3B52bd5D43A3';
     const nftApprovedList: {

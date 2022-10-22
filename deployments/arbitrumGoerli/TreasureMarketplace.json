@@ -1,5 +1,5 @@
 {
-  "address": "0x050c0C59DeA10FEF7E660591757Ce6EB180f2ABE",
+  "address": "0x8831365CeF44Fea45ACBE9078FF97E9cEDbe00d9",
   "abi": [
     {
       "anonymous": false,
@@ -112,57 +112,293 @@
       "type": "receive"
     },
     {
+      "anonymous": false,
       "inputs": [
         {
+          "indexed": false,
           "internalType": "address",
-          "name": "_claimer",
+          "name": "seller",
           "type": "address"
         },
         {
+          "indexed": false,
           "internalType": "address",
-          "name": "_badgeCollection",
+          "name": "bidder",
           "type": "address"
         },
         {
+          "indexed": false,
+          "internalType": "address",
+          "name": "nftAddress",
+          "type": "address"
+        },
+        {
+          "indexed": false,
           "internalType": "uint256",
-          "name": "_badgeId",
+          "name": "tokenId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint64",
+          "name": "quantity",
+          "type": "uint64"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint128",
+          "name": "pricePerItem",
+          "type": "uint128"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "paymentToken",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "enum BidType",
+          "name": "bidType",
+          "type": "uint8"
+        }
+      ],
+      "name": "BidAccepted",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "bidder",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "nftAddress",
+          "type": "address"
+        }
+      ],
+      "name": "CollectionBidCancelled",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "bidder",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "nftAddress",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint64",
+          "name": "quantity",
+          "type": "uint64"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint128",
+          "name": "pricePerItem",
+          "type": "uint128"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint64",
+          "name": "expirationTime",
+          "type": "uint64"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "paymentToken",
+          "type": "address"
+        }
+      ],
+      "name": "CollectionBidCreatedOrUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "seller",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "nftAddress",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "tokenId",
           "type": "uint256"
         }
       ],
-      "name": "BadgeAlreadyClaimed",
-      "type": "error"
+      "name": "ItemCanceled",
+      "type": "event"
     },
     {
+      "anonymous": false,
       "inputs": [
         {
+          "indexed": false,
           "internalType": "address",
-          "name": "_badgeCollection",
+          "name": "seller",
           "type": "address"
         },
         {
-          "internalType": "uint256",
-          "name": "_badgeId",
-          "type": "uint256"
-        }
-      ],
-      "name": "InvalidBadge",
-      "type": "error"
-    },
-    {
-      "inputs": [
-        {
+          "indexed": false,
           "internalType": "address",
-          "name": "_signer",
+          "name": "nftAddress",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint64",
+          "name": "quantity",
+          "type": "uint64"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint128",
+          "name": "pricePerItem",
+          "type": "uint128"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint64",
+          "name": "expirationTime",
+          "type": "uint64"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "paymentToken",
           "type": "address"
         }
       ],
-      "name": "InvalidSignature",
-      "type": "error"
+      "name": "ItemListed",
+      "type": "event"
     },
     {
-      "inputs": [],
-      "name": "NotRecipient",
-      "type": "error"
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "seller",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "buyer",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "nftAddress",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint64",
+          "name": "quantity",
+          "type": "uint64"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint128",
+          "name": "pricePerItem",
+          "type": "uint128"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "paymentToken",
+          "type": "address"
+        }
+      ],
+      "name": "ItemSold",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "seller",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "nftAddress",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint64",
+          "name": "quantity",
+          "type": "uint64"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint128",
+          "name": "pricePerItem",
+          "type": "uint128"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint64",
+          "name": "expirationTime",
+          "type": "uint64"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "paymentToken",
+          "type": "address"
+        }
+      ],
+      "name": "ItemUpdated",
+      "type": "event"
     },
     {
       "anonymous": false,
@@ -258,6 +494,105 @@
         {
           "indexed": false,
           "internalType": "address",
+          "name": "nft",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "enum TreasureMarketplace.TokenApprovalStatus",
+          "name": "status",
+          "type": "uint8"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "paymentToken",
+          "type": "address"
+        }
+      ],
+      "name": "TokenApprovalStatusUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "bidder",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "nftAddress",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        }
+      ],
+      "name": "TokenBidCancelled",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "bidder",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "nftAddress",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint64",
+          "name": "quantity",
+          "type": "uint64"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint128",
+          "name": "pricePerItem",
+          "type": "uint128"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint64",
+          "name": "expirationTime",
+          "type": "uint64"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "paymentToken",
+          "type": "address"
+        }
+      ],
+      "name": "TokenBidCreatedOrUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
           "name": "account",
           "type": "address"
         }
@@ -266,13 +601,90 @@
       "type": "event"
     },
     {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "_collection",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "_recipient",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "_fee",
+          "type": "uint256"
+        }
+      ],
+      "name": "UpdateCollectionOwnerFee",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "fee",
+          "type": "uint256"
+        }
+      ],
+      "name": "UpdateFee",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "feeRecipient",
+          "type": "address"
+        }
+      ],
+      "name": "UpdateFeeRecipient",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "fee",
+          "type": "uint256"
+        }
+      ],
+      "name": "UpdateFeeWithCollectionOwner",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "_priceTrackerAddress",
+          "type": "address"
+        }
+      ],
+      "name": "UpdateSalesTracker",
+      "type": "event"
+    },
+    {
       "inputs": [],
-      "name": "CLAIMINFO_TYPE_HASH",
+      "name": "BASIS_POINTS",
       "outputs": [
         {
-          "internalType": "bytes32",
+          "internalType": "uint256",
           "name": "",
-          "type": "bytes32"
+          "type": "uint256"
         }
       ],
       "stateMutability": "view",
@@ -292,19 +704,150 @@
       "type": "function"
     },
     {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        },
+      "inputs": [],
+      "name": "MAX_COLLECTION_FEE",
+      "outputs": [
         {
           "internalType": "uint256",
           "name": "",
           "type": "uint256"
         }
       ],
-      "name": "badgeToEnabledStatus",
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "MAX_FEE",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "MIN_PRICE",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "TREASURE_MARKETPLACE_ADMIN_ROLE",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "nftAddress",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "tokenId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "address",
+              "name": "bidder",
+              "type": "address"
+            },
+            {
+              "internalType": "uint64",
+              "name": "quantity",
+              "type": "uint64"
+            },
+            {
+              "internalType": "uint128",
+              "name": "pricePerItem",
+              "type": "uint128"
+            },
+            {
+              "internalType": "address",
+              "name": "paymentToken",
+              "type": "address"
+            }
+          ],
+          "internalType": "struct AcceptBidParams",
+          "name": "_acceptBidParams",
+          "type": "tuple"
+        }
+      ],
+      "name": "acceptCollectionBid",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "nftAddress",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "tokenId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "address",
+              "name": "bidder",
+              "type": "address"
+            },
+            {
+              "internalType": "uint64",
+              "name": "quantity",
+              "type": "uint64"
+            },
+            {
+              "internalType": "uint128",
+              "name": "pricePerItem",
+              "type": "uint128"
+            },
+            {
+              "internalType": "address",
+              "name": "paymentToken",
+              "type": "address"
+            }
+          ],
+          "internalType": "struct AcceptBidParams",
+          "name": "_acceptBidParams",
+          "type": "tuple"
+        }
+      ],
+      "name": "acceptTokenBid",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "areBidsActive",
       "outputs": [
         {
           "internalType": "bool",
@@ -321,31 +864,64 @@
           "components": [
             {
               "internalType": "address",
-              "name": "claimer",
-              "type": "address"
-            },
-            {
-              "internalType": "address",
-              "name": "badgeAddress",
+              "name": "nftAddress",
               "type": "address"
             },
             {
               "internalType": "uint256",
-              "name": "badgeId",
+              "name": "tokenId",
               "type": "uint256"
+            },
+            {
+              "internalType": "address",
+              "name": "owner",
+              "type": "address"
+            },
+            {
+              "internalType": "uint64",
+              "name": "quantity",
+              "type": "uint64"
+            },
+            {
+              "internalType": "uint128",
+              "name": "maxPricePerItem",
+              "type": "uint128"
+            },
+            {
+              "internalType": "address",
+              "name": "paymentToken",
+              "type": "address"
+            },
+            {
+              "internalType": "bool",
+              "name": "usingEth",
+              "type": "bool"
             }
           ],
-          "internalType": "struct ClaimInfo",
-          "name": "_claimInfo",
-          "type": "tuple"
-        },
-        {
-          "internalType": "bytes",
-          "name": "_validatorSignature",
-          "type": "bytes"
+          "internalType": "struct BuyItemParams[]",
+          "name": "_buyItemParams",
+          "type": "tuple[]"
         }
       ],
-      "name": "claim",
+      "name": "buyItems",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_nftAddress",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_tokenId",
+          "type": "uint256"
+        }
+      ],
+      "name": "cancelListing",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -355,32 +931,268 @@
         {
           "components": [
             {
-              "internalType": "address",
-              "name": "claimer",
-              "type": "address"
+              "internalType": "enum BidType",
+              "name": "bidType",
+              "type": "uint8"
             },
             {
               "internalType": "address",
-              "name": "badgeAddress",
+              "name": "nftAddress",
               "type": "address"
             },
             {
               "internalType": "uint256",
-              "name": "badgeId",
+              "name": "tokenId",
               "type": "uint256"
             }
           ],
-          "internalType": "struct ClaimInfo",
-          "name": "_claimInfo",
-          "type": "tuple"
+          "internalType": "struct CancelBidParams[]",
+          "name": "_cancelBidParams",
+          "type": "tuple[]"
         }
       ],
-      "name": "claimInfoHash",
+      "name": "cancelManyBids",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "collectionBids",
       "outputs": [
         {
-          "internalType": "bytes32",
+          "internalType": "uint64",
+          "name": "quantity",
+          "type": "uint64"
+        },
+        {
+          "internalType": "uint128",
+          "name": "pricePerItem",
+          "type": "uint128"
+        },
+        {
+          "internalType": "uint64",
+          "name": "expirationTime",
+          "type": "uint64"
+        },
+        {
+          "internalType": "address",
+          "name": "paymentTokenAddress",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
           "name": "",
-          "type": "bytes32"
+          "type": "address"
+        }
+      ],
+      "name": "collectionToCollectionOwnerFee",
+      "outputs": [
+        {
+          "internalType": "uint32",
+          "name": "fee",
+          "type": "uint32"
+        },
+        {
+          "internalType": "address",
+          "name": "recipient",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "collectionToPaymentToken",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_nftAddress",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_tokenId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint64",
+          "name": "_quantity",
+          "type": "uint64"
+        },
+        {
+          "internalType": "uint128",
+          "name": "_pricePerItem",
+          "type": "uint128"
+        },
+        {
+          "internalType": "uint64",
+          "name": "_expirationTime",
+          "type": "uint64"
+        },
+        {
+          "internalType": "address",
+          "name": "_paymentToken",
+          "type": "address"
+        }
+      ],
+      "name": "createListing",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_nftAddress",
+          "type": "address"
+        },
+        {
+          "internalType": "uint64",
+          "name": "_quantity",
+          "type": "uint64"
+        },
+        {
+          "internalType": "uint128",
+          "name": "_pricePerItem",
+          "type": "uint128"
+        },
+        {
+          "internalType": "uint64",
+          "name": "_expirationTime",
+          "type": "uint64"
+        },
+        {
+          "internalType": "address",
+          "name": "_paymentToken",
+          "type": "address"
+        }
+      ],
+      "name": "createOrUpdateCollectionBid",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_nftAddress",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_tokenId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint64",
+          "name": "_quantity",
+          "type": "uint64"
+        },
+        {
+          "internalType": "uint128",
+          "name": "_pricePerItem",
+          "type": "uint128"
+        },
+        {
+          "internalType": "uint64",
+          "name": "_expirationTime",
+          "type": "uint64"
+        },
+        {
+          "internalType": "address",
+          "name": "_paymentToken",
+          "type": "address"
+        }
+      ],
+      "name": "createOrUpdateListing",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_nftAddress",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_tokenId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint64",
+          "name": "_quantity",
+          "type": "uint64"
+        },
+        {
+          "internalType": "uint128",
+          "name": "_pricePerItem",
+          "type": "uint128"
+        },
+        {
+          "internalType": "uint64",
+          "name": "_expirationTime",
+          "type": "uint64"
+        },
+        {
+          "internalType": "address",
+          "name": "_paymentToken",
+          "type": "address"
+        }
+      ],
+      "name": "createOrUpdateTokenBid",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "fee",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
         }
       ],
       "stateMutability": "view",
@@ -388,12 +1200,44 @@
     },
     {
       "inputs": [],
-      "name": "domainSeparator",
+      "name": "feeReceipient",
       "outputs": [
         {
-          "internalType": "bytes32",
+          "internalType": "address",
           "name": "",
-          "type": "bytes32"
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "feeWithCollectionOwner",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_collection",
+          "type": "address"
+        }
+      ],
+      "name": "getPaymentTokenForCollection",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
         }
       ],
       "stateMutability": "view",
@@ -465,12 +1309,12 @@
       "inputs": [
         {
           "internalType": "bytes32",
-          "name": "_role",
+          "name": "role",
           "type": "bytes32"
         },
         {
           "internalType": "address",
-          "name": "_account",
+          "name": "account",
           "type": "address"
         }
       ],
@@ -506,13 +1350,18 @@
     {
       "inputs": [
         {
-          "internalType": "address",
-          "name": "_validator",
-          "type": "address"
+          "internalType": "uint256",
+          "name": "_initialFee",
+          "type": "uint256"
         },
         {
           "internalType": "address",
-          "name": "_badgeAddress",
+          "name": "_initialFeeRecipient",
+          "type": "address"
+        },
+        {
+          "internalType": "contract IERC20Upgradeable",
+          "name": "_initialPaymentToken",
           "type": "address"
         }
       ],
@@ -524,39 +1373,57 @@
     {
       "inputs": [
         {
-          "components": [
-            {
-              "internalType": "address",
-              "name": "claimer",
-              "type": "address"
-            },
-            {
-              "internalType": "address",
-              "name": "badgeAddress",
-              "type": "address"
-            },
-            {
-              "internalType": "uint256",
-              "name": "badgeId",
-              "type": "uint256"
-            }
-          ],
-          "internalType": "struct ClaimInfo",
-          "name": "_claimInfo",
-          "type": "tuple"
+          "internalType": "address",
+          "name": "",
+          "type": "address"
         },
         {
-          "internalType": "bytes",
-          "name": "_validatorSignature",
-          "type": "bytes"
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
         },
         {
           "internalType": "address",
-          "name": "_validatorAddress",
+          "name": "",
           "type": "address"
         }
       ],
-      "name": "isValidClaimInfoForSignature",
+      "name": "listings",
+      "outputs": [
+        {
+          "internalType": "uint64",
+          "name": "quantity",
+          "type": "uint64"
+        },
+        {
+          "internalType": "uint128",
+          "name": "pricePerItem",
+          "type": "uint128"
+        },
+        {
+          "internalType": "uint64",
+          "name": "expirationTime",
+          "type": "uint64"
+        },
+        {
+          "internalType": "address",
+          "name": "paymentTokenAddress",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "pause",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "paused",
       "outputs": [
         {
           "internalType": "bool",
@@ -569,12 +1436,25 @@
     },
     {
       "inputs": [],
-      "name": "paused",
+      "name": "paymentToken",
       "outputs": [
         {
-          "internalType": "bool",
+          "internalType": "contract IERC20Upgradeable",
           "name": "",
-          "type": "bool"
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "priceTrackerAddress",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
         }
       ],
       "stateMutability": "view",
@@ -602,12 +1482,12 @@
       "inputs": [
         {
           "internalType": "bytes32",
-          "name": "_role",
+          "name": "role",
           "type": "bytes32"
         },
         {
           "internalType": "address",
-          "name": "_account",
+          "name": "account",
           "type": "address"
         }
       ],
@@ -620,34 +1500,46 @@
       "inputs": [
         {
           "internalType": "address",
-          "name": "_badgeAddress",
+          "name": "_collectionAddress",
           "type": "address"
         },
         {
+          "components": [
+            {
+              "internalType": "uint32",
+              "name": "fee",
+              "type": "uint32"
+            },
+            {
+              "internalType": "address",
+              "name": "recipient",
+              "type": "address"
+            }
+          ],
+          "internalType": "struct TreasureMarketplace.CollectionOwnerFee",
+          "name": "_collectionOwnerFee",
+          "type": "tuple"
+        }
+      ],
+      "name": "setCollectionOwnerFee",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
           "internalType": "uint256",
-          "name": "_badgeId",
+          "name": "_newFee",
           "type": "uint256"
         },
         {
-          "internalType": "bool",
-          "name": "enabled",
-          "type": "bool"
+          "internalType": "uint256",
+          "name": "_newFeeWithCollectionOwner",
+          "type": "uint256"
         }
       ],
-      "name": "setBadgeStatus",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "bool",
-          "name": "_shouldPause",
-          "type": "bool"
-        }
-      ],
-      "name": "setPause",
+      "name": "setFee",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -656,11 +1548,11 @@
       "inputs": [
         {
           "internalType": "address",
-          "name": "_badgeAddress",
+          "name": "_newFeeRecipient",
           "type": "address"
         }
       ],
-      "name": "setTroveBadges",
+      "name": "setFeeRecipient",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -669,11 +1561,47 @@
       "inputs": [
         {
           "internalType": "address",
-          "name": "_validator",
+          "name": "_priceTrackerAddress",
           "type": "address"
         }
       ],
-      "name": "setValidator",
+      "name": "setPriceTracker",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_nft",
+          "type": "address"
+        },
+        {
+          "internalType": "enum TreasureMarketplace.TokenApprovalStatus",
+          "name": "_status",
+          "type": "uint8"
+        },
+        {
+          "internalType": "address",
+          "name": "_paymentToken",
+          "type": "address"
+        }
+      ],
+      "name": "setTokenApprovalStatus",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_wethAddress",
+          "type": "address"
+        }
+      ],
+      "name": "setWeth",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -682,7 +1610,7 @@
       "inputs": [
         {
           "internalType": "bytes4",
-          "name": "_interfaceId",
+          "name": "interfaceId",
           "type": "bytes4"
         }
       ],
@@ -699,11 +1627,68 @@
     },
     {
       "inputs": [],
-      "name": "troveBadgeCollection",
+      "name": "toggleAreBidsActive",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "tokenApprovals",
       "outputs": [
         {
-          "internalType": "contract ITroveBadges",
+          "internalType": "enum TreasureMarketplace.TokenApprovalStatus",
           "name": "",
+          "type": "uint8"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "tokenBids",
+      "outputs": [
+        {
+          "internalType": "uint64",
+          "name": "quantity",
+          "type": "uint64"
+        },
+        {
+          "internalType": "uint128",
+          "name": "pricePerItem",
+          "type": "uint128"
+        },
+        {
+          "internalType": "uint64",
+          "name": "expirationTime",
+          "type": "uint64"
+        },
+        {
+          "internalType": "address",
+          "name": "paymentTokenAddress",
           "type": "address"
         }
       ],
@@ -712,10 +1697,55 @@
     },
     {
       "inputs": [],
-      "name": "validator",
-      "outputs": [
+      "name": "unpause",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
         {
           "internalType": "address",
+          "name": "_nftAddress",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_tokenId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint64",
+          "name": "_newQuantity",
+          "type": "uint64"
+        },
+        {
+          "internalType": "uint128",
+          "name": "_newPricePerItem",
+          "type": "uint128"
+        },
+        {
+          "internalType": "uint64",
+          "name": "_newExpirationTime",
+          "type": "uint64"
+        },
+        {
+          "internalType": "address",
+          "name": "_paymentToken",
+          "type": "address"
+        }
+      ],
+      "name": "updateListing",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "weth",
+      "outputs": [
+        {
+          "internalType": "contract IERC20Upgradeable",
           "name": "",
           "type": "address"
         }
@@ -745,54 +1775,93 @@
       "type": "constructor"
     }
   ],
-  "transactionHash": "0xf6de2393c74e23b3be3beb7650fd7ce8be51961a2019365f2ca9e0dbd594a03a",
+  "transactionHash": "0xd366210bc5f5a94510255c1eece47a492ab741760c59a7ed98aa4f4fee4e8362",
   "receipt": {
     "to": null,
     "from": "0x33117a2843495E4d103bE35fFFf926c4cd988e10",
-    "contractAddress": "0x050c0C59DeA10FEF7E660591757Ce6EB180f2ABE",
+    "contractAddress": "0x8831365CeF44Fea45ACBE9078FF97E9cEDbe00d9",
     "transactionIndex": 1,
-    "gasUsed": "2522803",
-    "logsBloom": "0x00000004000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000080000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000010000000000000000000000001000000000000000000008000000000000000000000000000000000000000800000000000000000000000000000008000000000000000000001000000000000000000000000000100001000000000000000000000000000100000000000800000000000000004000000000000000000000000000000000000000000000000000",
-    "blockHash": "0x9ef4d49f6e1293d8fb7a16940d6ea58061f57f3d46df9ebcf9a61209314d8aae",
-    "transactionHash": "0xf6de2393c74e23b3be3beb7650fd7ce8be51961a2019365f2ca9e0dbd594a03a",
+    "gasUsed": "2559661",
+    "logsBloom": "0x00000004000000000800000000000000080000000000000000000002000002000000000000000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000200000000000000000000000000000020000400000000000000800000000000000000000000000000000000000000000000000000000000c00000000000000000000000000000000000800000000008000000000000000000008000000000000000000001001000000000000000000010020800001000000001000000000000000000100000000000020000010000000000000000000000000020004000000000000000000000000000000",
+    "blockHash": "0xe350825df244eec5a8bd461a2686d9b9937b00e5fd5708c446cf40e3efeaf391",
+    "transactionHash": "0xd366210bc5f5a94510255c1eece47a492ab741760c59a7ed98aa4f4fee4e8362",
     "logs": [
       {
         "transactionIndex": 1,
-        "blockNumber": 801636,
-        "transactionHash": "0xf6de2393c74e23b3be3beb7650fd7ce8be51961a2019365f2ca9e0dbd594a03a",
-        "address": "0x050c0C59DeA10FEF7E660591757Ce6EB180f2ABE",
+        "blockNumber": 801626,
+        "transactionHash": "0xd366210bc5f5a94510255c1eece47a492ab741760c59a7ed98aa4f4fee4e8362",
+        "address": "0x8831365CeF44Fea45ACBE9078FF97E9cEDbe00d9",
         "topics": [
-          "0x62e78cea01bee320cd4e420270b5ea74000d11b0c9f74754ebdbfc544b05a258"
+          "0xbd79b86ffe0ab8e8776151514217cd7cacd52c909f66475c3af44e129f0b00ff",
+          "0x34d5e892b0a7ec1561fc4a5fdcb31b798cf623590906b938d356c9619e539958",
+          "0x0000000000000000000000000000000000000000000000000000000000000000",
+          "0x34d5e892b0a7ec1561fc4a5fdcb31b798cf623590906b938d356c9619e539958"
         ],
-        "data": "0x00000000000000000000000033117a2843495e4d103be35ffff926c4cd988e10",
+        "data": "0x",
         "logIndex": 0,
-        "blockHash": "0x9ef4d49f6e1293d8fb7a16940d6ea58061f57f3d46df9ebcf9a61209314d8aae"
+        "blockHash": "0xe350825df244eec5a8bd461a2686d9b9937b00e5fd5708c446cf40e3efeaf391"
       },
       {
         "transactionIndex": 1,
-        "blockNumber": 801636,
-        "transactionHash": "0xf6de2393c74e23b3be3beb7650fd7ce8be51961a2019365f2ca9e0dbd594a03a",
-        "address": "0x050c0C59DeA10FEF7E660591757Ce6EB180f2ABE",
+        "blockNumber": 801626,
+        "transactionHash": "0xd366210bc5f5a94510255c1eece47a492ab741760c59a7ed98aa4f4fee4e8362",
+        "address": "0x8831365CeF44Fea45ACBE9078FF97E9cEDbe00d9",
         "topics": [
           "0x2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d",
-          "0x6270edb7c868f86fda4adedba75108201087268ea345934db8bad688e1feb91b",
+          "0x34d5e892b0a7ec1561fc4a5fdcb31b798cf623590906b938d356c9619e539958",
           "0x00000000000000000000000033117a2843495e4d103be35ffff926c4cd988e10",
           "0x00000000000000000000000033117a2843495e4d103be35ffff926c4cd988e10"
         ],
         "data": "0x",
         "logIndex": 1,
-        "blockHash": "0x9ef4d49f6e1293d8fb7a16940d6ea58061f57f3d46df9ebcf9a61209314d8aae"
+        "blockHash": "0xe350825df244eec5a8bd461a2686d9b9937b00e5fd5708c446cf40e3efeaf391"
+      },
+      {
+        "transactionIndex": 1,
+        "blockNumber": 801626,
+        "transactionHash": "0xd366210bc5f5a94510255c1eece47a492ab741760c59a7ed98aa4f4fee4e8362",
+        "address": "0x8831365CeF44Fea45ACBE9078FF97E9cEDbe00d9",
+        "topics": [
+          "0x38e229a7f3f9c329892d08eb37c4e91ccac6d12c798d394990ca4f56028ec266"
+        ],
+        "data": "0x00000000000000000000000000000000000000000000000000000000000001f4",
+        "logIndex": 2,
+        "blockHash": "0xe350825df244eec5a8bd461a2686d9b9937b00e5fd5708c446cf40e3efeaf391"
+      },
+      {
+        "transactionIndex": 1,
+        "blockNumber": 801626,
+        "transactionHash": "0xd366210bc5f5a94510255c1eece47a492ab741760c59a7ed98aa4f4fee4e8362",
+        "address": "0x8831365CeF44Fea45ACBE9078FF97E9cEDbe00d9",
+        "topics": [
+          "0x32837ab65d8583d89ac1b66920de55975eb33cbc0fbf00f2123197ce3b62c63e"
+        ],
+        "data": "0x00000000000000000000000000000000000000000000000000000000000001f4",
+        "logIndex": 3,
+        "blockHash": "0xe350825df244eec5a8bd461a2686d9b9937b00e5fd5708c446cf40e3efeaf391"
+      },
+      {
+        "transactionIndex": 1,
+        "blockNumber": 801626,
+        "transactionHash": "0xd366210bc5f5a94510255c1eece47a492ab741760c59a7ed98aa4f4fee4e8362",
+        "address": "0x8831365CeF44Fea45ACBE9078FF97E9cEDbe00d9",
+        "topics": [
+          "0x6632de8ab33c46549f7bb29f647ea0d751157b25fe6a14b1bcc7527cdfbeb79c"
+        ],
+        "data": "0x000000000000000000000000db6ab450178babcf0e467c1f3b436050d907e233",
+        "logIndex": 4,
+        "blockHash": "0xe350825df244eec5a8bd461a2686d9b9937b00e5fd5708c446cf40e3efeaf391"
       }
     ],
-    "blockNumber": 801636,
-    "cumulativeGasUsed": "2522803",
+    "blockNumber": 801626,
+    "cumulativeGasUsed": "2559661",
     "status": 1,
     "byzantium": true
   },
   "args": [
-    "0x7936b76Cb069a0B18cA504F66ABb1A4cd5C08DAa",
+    "0x65A777EC4068eb96F7441cE2F57166a5Dae633C6",
     "0xE067cE98Fb2B0458d66c91d698800C8250E05eB3",
-    "0x485cc955000000000000000000000000c0de123d0ca961a3ea9d2d29e015ce74d3ec124f000000000000000000000000b79ae9c10c10629b4699815121e5b30b1ab7a06f"
+    "0xb4988fd000000000000000000000000000000000000000000000000000000000000001f4000000000000000000000000db6ab450178babcf0e467c1f3b436050d907e23300000000000000000000000088f9efb3a7f728fdb2b8872fe994c84b1d148f65"
   ],
   "numDeployments": 1,
   "solcInputHash": "1635d55d57a0a2552952c0d22586ed23",
@@ -802,11 +1871,12 @@
   "execute": {
     "methodName": "initialize",
     "args": [
-      "0xC0DE123d0CA961A3EA9D2D29E015ce74d3EC124f",
-      "0xb79Ae9c10c10629b4699815121E5B30B1aB7a06F"
+      500,
+      "0xDb6Ab450178bAbCf0e467c1F3B436050d907E233",
+      "0x88f9eFB3A7F728fdb2B8872fE994c84b1d148f65"
     ]
   },
-  "implementation": "0x7936b76Cb069a0B18cA504F66ABb1A4cd5C08DAa",
+  "implementation": "0x65A777EC4068eb96F7441cE2F57166a5Dae633C6",
   "devdoc": {
     "details": "This contract implements a proxy that is upgradeable by an admin.  To avoid https://medium.com/nomic-labs-blog/malicious-backdoors-in-ethereum-proxies-62629adf3357[proxy selector clashing], which can potentially be used in an attack, this contract uses the https://blog.openzeppelin.com/the-transparent-proxy-pattern/[transparent proxy pattern]. This pattern implies two things that go hand in hand:  1. If any account other than the admin calls the proxy, the call will be forwarded to the implementation, even if that call matches one of the admin functions exposed by the proxy itself. 2. If the admin calls the proxy, it can access the admin functions, but its calls will never be forwarded to the implementation. If the admin tries to call a function on the implementation it will fail with an error that says \"admin cannot fallback to proxy target\".  These properties mean that the admin account can only be used for admin actions like upgrading the proxy or changing the admin, so it's best if it's a dedicated account that is not used for anything else. This will avoid headaches due to sudden errors when trying to call a function from the proxy implementation.  Our recommendation is for the dedicated account to be an instance of the {ProxyAdmin} contract. If set up this way, you should think of the `ProxyAdmin` instance as the real administrative inerface of your proxy.",
     "events": {

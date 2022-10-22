@@ -5,10 +5,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const { deployments, getNamedAccounts } = hre;
     const { deploy, execute, read } = deployments;
     const { deployer } = await getNamedAccounts();
-
-    console.log(await read('TreasureMarketplace', 'weth'));
-    return
-
     const magicArbitrum = "0x539bdE0d7Dbd336b79148AA742883198BBF60342";
     const fee = 500; // 5%
     const feeWithCollectionOwner = 250; // 2.5%

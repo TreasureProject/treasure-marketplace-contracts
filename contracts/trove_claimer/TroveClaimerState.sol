@@ -12,7 +12,7 @@ abstract contract TroveClaimerState is Initializable, ITroveClaimer, UtilitiesUp
     error BadgeAlreadyClaimed(address _claimer, address _badgeCollection, uint256 _badgeId);
 
     bytes32 public constant CLAIMINFO_TYPE_HASH
-        = keccak256("ClaimInfo(address _claimer, address _badgeAddress, uint256 _badgeId)");
+        = keccak256("ClaimInfo(address _claimer,address _badgeAddress,uint256 _badgeId)");
 
     address public validator;
     ITroveBadges public troveBadgeCollection;

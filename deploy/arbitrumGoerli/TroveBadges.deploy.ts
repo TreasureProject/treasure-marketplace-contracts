@@ -20,14 +20,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
             },
         },
     });
-
-    const entries = [
-        { name: 'TroveBadges Address', value: badges.address },
-        { name: 'TroveBadgesImpl Address', value: badges.implementation },
-    ];
-
-    console.log(`---- TroveBadges Config ----`);
-    console.table(entries);
 };
 export default func;
 func.tags = ['TroveBadges'];

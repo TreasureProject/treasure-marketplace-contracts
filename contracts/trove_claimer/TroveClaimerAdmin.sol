@@ -16,4 +16,8 @@ abstract contract TroveClaimerAdmin is Initializable, TroveClaimerState {
     function setValidator(address _validator) external requiresEitherRole(ADMIN_ROLE, OWNER_ROLE) {
         validator = _validator;
     }
+
+    function setBadgeStatus(address _badgeAddress, uint256 _badgeId, bool enabled) external requiresEitherRole(ADMIN_ROLE, OWNER_ROLE) {
+        badgeToEnabledStatus[_badgeAddress][_badgeId] = enabled;
+    }
 }

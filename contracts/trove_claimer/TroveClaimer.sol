@@ -9,6 +9,7 @@ contract TroveClaimer is Initializable, EIP712Upgradeable, TroveClaimerAdmin {
 
     function initialize(address _validator, address _badgeAddress) external initializer {
         __TroveClaimerAdmin_init();
+        __EIP712_init("TroveClaimer", "1.0.0");
         validator = _validator;
         troveBadgeCollection = ITroveBadges(_badgeAddress);
     }
@@ -40,8 +41,28 @@ contract TroveClaimer is Initializable, EIP712Upgradeable, TroveClaimerAdmin {
         // todo: mint utility associated to the given collection address + badgeId
     }
 
+    // TESTING ONLY - REMOVE FOR PROD
+    function isValidClaimInfoForSignature(
+        ClaimInfo calldata _claimInfo,
+        bytes memory _validatorSignature,
+        address _validatorAddress
+    )
+        external view returns (bool)
+    {
+        if(_claimInfo.claimer != msg.sender) {
+            revert NotRecipient();
+        }
+        bytes32 claimToHash = claimInfoHash(_claimInfo);
+        address signer = ECDSAUpgradeable.recover(claimToHash, _validatorSignature);
+        return signer == _validatorAddress;
+    }
+
     function _isSupportedBadge(address _badgeAddress, uint256 _badgeId) internal view returns (bool isSupported_) {
         isSupported_ = badgeToEnabledStatus[_badgeAddress][_badgeId];
+    }
+
+    function domainSeparator() public view returns(bytes32) {
+        return _domainSeparatorV4();
     }
 
     function claimInfoHash(ClaimInfo calldata _claimInfo) public view returns (bytes32) {

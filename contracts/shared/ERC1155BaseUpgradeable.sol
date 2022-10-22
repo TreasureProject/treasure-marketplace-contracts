@@ -14,6 +14,7 @@ abstract contract ERC1155BaseUpgradeable is Initializable, ERC1155Upgradeable, U
 
     function __ERC1155BaseUpgradeable_init() internal initializer {
         ERC1155Upgradeable.__ERC1155_init("");
+        __Utilities_init();
     }
 
     function uri(uint256 _typeId)

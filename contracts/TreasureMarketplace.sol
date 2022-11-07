@@ -582,6 +582,10 @@ contract TreasureMarketplace is AccessControlEnumerableUpgradeable, PausableUpgr
 
         _payFees(_bid, _acceptBidParams.quantity, _acceptBidParams.nftAddress, _acceptBidParams.bidder, _msgSender(), _acceptBidParams.paymentToken, false);
 
+        if(priceTrackerAddress != address(0)) {
+            ITreasureNFTPriceTracker(priceTrackerAddress).recordSale(_acceptBidParams.nftAddress, _acceptBidParams.tokenId, _bid.pricePerItem);
+        }
+
         // Announce accepting bid
         emit BidAccepted(
             _msgSender(),

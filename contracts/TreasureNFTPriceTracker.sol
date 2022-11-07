@@ -32,6 +32,8 @@ contract TreasureNFTPriceTracker is ITreasureNFTPriceTracker, OwnableUpgradeable
         require(address(_treasureMarketplaceContract) != address(0), "TreasureNFTPricing: cannot set address(0)");
         require(address(_legionContract) != address(0), "TreasureNFTPricing: cannot set address(0)");
 
+        __Ownable_init();
+
         treasureMarketplaceContract = _treasureMarketplaceContract;
         legionContract = _legionContract;
         legionMetadata = _legionMetadata;

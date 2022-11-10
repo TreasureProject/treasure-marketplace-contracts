@@ -20,6 +20,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
             },
         },
     });
+
+    await execute('TroveBadges', { from: deployer, log: true },
+        'setUri',
+        [ 'ipfs://QmUokgu8K4McQAmFVrSocaXBnmy5naTUKNes1hartTJiRs/' ]
+    );
 };
 export default func;
 func.tags = ['TroveBadges'];

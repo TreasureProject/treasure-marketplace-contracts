@@ -32,7 +32,7 @@ const config: HardhatUserConfig = {
     },
     rinkeby: {
       url: `https://eth-rinkeby.alchemyapi.io/v2/${process.env.ALCHEMY_API_KEY}`,
-      accounts: [`${privateKey}`],
+      accounts: privateKey !== undefined ? [privateKey] : [],
       chainId: 4,
       live: true,
       saveDeployments: true,
@@ -40,7 +40,7 @@ const config: HardhatUserConfig = {
     },
     kovan: {
       url: `https://eth-kovan.alchemyapi.io/v2/${process.env.ALCHEMY_API_KEY}`,
-      accounts: [`${privateKey}`],
+      accounts: privateKey !== undefined ? [privateKey] : [],
       chainId: 42,
       live: true,
       saveDeployments: true,
@@ -48,7 +48,7 @@ const config: HardhatUserConfig = {
     },
     mainnet: {
       url: `https://eth-mainnet.alchemyapi.io/v2/${process.env.ALCHEMY_API_KEY}`,
-      accounts: [`${privateKey}`],
+      accounts: privateKey !== undefined ? [privateKey] : [],
       chainId: 1,
       live: true,
       saveDeployments: true,
@@ -57,15 +57,15 @@ const config: HardhatUserConfig = {
     },
     polygon: {
       url: `https://polygon-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`,
-      accounts: [`${privateKey}`],
+      accounts: privateKey !== undefined ? [privateKey] : [],
       chainId: 137,
       live: true,
       saveDeployments: true,
       gasMultiplier: 2,
     },
     arbitrum: {
-      url: process.env.ARBITRUM_MAINNET_URL,
-      accounts: [`${process.env.ARBITRUM_MAINNET_PK}`],
+      url: `${process.env.ARBITRUM_MAINNET_URL}`,
+      accounts: process.env.ARBITRUM_MAINNET_PK !== undefined ? [process.env.ARBITRUM_MAINNET_PK] : [],
       chainId: 42161,
       live: true,
       saveDeployments: true,
@@ -73,8 +73,8 @@ const config: HardhatUserConfig = {
       deploy: ["deploy/arbitrum"]
     },
     arbitrumRinkeby: {
-      url: process.env.ARBITRUM_TESTNET_URL,
-      accounts: [`${process.env.ARBITRUM_MAINNET_PK}`],
+      url: `${process.env.ARBITRUM_TESTNET_URL}`,
+      accounts: process.env.ARBITRUM_MAINNET_PK !== undefined ? [process.env.ARBITRUM_MAINNET_PK] : [],
       chainId: 421611,
       live: false,
       saveDeployments: true,
@@ -82,8 +82,8 @@ const config: HardhatUserConfig = {
       deploy: ["deploy/arbitrumRinkeby"]
     },
     arbitrumGoerli: {
-      url: process.env.ARBITRUM_GOERLI_URL,
-      accounts: [`${privateKey}`],
+      url: `${process.env.ARBITRUM_GOERLI_URL}`,
+      accounts: privateKey !== undefined ? [privateKey] : [],
       chainId: 421613,
       live: false,
       saveDeployments: true,
@@ -91,8 +91,8 @@ const config: HardhatUserConfig = {
       deploy: ["deploy/arbitrumGoerli"]
     },
     arbitrumNova: {
-      url: process.env.ARBITRUM_NOVA_URL,
-      accounts: [`${process.env.ARBITRUM_MAINNET_PK}`],
+      url: `${process.env.ARBITRUM_NOVA_URL}`,
+      accounts: process.env.ARBITRUM_MAINNET_PK !== undefined ? [process.env.ARBITRUM_MAINNET_PK] : [],
       chainId: 42170,
       live: true,
       saveDeployments: true,

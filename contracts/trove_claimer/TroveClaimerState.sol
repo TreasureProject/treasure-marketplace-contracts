@@ -20,6 +20,9 @@ abstract contract TroveClaimerState is Initializable, ITroveClaimer, UtilitiesUp
     // badge collection address -> badgeId -> enabled status
     mapping(address => mapping(uint256 => bool)) public badgeToEnabledStatus;
 
+    // user address -> badge_address -> badge_id -> isClaimed
+    mapping(address => mapping(address => mapping(uint256 => bool))) public userToBadgeToHasClaimed;
+
     function __TroveClaimerState_init() internal initializer {
         __Utilities_init();
     }

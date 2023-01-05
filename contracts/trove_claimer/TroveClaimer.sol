@@ -34,9 +34,10 @@ contract TroveClaimer is Initializable, EIP712Upgradeable, TroveClaimerAdmin {
         if(signer != validator) {
             revert InvalidSignature(signer);
         }
-        if(troveBadgeCollection.balanceOf(_claimInfo.claimer, _claimInfo.badgeId) > 0) {
+        if(userToBadgeToHasClaimed[_claimInfo.claimer][_claimInfo.badgeAddress][_claimInfo.badgeId]) {
             revert BadgeAlreadyClaimed(_claimInfo.claimer, _claimInfo.badgeAddress, _claimInfo.badgeId);
         }
+        userToBadgeToHasClaimed[_claimInfo.claimer][_claimInfo.badgeAddress][_claimInfo.badgeId] = true;
         troveBadgeCollection.adminMint(msg.sender, _claimInfo.badgeId);
         // todo: mint utility associated to the given collection address + badgeId
     }

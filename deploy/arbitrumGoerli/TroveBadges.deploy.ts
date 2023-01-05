@@ -22,11 +22,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     });
 
     // ipfs://QmUokgu8K4McQAmFVrSocaXBnmy5naTUKNes1hartTJiRs/ is the IPFS of Smol Racing Trophies for testnet only
-    const badgesUri = 'ipfs://QmUokgu8K4McQAmFVrSocaXBnmy5naTUKNes1hartTJiRs/';
-    await execute('TroveBadges', { from: deployer, log: true },
-        'setUri',
+    // const badgesUri = 'ipfs://QmUokgu8K4McQAmFVrSocaXBnmy5naTUKNes1hartTJiRs/';
+    // await execute('TroveBadges', { from: deployer, log: true },
+    //     'setUri',
         
-    );
+    // );
 };
 export default func;
 func.tags = ['TroveBadges'];

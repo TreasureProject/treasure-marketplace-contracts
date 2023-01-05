@@ -837,6 +837,14 @@ contract TreasureMarketplace is AccessControlEnumerableUpgradeable, PausableUpgr
 
         _;
     }
+
+    /// @notice Set the default paymentToken
+    /// @dev    This is callable only by the owner.
+    /// @param  _paymentToken address of the default token that is used for settlement
+    function setDefaultPaymentToken(IERC20Upgradeable _paymentToken) external onlyRole(TREASURE_MARKETPLACE_ADMIN_ROLE) {
+        require(address(_paymentToken) != address(0), "TreasureMarketplace: cannot set address(0)");
+        paymentToken = _paymentToken;
+    }
 }
 
 struct BuyItemParams {

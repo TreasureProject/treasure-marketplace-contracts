@@ -55,6 +55,15 @@ const config: HardhatUserConfig = {
       gasMultiplier: 2,
       deploy: ["deploy/mainnet"]
     },
+    sepolia: {
+      url: `${process.env.SEPOLIA_URL}`,
+      accounts: privateKey !== undefined ? [privateKey] : [],
+      chainId: 11155111,
+      live: false,
+      saveDeployments: true,
+      gasMultiplier: 2,
+      deploy: ["deploy/sepolia"]
+    },
     polygon: {
       url: `https://polygon-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`,
       accounts: privateKey !== undefined ? [privateKey] : [],

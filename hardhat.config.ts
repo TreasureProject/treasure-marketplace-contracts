@@ -108,6 +108,15 @@ const config: HardhatUserConfig = {
       gasMultiplier: 2,
       deploy: ["deploy/arbitrumNova"]
     },
+    arbitrumSepolia: {
+      url: `${process.env.ARBITRUM_SEPOLIA_URL}`,
+      accounts: process.env.ARBITRUM_MAINNET_PK !== undefined ? [process.env.ARBITRUM_MAINNET_PK] : [],
+      chainId: 421614,
+      live: false,
+      saveDeployments: true,
+      gasMultiplier: 2,
+      deploy: ["deploy/arbitrumSepolia"]
+    },
   },
   solidity: {
     compilers: [
@@ -175,6 +184,14 @@ const config: HardhatUserConfig = {
             urls: {
                 apiURL: 'https://api-nova.arbiscan.io/api',
                 browserURL: 'https://nova.arbiscan.io',
+            },
+        },
+        {
+            network: 'arbitrumSepolia',
+            chainId: 421614,
+            urls: {
+                apiURL: 'https://sepolia-explorer.arbitrum.io/api',
+                browserURL: 'https://sepolia-explorer.arbitrum.io',
             },
         },
     ],

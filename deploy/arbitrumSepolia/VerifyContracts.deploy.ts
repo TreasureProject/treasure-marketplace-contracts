@@ -12,7 +12,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         switch (hre.network.name) {
             case 'arbitrumSepolia':
                 await hre.run('etherscan-verify', {
-                    apiUrl: 'https://sepolia-explorer.arbitrum.io',
+                    apiUrl: 'https://api-sepolia.arbiscan.io',
+                    apiKey: process.env.ARBISCAN_API_KEY,
                     sleep: true,
                 });
                 break;

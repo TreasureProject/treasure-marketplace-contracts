@@ -199,7 +199,7 @@ describe('TreasureMarketplace', function () {
                     paymentToken: magicToken.address
                 },
                 INVALID_QUANTITY: {
-                    tokenId: 1,
+                    tokenId: 0,
                     nftAddress: nft.address,
                     quantity: 0,
                     pricePerItem,
@@ -207,15 +207,23 @@ describe('TreasureMarketplace', function () {
                     paymentToken: magicToken.address
                 },
                 INVALID_PAYMENT_TOKEN: {
-                    tokenId: 1,
+                    tokenId: 0,
                     nftAddress: nft.address,
                     quantity: 1,
                     pricePerItem,
                     expirationTime,
                     paymentToken: weth.address
                 },
+                INVALID_EXPIRATION: {
+                    tokenId: 0,
+                    nftAddress: nft.address,
+                    quantity: 5,
+                    pricePerItem,
+                    expirationTime: (await getCurrentTime()) - 100000,
+                    paymentToken: magicToken.address,
+                },
                 VALID_1: {
-                    tokenId: 2,
+                    tokenId: 1,
                     nftAddress: nft.address,
                     quantity: 1,
                     pricePerItem,
@@ -223,7 +231,7 @@ describe('TreasureMarketplace', function () {
                     paymentToken: magicToken.address
                 },
                 VALID_2: {
-                    tokenId: 3,
+                    tokenId: 2,
                     nftAddress: nft.address,
                     quantity: 1,
                     pricePerItem,
@@ -231,7 +239,7 @@ describe('TreasureMarketplace', function () {
                     paymentToken: magicToken.address
                 },
                 VALID_3: {
-                    tokenId: 4,
+                    tokenId: 3,
                     nftAddress: nft.address,
                     quantity: 1,
                     pricePerItem,
@@ -239,7 +247,7 @@ describe('TreasureMarketplace', function () {
                     paymentToken: magicToken.address
                 },
                 VALID_4: {
-                    tokenId: 5,
+                    tokenId: 4,
                     nftAddress: nft.address,
                     quantity: 1,
                     pricePerItem,
@@ -278,12 +286,12 @@ describe('TreasureMarketplace', function () {
             await nft.mint(seller);
             await nft.mint(seller);
             await nft.mint(seller);
-            await nft.mint(seller);
             await nft.connect(sellerSigner).setApprovalForAll(marketplace.address, true);
             await expect(marketplace.connect(sellerSigner).createOrUpdateListings([ListingsToCreate.VALID_1])).to.be.revertedWith("token is not approved for trading");
             await marketplace.setTokenApprovalStatus(nft.address, TOKEN_APPROVAL_STATUS_ERC_721_APPROVED, magicToken.address);
             await expect(marketplace.connect(sellerSigner).createOrUpdateListings([ListingsToCreate.VALID_1, ListingsToCreate.INVALID_MIN_PRICE])).to.be.revertedWith("TreasureMarketplace: below min price")
             await expect(marketplace.connect(sellerSigner).createOrUpdateListings([ListingsToCreate.VALID_1, ListingsToCreate.INVALID_QUANTITY])).to.be.revertedWith("TreasureMarketplace: cannot list multiple ERC721")
+            await expect(marketplace.connect(sellerSigner).createOrUpdateListings([ListingsToCreate.VALID_1, ListingsToCreate.INVALID_EXPIRATION])).to.be.revertedWith("TreasureMarketplace: invalid expiration time")
             await expect(marketplace.connect(buyerSigner).createOrUpdateListings([ListingsToCreate.VALID_1])).to.be.revertedWith("not owning item")
             await marketplace.pause();
             await expect(marketplace.connect(sellerSigner).createOrUpdateListings([ListingsToCreate.VALID_1])).to.be.revertedWith("Pausable: paused");
@@ -350,7 +358,7 @@ describe('TreasureMarketplace', function () {
                     ListingsToUpdate.CHANGE_EXPIRATION_2,
                     ListingsToUpdate.CHANGE_EXPIRATION_3
                 ].map(async (expectedListing) => {
-                    const listing = await marketplace.listings(nft.address, expectedListing, expectedListing.tokenId, seller)
+                    const listing = await marketplace.listings(nft.address, expectedListing.tokenId, seller)
                     expect(listing.quantity).to.be.equal(expectedListing.quantity);
                     expect(listing.pricePerItem).to.be.equal(expectedListing.pricePerItem);
                     expect(listing.expirationTime).to.be.equal(expectedListing.expirationTime);
@@ -719,6 +727,213 @@ describe('TreasureMarketplace', function () {
     })
 
     describe('ERC1155', function () {
+        it('createOrUpdateListings()', async function () {
+            const pricePerItem = ethers.utils.parseUnits('1', 'ether');
+            const expirationTime = ethers.BigNumber.from('4102462800'); // Midnight Jan 1, 2100
+            const quantity = 10;
+            const ListingsToCreate = {
+                INVALID_MIN_PRICE: {
+                    tokenId: 0,
+                    nftAddress: erc1155.address,
+                    quantity: 5,
+                    pricePerItem: 0,
+                    expirationTime,
+                    paymentToken: magicToken.address
+                },
+                INVALID_OVERFLOW_PRICE: {
+                    tokenId: 0,
+                    nftAddress: erc1155.address,
+                    quantity: 5,
+                    pricePerItem: ethers.BigNumber.from('999999999'),
+                    expirationTime,
+                    paymentToken: magicToken.address
+                },
+                INVALID_MIN_QUANTITY: {
+                    tokenId: 0,
+                    nftAddress: erc1155.address,
+                    quantity: 0,
+                    pricePerItem,
+                    expirationTime,
+                    paymentToken: magicToken.address
+                },
+                INVALID_OVERFLOW_QUANTITY: {
+                    tokenId: 0,
+                    nftAddress: erc1155.address,
+                    quantity: quantity + 1,
+                    pricePerItem,
+                    expirationTime,
+                    paymentToken: magicToken.address
+                },
+                INVALID_PAYMENT_TOKEN: {
+                    tokenId: 0,
+                    nftAddress: erc1155.address,
+                    quantity: 5,
+                    pricePerItem,
+                    expirationTime,
+                    paymentToken: weth.address
+                },
+                INVALID_EXPIRATION: {
+                    tokenId: 1,
+                    nftAddress: erc1155.address,
+                    quantity: 5,
+                    pricePerItem,
+                    expirationTime: (await getCurrentTime()) - 1,
+                    paymentToken: magicToken.address,
+                },
+                VALID_1: {
+                    tokenId: 2,
+                    nftAddress: erc1155.address,
+                    quantity: 5,
+                    pricePerItem,
+                    expirationTime,
+                    paymentToken: magicToken.address
+                },
+                VALID_2: {
+                    tokenId: 3,
+                    nftAddress: erc1155.address,
+                    quantity: 5,
+                    pricePerItem,
+                    expirationTime,
+                    paymentToken: magicToken.address
+                },
+                VALID_3: {
+                    tokenId: 4,
+                    nftAddress: erc1155.address,
+                    quantity: 2,
+                    pricePerItem,
+                    expirationTime,
+                    paymentToken: magicToken.address
+                },
+                VALID_4: {
+                    tokenId: 5,
+                    nftAddress: erc1155.address,
+                    quantity: 5,
+                    pricePerItem,
+                    expirationTime,
+                    paymentToken: magicToken.address
+                },
+            }
+            const ListingsToUpdate = {
+                INCREASE_PRICE: {
+                    ...ListingsToCreate.VALID_1,
+                    pricePerItem: BigNumber.from(ListingsToCreate.VALID_1.pricePerItem).add(100),
+                },
+                CHANGE_EXPIRATION: {
+                    ...ListingsToCreate.VALID_1,
+                    expirationTime: BigNumber.from(ListingsToCreate.VALID_1.expirationTime).add(100)
+                },
+                CHANGE_EXPIRATION_2: {
+                    ...ListingsToCreate.VALID_2,
+                    expirationTime: BigNumber.from(ListingsToCreate.VALID_2.expirationTime).add(100)
+                },
+                INCREASE_QUANTITY: {
+                    ...ListingsToCreate.VALID_3,
+                    quantity: ListingsToCreate.VALID_3.quantity + 1,
+                },
+                INVALID_MIN_PRICE: {
+                    ...ListingsToCreate.VALID_1,
+                    pricePerItem: 0,
+                },
+                INVALID_MIN_QUANTITY: {
+                    ...ListingsToCreate.VALID_1,
+                    quantity: 0,
+                },
+                INVALID_OVERFLOW_QUANTITY: {
+                    ...ListingsToCreate.VALID_1,
+                    quantity: quantity + 1,
+                }
+            }
+            await erc1155.functions['mint(address,uint256,uint256)'](seller, 0, quantity);
+            await erc1155.functions['mint(address,uint256,uint256)'](seller, 1, quantity);
+            await erc1155.functions['mint(address,uint256,uint256)'](seller, 2, quantity);
+            await erc1155.functions['mint(address,uint256,uint256)'](seller, 3, quantity);
+            await erc1155.functions['mint(address,uint256,uint256)'](seller, 4, quantity);
+            await erc1155.functions['mint(address,uint256,uint256)'](seller, 5, quantity);
+            await erc1155.connect(sellerSigner).setApprovalForAll(marketplace.address, true);
+            await expect(marketplace.connect(sellerSigner).createOrUpdateListings([ListingsToCreate.VALID_1])).to.be.revertedWith("token is not approved for trading");
+            await marketplace.setTokenApprovalStatus(erc1155.address, TOKEN_APPROVAL_STATUS_ERC_1155_APPROVED, magicToken.address);
+            await expect(marketplace.connect(sellerSigner).createOrUpdateListings([ListingsToCreate.VALID_1, ListingsToCreate.INVALID_MIN_PRICE])).to.be.revertedWith("TreasureMarketplace: below min price")
+            await expect(marketplace.connect(sellerSigner).createOrUpdateListings([ListingsToCreate.VALID_1, ListingsToCreate.INVALID_EXPIRATION])).to.be.revertedWith("TreasureMarketplace: invalid expiration time")
+            await expect(marketplace.connect(sellerSigner).createOrUpdateListings([ListingsToCreate.VALID_1, ListingsToCreate.INVALID_MIN_QUANTITY])).to.be.revertedWith("TreasureMarketplace: nothing to list")
+            await expect(marketplace.connect(sellerSigner).createOrUpdateListings([ListingsToCreate.VALID_1, ListingsToCreate.INVALID_OVERFLOW_QUANTITY])).to.be.revertedWith("TreasureMarketplace: must hold enough nfts")
+            await expect(marketplace.connect(buyerSigner).createOrUpdateListings([ListingsToCreate.VALID_1])).to.be.revertedWith("TreasureMarketplace: must hold enough nfts")
+            await marketplace.pause();
+            await expect(marketplace.connect(sellerSigner).createOrUpdateListings([ListingsToCreate.VALID_1])).to.be.revertedWith("Pausable: paused");
+            await marketplace.unpause();
+            await expect(marketplace.connect(sellerSigner).createOrUpdateListings([ListingsToCreate.VALID_1, ListingsToCreate.INVALID_OVERFLOW_PRICE])).to.be.revertedWith("TreasureMarketplace: below min price");
+            await expect(marketplace.connect(sellerSigner).createOrUpdateListings([ListingsToCreate.VALID_1, ListingsToCreate.INVALID_PAYMENT_TOKEN])).to.be.revertedWith("TreasureMarketplace: Wrong payment token");
+            await marketplace.connect(sellerSigner).createOrUpdateListings(
+                [ListingsToCreate.VALID_1]
+            );
+            await marketplace.connect(sellerSigner).createOrUpdateListings(
+                [ListingsToCreate.VALID_2, ListingsToCreate.VALID_3]
+            );
+            const createdListings = [ListingsToCreate.VALID_1, ListingsToCreate.VALID_2, ListingsToCreate.VALID_3]
+            await Promise.all(createdListings.map(async (createdListing) => {
+            const listing = await marketplace.listings(erc1155.address, createdListing.tokenId, seller)
+                expect(listing.quantity).to.be.equal(createdListing.quantity);
+                expect(listing.pricePerItem).to.be.equal(createdListing.pricePerItem);
+                expect(listing.expirationTime).to.be.equal(createdListing.expirationTime);
+            }))
+            await marketplace.pause();
+            await expect(marketplace.connect(sellerSigner).createOrUpdateListings(
+                [ListingsToUpdate.INCREASE_PRICE]
+            )).to.be.revertedWith("Pausable: paused");
+
+            await marketplace.unpause();
+            // Can increase price
+            await marketplace.connect(sellerSigner).createOrUpdateListings([
+                ListingsToUpdate.INCREASE_PRICE
+            ]);
+
+            let listing = await marketplace.listings(erc1155.address, ListingsToUpdate.INCREASE_PRICE.tokenId, seller)
+            expect(listing.pricePerItem).to.be.equal(listing.pricePerItem);
+
+            await expect(marketplace.connect(sellerSigner).createOrUpdateListings(
+               [
+                    ListingsToUpdate.INCREASE_PRICE,
+                    ListingsToUpdate.INVALID_MIN_PRICE
+               ]
+            )).to.be.revertedWith("TreasureMarketplace: below min price");
+            await expect(marketplace.connect(sellerSigner).createOrUpdateListings(
+                [
+                     ListingsToUpdate.INCREASE_PRICE,
+                     ListingsToUpdate.INVALID_OVERFLOW_QUANTITY
+                ]
+             )).to.be.revertedWith("TreasureMarketplace: must hold enough nfts");
+            await expect(marketplace.connect(sellerSigner).createOrUpdateListings(
+                [
+                    ListingsToUpdate.INCREASE_PRICE,
+                    ListingsToUpdate.INVALID_MIN_QUANTITY
+               ]
+            )).to.be.revertedWith("TreasureMarketplace: nothing to list");
+
+            // Can create an update in the same transaction
+            await marketplace.connect(sellerSigner).createOrUpdateListings(
+                [
+                    ListingsToCreate.VALID_4,
+                    ListingsToUpdate.CHANGE_EXPIRATION
+                ]
+            )
+            await marketplace.connect(sellerSigner).createOrUpdateListings(
+                [
+                    ListingsToUpdate.CHANGE_EXPIRATION_2,
+                    ListingsToUpdate.INCREASE_QUANTITY
+                ]
+            )
+            await Promise.all([
+                ListingsToCreate.VALID_4,
+                ListingsToUpdate.CHANGE_EXPIRATION,
+                ListingsToUpdate.CHANGE_EXPIRATION_2,
+                ListingsToUpdate.INCREASE_QUANTITY
+            ].map(async (expectedListing) => {
+                const listing = await marketplace.listings(erc1155.address, expectedListing.tokenId, seller)
+                expect(listing.quantity).to.be.equal(expectedListing.quantity);
+                expect(listing.pricePerItem).to.be.equal(expectedListing.pricePerItem);
+                expect(listing.expirationTime).to.be.equal(expectedListing.expirationTime);
+            }))
+
+        });
         describe('with NFT minted', function () {
             const tokenId = 0;
             const quantity = 10;

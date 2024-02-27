@@ -36,6 +36,6 @@
   "dependencies": {
     "@openzeppelin/contracts-upgradeable": "4.5.2",
     "@prb/math": "^2.5.0",
-    "solidity-coverage": "^0.7.20"
+    "solidity-coverage": "^0.8.0"
   }
 }

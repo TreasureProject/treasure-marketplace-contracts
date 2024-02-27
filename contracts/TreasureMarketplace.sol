@@ -325,6 +325,43 @@ contract TreasureMarketplace is AccessControlEnumerableUpgradeable, PausableUpgr
         );
     }
 
+    struct CreateOrUpdateListingParams {
+        /// which token contract holds the offered token
+        address nftAddress;
+        /// the identifier for the token to be bought
+        uint256 tokenId;
+        /// how many of this token identifier to be bought (or 1 for a ERC-721 token)
+        uint64 quantity;
+        /// the maximum price (in units of the paymentToken) for each token offered
+        uint128 pricePerItem;
+        /// UNIX timestamp after when this listing expires
+        uint64 expirationTime;
+        /// indicates if the user is purchasing this item with eth.
+        /// the payment token to be used
+        address paymentToken;
+    }
+
+    /// @notice Create or update multiple listings.
+    function createOrUpdateListings(
+        CreateOrUpdateListingParams[] calldata _createOrUpdateListingParams)
+    external
+    nonReentrant
+    whenNotPaused
+    {
+        for (uint256 i = 0; i < _createOrUpdateListingParams.length;) {
+            CreateOrUpdateListingParams calldata _createOrUpdateListingParam = _createOrUpdateListingParams[i];
+            _createOrUpdateListing(
+                _createOrUpdateListingParam.nftAddress,
+                _createOrUpdateListingParam.tokenId,
+                _createOrUpdateListingParam.quantity,
+                _createOrUpdateListingParam.pricePerItem,
+                _createOrUpdateListingParam.expirationTime,
+                _createOrUpdateListingParam.paymentToken
+            );
+            unchecked { i += 1; }
+        }
+    }
+
     function createOrUpdateListing(
         address _nftAddress,
         uint256 _tokenId,
@@ -335,6 +372,18 @@ contract TreasureMarketplace is AccessControlEnumerableUpgradeable, PausableUpgr
     external
     nonReentrant
     whenNotPaused
+    {
+        _createOrUpdateListing(_nftAddress, _tokenId, _quantity, _pricePerItem, _expirationTime, _paymentToken);
+    }
+
+    function _createOrUpdateListing(
+        address _nftAddress,
+        uint256 _tokenId,
+        uint64 _quantity,
+        uint128 _pricePerItem,
+        uint64 _expirationTime,
+        address _paymentToken)
+    internal
     {
         bool _existingListing = listings[_nftAddress][_tokenId][_msgSender()].quantity > 0;
         _createListingWithoutEvent(_nftAddress, _tokenId, _quantity, _pricePerItem, _expirationTime, _paymentToken);

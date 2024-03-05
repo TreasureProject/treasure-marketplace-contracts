@@ -1,16 +1,17 @@
-import "@nomiclabs/hardhat-ethers";
-import "@nomiclabs/hardhat-etherscan";
-import "@nomiclabs/hardhat-waffle";
 import 'dotenv/config';
-import {HardhatUserConfig} from 'hardhat/types';
+import '@nomicfoundation/hardhat-chai-matchers';
+import '@nomicfoundation/hardhat-ethers';
+import '@nomicfoundation/hardhat-foundry';
+import '@nomicfoundation/hardhat-verify';
+import 'hardhat-contract-sizer';
 import 'hardhat-deploy';
-import 'hardhat-deploy-ethers';
 import 'hardhat-gas-reporter';
 import 'solidity-coverage';
-import 'hardhat-contract-sizer';
+import { HardhatUserConfig } from 'hardhat/types';
+import './hardhat-extra';
 
-// A 32-byte private key.
-const privateKey = process.env.DEV_PRIVATE_KEY;
+// KMS signer used for production deployments.
+const kmsKeyId = 'arn:aws:kms:us-west-2:665230337498:key/mrk-5a1618d2c69c4986b414b617fac6bfd1';
 
 const config: HardhatUserConfig = {
   defaultNetwork: "hardhat",
@@ -18,8 +19,8 @@ const config: HardhatUserConfig = {
     hardhat: {
       forking: {
         enabled: process.env.FORKING === "true",
-        url: `https://arb-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`,
-        blockNumber: 7754848
+        url: `${process.env.ARBITRUM_SEPOLIA_URL}`,
+        blockNumber: parseInt(process.env.FORKING_BLOCK || '12821000', 10),
       },
       live: false,
       saveDeployments: true,
@@ -30,25 +31,9 @@ const config: HardhatUserConfig = {
       url: "http://localhost:8545",
       chainId : 61337
     },
-    rinkeby: {
-      url: `https://eth-rinkeby.alchemyapi.io/v2/${process.env.ALCHEMY_API_KEY}`,
-      accounts: privateKey !== undefined ? [privateKey] : [],
-      chainId: 4,
-      live: true,
-      saveDeployments: true,
-      tags: ["staging"]
-    },
-    kovan: {
-      url: `https://eth-kovan.alchemyapi.io/v2/${process.env.ALCHEMY_API_KEY}`,
-      accounts: privateKey !== undefined ? [privateKey] : [],
-      chainId: 42,
-      live: true,
-      saveDeployments: true,
-      tags: ["staging"]
-    },
     mainnet: {
-      url: `https://eth-mainnet.alchemyapi.io/v2/${process.env.ALCHEMY_API_KEY}`,
-      accounts: privateKey !== undefined ? [privateKey] : [],
+      url: `${process.env.ETHEREUM_MAINNET_URL}`,
+      kmsKeyId,
       chainId: 1,
       live: true,
       saveDeployments: true,
@@ -57,51 +42,25 @@ const config: HardhatUserConfig = {
     },
     sepolia: {
       url: `${process.env.SEPOLIA_URL}`,
-      accounts: privateKey !== undefined ? [privateKey] : [],
+      kmsKeyId,
       chainId: 11155111,
       live: false,
       saveDeployments: true,
       gasMultiplier: 2,
       deploy: ["deploy/sepolia"]
     },
-    polygon: {
-      url: `https://polygon-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`,
-      accounts: privateKey !== undefined ? [privateKey] : [],
-      chainId: 137,
-      live: true,
-      saveDeployments: true,
-      gasMultiplier: 2,
-    },
     arbitrum: {
       url: `${process.env.ARBITRUM_MAINNET_URL}`,
-      accounts: process.env.ARBITRUM_MAINNET_PK !== undefined ? [process.env.ARBITRUM_MAINNET_PK] : [],
+      kmsKeyId,
       chainId: 42161,
       live: true,
       saveDeployments: true,
       gasMultiplier: 2,
       deploy: ["deploy/arbitrum"]
     },
-    arbitrumRinkeby: {
-      url: `${process.env.ARBITRUM_TESTNET_URL}`,
-      accounts: process.env.ARBITRUM_MAINNET_PK !== undefined ? [process.env.ARBITRUM_MAINNET_PK] : [],
-      chainId: 421611,
-      live: false,
-      saveDeployments: true,
-      gasMultiplier: 2,
-      deploy: ["deploy/arbitrumRinkeby"]
-    },
-    arbitrumGoerli: {
-      url: `${process.env.ARBITRUM_GOERLI_URL}`,
-      accounts: privateKey !== undefined ? [privateKey] : [],
-      chainId: 421613,
-      live: false,
-      saveDeployments: true,
-      gasMultiplier: 2,
-      deploy: ["deploy/arbitrumGoerli"]
-    },
     arbitrumNova: {
       url: `${process.env.ARBITRUM_NOVA_URL}`,
-      accounts: process.env.ARBITRUM_MAINNET_PK !== undefined ? [process.env.ARBITRUM_MAINNET_PK] : [],
+      kmsKeyId,
       chainId: 42170,
       live: true,
       saveDeployments: true,
@@ -110,7 +69,7 @@ const config: HardhatUserConfig = {
     },
     arbitrumSepolia: {
       url: `${process.env.ARBITRUM_SEPOLIA_URL}`,
-      accounts: process.env.ARBITRUM_MAINNET_PK !== undefined ? [process.env.ARBITRUM_MAINNET_PK] : [],
+      kmsKeyId,
       chainId: 421614,
       live: false,
       saveDeployments: true,
@@ -170,14 +129,6 @@ const config: HardhatUserConfig = {
   etherscan: {
     apiKey: process.env.ETHERSCAN_API_KEY,
     customChains: [
-        {
-            network: 'arbitrumGoerli',
-            chainId: 421613,
-            urls: {
-                apiURL: 'https://api-goerli.arbiscan.io/api',
-                browserURL: 'https://goerli.arbiscan.io',
-            },
-        },
         {
             network: 'arbitrumNova',
             chainId: 42170,

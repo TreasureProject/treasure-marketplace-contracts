@@ -10,8 +10,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const fee = 500; // 5%
     const feeWithCollectionOwner = 250; // 2.5%
     const feeReceipient = '0x9b7c4b3edc8e8cd7741e8a213723b5ef1bdba64a'; // TODO: replace w/ official Treasure marketplace treasury on Arbitrum Nova.
-    const newOwner = '0x33117a2843495E4d103bE35fFFf926c4cd988e10';
-    const newProxyOwner = '0x33117a2843495E4d103bE35fFFf926c4cd988e10';
+    const newOwner = '0xd9F1E68fD5b9749ABc8C87241DDDA171baa0d791';
+    const newProxyOwner = '0xd9F1E68fD5b9749ABc8C87241DDDA171baa0d791';
     const magicAddress = '0xe8936ac97a85d708d5312d52c30c18d4533b8a9c';
     const wethAddress = '0x722E8BdD2ce80A4422E880164f2079488e115365';
     const nftApprovedList: {
@@ -120,4 +120,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     console.table(entries);
 };
 export default func;
-func.tags = ['marketplace'];
+func.tags = ['TreasureMarketplace'];

@@ -9,9 +9,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     // Constants for this deploy script.
     const fee = 500; // 5%
     const feeWithCollectionOwner = 250; // 2.5%
-    const feeReceipient = '0x33117a2843495E4d103bE35fFFf926c4cd988e10';
-    const newOwner = '0x33117a2843495E4d103bE35fFFf926c4cd988e10';
-    const newProxyOwner = '0x33117a2843495E4d103bE35fFFf926c4cd988e10';
+    const feeReceipient = '0xd9F1E68fD5b9749ABc8C87241DDDA171baa0d791';
+    const newOwner = '0xd9F1E68fD5b9749ABc8C87241DDDA171baa0d791';
+    const newProxyOwner = '0xd9F1E68fD5b9749ABc8C87241DDDA171baa0d791';
     const magicAddress = '0x55d0cf68a1afe0932aff6f36c87efa703508191c';
     const wethAddress = '0x980b62da83eff3d4576c647993b0c1d7faf17c73';
 

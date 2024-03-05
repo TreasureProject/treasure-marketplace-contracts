@@ -1,7 +1,7 @@
 import { ethers } from 'hardhat'
 
 export async function getBlockTime(blockNumber: any) {
-  return (await ethers.provider.getBlock(blockNumber)).timestamp;
+  return (await ethers.provider.getBlock(blockNumber))?.timestamp ?? 0;
 }
 
 export async function getCurrentTime() {

@@ -8,18 +8,20 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         return;
     }
 
-    const apiKey = process.env.NOVA_ARBISCAN_API_KEY;
-    if (!apiKey) {
-        throw new Error(`NOVA_ARBISCAN_API_KEY was undefined`);
-    }
-
     try {
         switch (hre.network.name) {
-            case 'arbitrumNova':
-                await hre.run("etherscan-verify", {"apiKey": apiKey, "apiUrl": "https://api-nova.arbiscan.io", sleep: true});
+            case 'arbitrumSepolia':
+                await hre.run('etherscan-verify', {
+                    apiUrl: 'https://api-sepolia.arbiscan.io',
+                    apiKey: process.env.ARBISCAN_API_KEY,
+                    sleep: true,
+                });
                 break;
             default:
-                await hre.run("etherscan-verify", { sleep: true });
+                await hre.run('etherscan-verify', {
+                    apiKey: process.env.ETHERSCAN_API_KEY,
+                    sleep: true,
+                });
                 break;
         }
     } catch (error) {

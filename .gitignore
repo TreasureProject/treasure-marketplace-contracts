@@ -150,3 +150,5 @@ deployments/hardhat
 coverage.json
 
 yarn.lock
+
+*.swp

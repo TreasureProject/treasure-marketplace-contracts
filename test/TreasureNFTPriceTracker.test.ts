@@ -28,8 +28,6 @@ enum FloorType {
 }
 
 describe('TreasureNFTPriceTracker', function () {
-    this.timeout(10000);
-
     let _nftPriceTracker: any;
     let _genCommonMetadataContract: any;
     
@@ -41,10 +39,10 @@ describe('TreasureNFTPriceTracker', function () {
     before(async function () {
         const namedAccounts = await getNamedAccounts();
 
-        _marketplaceSigner = ethers.provider.getSigner(namedAccounts.staker1);
-        _randomSigner = ethers.provider.getSigner(namedAccounts.staker2);
+        _marketplaceSigner = await ethers.provider.getSigner(namedAccounts.staker1);
+        _randomSigner = await ethers.provider.getSigner(namedAccounts.staker2);
 
-        _legionNFTContractAddress = namedAccounts.staker3;
+        _legionNFTContractAddress = await (await ethers.provider.getSigner(namedAccounts.staker3)).getAddress();
     });
 
     beforeEach(async function () {
@@ -55,19 +53,19 @@ describe('TreasureNFTPriceTracker', function () {
         const trackerFactory = await ethers.getContractFactory('TreasureNFTPriceTracker');
         _nftPriceTracker = await trackerFactory.deploy();
         await _nftPriceTracker.waitForDeployment();
-        await _nftPriceTracker.initialize(_marketplaceSigner._address, _legionNFTContractAddress, _genCommonMetadataContract.address);
+        await _nftPriceTracker.initialize(await _marketplaceSigner.getAddress(), _legionNFTContractAddress, await _genCommonMetadataContract.getAddress());
     });
 
     it('initialize()', async function () {
-        await expect(_nftPriceTracker.initialize(_marketplaceSigner._address, _legionNFTContractAddress, _genCommonMetadataContract.address))
+        await expect(_nftPriceTracker.initialize(await _marketplaceSigner.getAddress(), _legionNFTContractAddress, await _genCommonMetadataContract.getAddress()))
             .to.be.revertedWith("Initializable: contract is already initialized");
         
         expect(await _nftPriceTracker.treasureMarketplaceContract())
-            .to.equal(_marketplaceSigner._address);
+            .to.equal(await _marketplaceSigner.getAddress());
         expect(await _nftPriceTracker.legionContract())
             .to.equal(_legionNFTContractAddress);
         expect(await _nftPriceTracker.legionMetadata())
-            .to.equal(_genCommonMetadataContract.address);
+            .to.equal(await _genCommonMetadataContract.getAddress());
     });
 
     it('recordSale()', async function () {

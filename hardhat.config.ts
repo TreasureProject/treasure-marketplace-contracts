@@ -19,7 +19,7 @@ const config: HardhatUserConfig = {
     hardhat: {
       forking: {
         enabled: process.env.FORKING === "true",
-        url: `${process.env.FORKING_ALCHEMY_URL}`,
+        url: `${process.env.ARBITRUM_SEPOLIA_URL}`,
         blockNumber: parseInt(process.env.FORKING_BLOCK || '12821000', 10),
       },
       live: false,

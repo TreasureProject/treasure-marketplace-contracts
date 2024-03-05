@@ -19,7 +19,7 @@
         "@aws-sdk/client-kms": "^3.504.0",
         "@nomicfoundation/hardhat-ethers": "^3.0.5",
         "@nomicfoundation/hardhat-foundry": "^1.1.1",
-        "@nomicfoundation/hardhat-verify": "^2.0.3",
+        "@nomicfoundation/hardhat-verify": "^2.0.4",
         "@openzeppelin/contracts": "4.3.2",
         "@openzeppelin/contracts-upgradeable": "4.5.2",
         "@prb/math": "^2.5.0",
@@ -36,7 +36,7 @@
     "devDependencies": {
         "@nomicfoundation/hardhat-chai-matchers": "^2.0.6",
         "@types/chai": "^4.3.12",
-        "@types/mocha": "^9.0.0",
+        "@types/mocha": "^10.0.6",
         "chai": "^4.3.4",
         "dotenv": "^10.0.0",
         "eslint": "^8.56.0",

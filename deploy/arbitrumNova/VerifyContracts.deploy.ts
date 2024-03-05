@@ -19,7 +19,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
                 await hre.run("etherscan-verify", {"apiKey": apiKey, "apiUrl": "https://api-nova.arbiscan.io", sleep: true});
                 break;
             default:
-                await hre.run("etherscan-verify");
+                await hre.run("etherscan-verify", { sleep: true });
                 break;
         }
     } catch (error) {
@@ -28,6 +28,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     
 };
 export default func;
-func.tags = ['verify'];
+func.tags = ['VerifyContracts'];
 func.dependencies = [];
 func.runAtTheEnd = true;

@@ -120,4 +120,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     console.table(entries);
 };
 export default func;
-func.tags = ['marketplace'];
+func.tags = ['TreasureMarketplace'];

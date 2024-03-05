@@ -28,6 +28,8 @@ enum FloorType {
 }
 
 describe('TreasureNFTPriceTracker', function () {
+    this.timeout(10000);
+
     let _nftPriceTracker: any;
     let _genCommonMetadataContract: any;
     
@@ -48,11 +50,11 @@ describe('TreasureNFTPriceTracker', function () {
     beforeEach(async function () {
         const metadataMockFactory = await ethers.getContractFactory('LegionMetadataStoreMock')
         _genCommonMetadataContract = await metadataMockFactory.deploy(LegionGeneration.GENESIS, LegionRarity.COMMON);
-        await _genCommonMetadataContract.deployed();
+        await _genCommonMetadataContract.waitForDeployment();
 
         const trackerFactory = await ethers.getContractFactory('TreasureNFTPriceTracker');
-        _nftPriceTracker = await trackerFactory.deploy()
-        await _nftPriceTracker.deployed();
+        _nftPriceTracker = await trackerFactory.deploy();
+        await _nftPriceTracker.waitForDeployment();
         await _nftPriceTracker.initialize(_marketplaceSigner._address, _legionNFTContractAddress, _genCommonMetadataContract.address);
     });
 
@@ -70,9 +72,9 @@ describe('TreasureNFTPriceTracker', function () {
 
     it('recordSale()', async function () {
         const tokenId = 1;
-        const salePrice1 = ethers.utils.parseEther('500');
-        const salePrice2 = ethers.utils.parseEther('100');
-        const salePrice3 = ethers.utils.parseEther('900');
+        const salePrice1 = ethers.parseEther('500');
+        const salePrice2 = ethers.parseEther('100');
+        const salePrice3 = ethers.parseEther('900');
         await expect(_nftPriceTracker.recordSale(_legionNFTContractAddress, tokenId, salePrice1))
             .to.be.revertedWith("Invalid caller");
 
@@ -87,7 +89,7 @@ describe('TreasureNFTPriceTracker', function () {
             .to.emit(_nftPriceTracker, 'AveragePriceUpdated')
             .withArgs(_legionNFTContractAddress, FloorType.SUBFLOOR1, 0, salePrice1, salePrice1);
         
-        const expectedAvgPrice = salePrice1.add(salePrice2).div(2);
+        const expectedAvgPrice = (salePrice1 + salePrice2) / 2n;
         await expect(_nftPriceTracker.connect(_marketplaceSigner).recordSale(_legionNFTContractAddress, tokenId, salePrice2))
             .to.emit(_nftPriceTracker, 'AveragePriceUpdated')
             .withArgs(_legionNFTContractAddress, FloorType.SUBFLOOR1, salePrice1, salePrice2, expectedAvgPrice);
@@ -95,7 +97,7 @@ describe('TreasureNFTPriceTracker', function () {
         expect(await _nftPriceTracker.getAveragePriceForCollection(_legionNFTContractAddress, FloorType.SUBFLOOR1))
             .to.equal(expectedAvgPrice);
         
-        const expectedAvgPrice2 = expectedAvgPrice.add(salePrice3).div(2);
+        const expectedAvgPrice2 = (expectedAvgPrice + salePrice3) / 2n;
         await expect(_nftPriceTracker.connect(_marketplaceSigner).recordSale(_legionNFTContractAddress, tokenId, salePrice3))
             .to.emit(_nftPriceTracker, 'AveragePriceUpdated')
             .withArgs(_legionNFTContractAddress, FloorType.SUBFLOOR1, expectedAvgPrice, salePrice3, expectedAvgPrice2);

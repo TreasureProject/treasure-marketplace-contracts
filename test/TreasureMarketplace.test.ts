@@ -1,12 +1,13 @@
 import hre from 'hardhat';
 import { expect } from 'chai';
 import { getCurrentTime, mineBlock } from './utils';
-import { BigNumber } from 'ethers';
 
 const { ethers, deployments, artifacts, getNamedAccounts } = hre;
 const { deploy } = deployments;
 
 describe('TreasureMarketplace', function () {
+    this.timeout(10000);
+
     let marketplace: any;
     let weth: any;
     let magicToken: any, nft: any, erc1155: any;
@@ -37,32 +38,32 @@ describe('TreasureMarketplace', function () {
     beforeEach(async function () {
         const ERC20Mintable = await ethers.getContractFactory('ERC20Mintable')
         magicToken = await ERC20Mintable.deploy()
-        await magicToken.deployed();
+        await magicToken.waitForDeployment();
 
         const MockWETH = await ethers.getContractFactory('MockWeth');
         weth = await MockWETH.deploy()
-        await weth.deployed();
+        await weth.waitForDeployment();
 
         const ERC721Mintable = await ethers.getContractFactory('ERC721Mintable')
         nft = await ERC721Mintable.deploy()
-        await nft.deployed();
+        await nft.waitForDeployment();
 
         const ERC1155Mintable = await ethers.getContractFactory('ERC1155Mintable')
         erc1155 = await ERC1155Mintable.deploy()
-        await erc1155.deployed();
+        await erc1155.waitForDeployment();
 
         const TreasureMarketplace = await ethers.getContractFactory('TreasureMarketplace')
         const marketplaceImpl = await TreasureMarketplace.deploy();
 
         const TreasureMarketplaceAbi = (await artifacts.readArtifact('TreasureMarketplace')).abi;
-        const iface = new ethers.utils.Interface(TreasureMarketplaceAbi);
+        const iface = new ethers.Interface(TreasureMarketplaceAbi);
         const data = iface.encodeFunctionData("initialize", [100, feeRecipient, magicToken.address]);
 
         const OptimizedTransparentUpgradeableProxy = await ethers.getContractFactory('OptimizedTransparentUpgradeableProxy')
         const proxy = await OptimizedTransparentUpgradeableProxy.deploy(marketplaceImpl.address, admin, data)
-        await proxy.deployed();
+        await proxy.waitForDeployment();
 
-        marketplace = new ethers.Contract(proxy.address, TreasureMarketplaceAbi, deployerSigner);
+        marketplace = new ethers.Contract(await proxy.getAddress(), TreasureMarketplaceAbi, deployerSigner);
 
         await(await marketplace.setWeth(weth.address)).wait();
         await(await marketplace.toggleAreBidsActive()).wait();
@@ -80,7 +81,7 @@ describe('TreasureMarketplace', function () {
 
             await expect(marketplace.connect(staker3Signer).setFee(newFee, newFeeWithCollectionOwner)).to.be.revertedWith("AccessControl: account 0x90f79bf6eb2c4f870365e785982e1f101e93b906 is missing role 0x34d5e892b0a7ec1561fc4a5fdcb31b798cf623590906b938d356c9619e539958");
 
-            const tooHighFee = (await marketplace.MAX_FEE()).add(1);
+            const tooHighFee = (await marketplace.MAX_FEE()) + 1n;
 
             await expect(marketplace.setFee(tooHighFee, newFeeWithCollectionOwner)).to.be.revertedWith("max fee");
 
@@ -94,7 +95,7 @@ describe('TreasureMarketplace', function () {
             const newRecipient = seller;
 
             await expect(marketplace.connect(staker3Signer).setFeeRecipient(newRecipient)).to.be.revertedWith("AccessControl: account 0x90f79bf6eb2c4f870365e785982e1f101e93b906 is missing role 0x34d5e892b0a7ec1561fc4a5fdcb31b798cf623590906b938d356c9619e539958");
-            await expect(marketplace.setFeeRecipient(ethers.constants.AddressZero)).to.be.revertedWith("TreasureMarketplace: cannot set 0x0 address");
+            await expect(marketplace.setFeeRecipient(ethers.ZeroAddress)).to.be.revertedWith("TreasureMarketplace: cannot set 0x0 address");
 
             await marketplace.setFeeRecipient(newRecipient);
             expect(await marketplace.feeReceipient()).to.be.equal(newRecipient);
@@ -179,8 +180,8 @@ describe('TreasureMarketplace', function () {
 
     describe('ERC721', function () {
         it('createOrUpdateListings()', async function () {
-            const pricePerItem = ethers.utils.parseUnits('1', 'ether');
-            const expirationTime = ethers.BigNumber.from('4102462800'); // Midnight Jan 1, 2100
+            const pricePerItem = ethers.parseUnits('1', 'ether');
+            const expirationTime = 4102462800; // Midnight Jan 1, 2100
             const ListingsToCreate = {
                 INVALID_MIN_PRICE: {
                     tokenId: 0,
@@ -194,7 +195,7 @@ describe('TreasureMarketplace', function () {
                     tokenId: 0,
                     nftAddress: nft.address,
                     quantity: 1,
-                    pricePerItem: ethers.BigNumber.from('999999999'),
+                    pricePerItem: 999999999n,
                     expirationTime,
                     paymentToken: magicToken.address
                 },
@@ -258,23 +259,23 @@ describe('TreasureMarketplace', function () {
             const ListingsToUpdate = {
                 INCREASE_PRICE: {
                     ...ListingsToCreate.VALID_1,
-                    pricePerItem: BigNumber.from(ListingsToCreate.VALID_1.pricePerItem).add(100),
+                    pricePerItem: ListingsToCreate.VALID_1.pricePerItem + 100n,
                 },
                 CHANGE_EXPIRATION: {
                     ...ListingsToCreate.VALID_1,
-                    expirationTime: BigNumber.from(ListingsToCreate.VALID_1.expirationTime).add(100)
+                    expirationTime: ListingsToCreate.VALID_1.expirationTime + 100,
                 },
                 CHANGE_EXPIRATION_2: {
                     ...ListingsToCreate.VALID_2,
-                    expirationTime: BigNumber.from(ListingsToCreate.VALID_2.expirationTime).add(100)
+                    expirationTime: ListingsToCreate.VALID_2.expirationTime + 100,
                 },
                 CHANGE_EXPIRATION_3: {
                     ...ListingsToCreate.VALID_3,
-                    expirationTime: BigNumber.from(ListingsToCreate.VALID_2.expirationTime).add(100)
+                    expirationTime: ListingsToCreate.VALID_2.expirationTime + 100,
                 },
                 INVALID_MIN_PRICE: {
                     ...ListingsToCreate.VALID_1,
-                    pricePerItem: 0,
+                    pricePerItem: 0n,
                 },
                 INVALID_QUANTITY: {
                     ...ListingsToCreate.VALID_1,
@@ -373,8 +374,8 @@ describe('TreasureMarketplace', function () {
 
             it('createListing()', async function () {
                 const tokenId = 0;
-                const pricePerItem = ethers.utils.parseUnits('1', 'ether');
-                const expirationTime = ethers.BigNumber.from('4102462800'); // Midnight Jan 1, 2100
+                const pricePerItem = ethers.parseUnits('1', 'ether');
+                const expirationTime = 4102462800; // Midnight Jan 1, 2100
                 expect(await nft.ownerOf(tokenId)).to.be.equal(seller);
 
                 await nft.connect(sellerSigner).setApprovalForAll(marketplace.address, true);
@@ -434,7 +435,7 @@ describe('TreasureMarketplace', function () {
                     nft.address,
                     tokenId,
                     1,
-                    ethers.BigNumber.from('999999999'),
+                    999999999n,
                     expirationTime,
                     magicToken.address
                 )).to.be.revertedWith("TreasureMarketplace: below min price");
@@ -466,8 +467,8 @@ describe('TreasureMarketplace', function () {
 
             describe('with listing', function () {
                 const tokenId = 0;
-                const pricePerItem = ethers.utils.parseUnits('1', 'ether');
-                const expirationTime = ethers.BigNumber.from('4102462800'); // Midnight Jan 1, 2100
+                const pricePerItem = ethers.parseUnits('1', 'ether');
+                const expirationTime = 4102462800; // Midnight Jan 1, 2100
 
                 beforeEach(async function () {
                     expect(await nft.ownerOf(tokenId)).to.be.equal(seller);
@@ -485,7 +486,7 @@ describe('TreasureMarketplace', function () {
                 });
 
                 it('updateListing()', async function () {
-                    const newPricePerItem = pricePerItem.div(2);
+                    const newPricePerItem = pricePerItem / 2n;
                     const newExpirationTime = (await getCurrentTime()) + 500;
 
                     await marketplace.pause();
@@ -506,7 +507,7 @@ describe('TreasureMarketplace', function () {
                         nft.address,
                         tokenId,
                         1,
-                        pricePerItem.add(1),
+                        pricePerItem + 1n,
                         newExpirationTime,
                         magicToken.address
                     );
@@ -588,7 +589,7 @@ describe('TreasureMarketplace', function () {
                             tokenId,
                             seller,
                             1,
-                        pricePerItem.sub(1),
+                        pricePerItem - 1n,
                         magicToken.address,
                         false]]
                     )).to.be.revertedWith("price increased");
@@ -637,8 +638,8 @@ describe('TreasureMarketplace', function () {
                         false]]
                     )
 
-                    expect(await magicToken.balanceOf(await marketplace.feeReceipient())).to.be.equal(pricePerItem.div(100));
-                    expect(await magicToken.balanceOf(seller)).to.be.equal(pricePerItem.mul(99).div(100));
+                    expect(await magicToken.balanceOf(await marketplace.feeReceipient())).to.be.equal(pricePerItem / 100n);
+                    expect(await magicToken.balanceOf(seller)).to.be.equal(pricePerItem * 99n / 100n);
 
                     expect(await nft.ownerOf(tokenId)).to.be.equal(buyer);
                     const listing = await marketplace.listings(nft.address, tokenId, seller);
@@ -673,12 +674,12 @@ describe('TreasureMarketplace', function () {
                     )).wait();
 
                     expect(await magicToken.balanceOf(await marketplace.feeReceipient()))
-                        .to.be.equal(pricePerItem.mul(25).div(1000));
+                        .to.be.equal(pricePerItem * 25n / 1000n);
                     // Owner of collection.
                     expect(await magicToken.balanceOf(admin))
-                        .to.be.equal(pricePerItem.mul(50).div(1000));
+                        .to.be.equal(pricePerItem * 50n / 1000n);
                     expect(await magicToken.balanceOf(seller))
-                        .to.be.equal(pricePerItem.mul(925).div(1000));
+                        .to.be.equal(pricePerItem * 925n / 1000n);
                 });
 
                 it('buyItem() with quantity 0', async function () {
@@ -728,8 +729,8 @@ describe('TreasureMarketplace', function () {
 
     describe('ERC1155', function () {
         it('createOrUpdateListings()', async function () {
-            const pricePerItem = ethers.utils.parseUnits('1', 'ether');
-            const expirationTime = ethers.BigNumber.from('4102462800'); // Midnight Jan 1, 2100
+            const pricePerItem = ethers.parseUnits('1', 'ether');
+            const expirationTime = 4102462800; // Midnight Jan 1, 2100
             const quantity = 10;
             const ListingsToCreate = {
                 INVALID_MIN_PRICE: {
@@ -744,7 +745,7 @@ describe('TreasureMarketplace', function () {
                     tokenId: 0,
                     nftAddress: erc1155.address,
                     quantity: 5,
-                    pricePerItem: ethers.BigNumber.from('999999999'),
+                    pricePerItem: 999999999n,
                     expirationTime,
                     paymentToken: magicToken.address
                 },
@@ -816,15 +817,15 @@ describe('TreasureMarketplace', function () {
             const ListingsToUpdate = {
                 INCREASE_PRICE: {
                     ...ListingsToCreate.VALID_1,
-                    pricePerItem: BigNumber.from(ListingsToCreate.VALID_1.pricePerItem).add(100),
+                    pricePerItem: ListingsToCreate.VALID_1.pricePerItem + 100n,
                 },
                 CHANGE_EXPIRATION: {
                     ...ListingsToCreate.VALID_1,
-                    expirationTime: BigNumber.from(ListingsToCreate.VALID_1.expirationTime).add(100)
+                    expirationTime: ListingsToCreate.VALID_1.expirationTime + 100,
                 },
                 CHANGE_EXPIRATION_2: {
                     ...ListingsToCreate.VALID_2,
-                    expirationTime: BigNumber.from(ListingsToCreate.VALID_2.expirationTime).add(100)
+                    expirationTime: ListingsToCreate.VALID_2.expirationTime + 100,
                 },
                 INCREASE_QUANTITY: {
                     ...ListingsToCreate.VALID_3,
@@ -937,8 +938,8 @@ describe('TreasureMarketplace', function () {
         describe('with NFT minted', function () {
             const tokenId = 0;
             const quantity = 10;
-            const pricePerItem = ethers.utils.parseUnits('1', 'ether');
-            const expirationTime = ethers.BigNumber.from('4102462800'); // Midnight Jan 1, 2100
+            const pricePerItem = ethers.parseUnits('1', 'ether');
+            const expirationTime = 4102462800; // Midnight Jan 1, 2100
 
             beforeEach(async function () {
                 await erc1155.functions['mint(address,uint256,uint256)'](seller, tokenId, quantity);
@@ -1032,8 +1033,8 @@ describe('TreasureMarketplace', function () {
 
                 it('success', async function () {
                     expect(await erc1155.balanceOf(seller, tokenId)).to.be.equal(quantity);
-                    await magicToken.mint(buyer, pricePerItem.mul(quantity));
-                    await magicToken.connect(buyerSigner).approve(marketplace.address, pricePerItem.mul(quantity));
+                    await magicToken.mint(buyer, pricePerItem * BigInt(quantity));
+                    await magicToken.connect(buyerSigner).approve(marketplace.address, pricePerItem * BigInt(quantity));
                     expect(await magicToken.balanceOf(marketplace.address)).to.be.equal(0);
                     expect(await magicToken.balanceOf(seller)).to.be.equal(0);
 
@@ -1047,8 +1048,8 @@ describe('TreasureMarketplace', function () {
                         false]]
                     )
 
-                    expect(await magicToken.balanceOf(await marketplace.feeReceipient())).to.be.equal(pricePerItem.mul(quantity).div(100));
-                    expect(await magicToken.balanceOf(seller)).to.be.equal(pricePerItem.mul(quantity).mul(99).div(100));
+                    expect(await magicToken.balanceOf(await marketplace.feeReceipient())).to.be.equal(pricePerItem * BigInt(quantity) / 100n);
+                    expect(await magicToken.balanceOf(seller)).to.be.equal(pricePerItem * BigInt(quantity) * 99n / 100n);
 
                     expect(await erc1155.balanceOf(buyer, tokenId)).to.be.equal(quantity);
                     expect(await erc1155.balanceOf(seller, tokenId)).to.be.equal(0);
@@ -1062,8 +1063,8 @@ describe('TreasureMarketplace', function () {
                     await mineBlock(expirationTime + 100);
 
                     expect(await erc1155.balanceOf(seller, tokenId)).to.be.equal(quantity);
-                    await magicToken.mint(buyer, pricePerItem.mul(quantity));
-                    await magicToken.connect(buyerSigner).approve(marketplace.address, pricePerItem.mul(quantity));
+                    await magicToken.mint(buyer, pricePerItem * BigInt(quantity));
+                    await magicToken.connect(buyerSigner).approve(marketplace.address, pricePerItem * BigInt(quantity));
                     expect(await magicToken.balanceOf(marketplace.address)).to.be.equal(0);
                     expect(await magicToken.balanceOf(seller)).to.be.equal(0);
 
@@ -1077,7 +1078,7 @@ describe('TreasureMarketplace', function () {
                         false]]
                     )).to.be.revertedWith("listing expired");
 
-                    expect(await magicToken.balanceOf(buyer)).to.be.equal(pricePerItem.mul(quantity));
+                    expect(await magicToken.balanceOf(buyer)).to.be.equal(pricePerItem * BigInt(quantity));
                     expect(await erc1155.balanceOf(seller, tokenId)).to.be.equal(quantity);
 
                     const listing = await marketplace.listings(erc1155.address, tokenId, seller);
@@ -1104,7 +1105,7 @@ describe('TreasureMarketplace', function () {
                 });
 
                 it('updateListing()', async function () {
-                    const newPricePerItem = pricePerItem.div(2);
+                    const newPricePerItem = pricePerItem / 2n;
                     const newQuantity = 5;
                     const newExpirationTime = (await getCurrentTime()) + 500;
 
@@ -1149,7 +1150,7 @@ describe('TreasureMarketplace', function () {
                         erc1155.address,
                         tokenId,
                         newQuantity,
-                        pricePerItem.add(1),
+                        pricePerItem + 1n,
                         newExpirationTime,
                         magicToken.address
                     );
@@ -1190,8 +1191,8 @@ describe('TreasureMarketplace', function () {
                 describe('buyItem()', function () {
                     it('all', async function () {
                         expect(await erc1155.balanceOf(seller, tokenId)).to.be.equal(quantity);
-                        await magicToken.mint(buyer, pricePerItem.mul(quantity));
-                        await magicToken.connect(buyerSigner).approve(marketplace.address, pricePerItem.mul(quantity));
+                        await magicToken.mint(buyer, pricePerItem * BigInt(quantity));
+                        await magicToken.connect(buyerSigner).approve(marketplace.address, pricePerItem * BigInt(quantity));
                         expect(await magicToken.balanceOf(marketplace.address)).to.be.equal(0);
                         expect(await magicToken.balanceOf(seller)).to.be.equal(0);
 
@@ -1239,8 +1240,8 @@ describe('TreasureMarketplace', function () {
                             false]]
                         )
 
-                        expect(await magicToken.balanceOf(await marketplace.feeReceipient())).to.be.equal(pricePerItem.mul(quantity).div(100));
-                        expect(await magicToken.balanceOf(seller)).to.be.equal(pricePerItem.mul(quantity).mul(99).div(100));
+                        expect(await magicToken.balanceOf(await marketplace.feeReceipient())).to.be.equal(pricePerItem * BigInt(quantity) / 100n);
+                        expect(await magicToken.balanceOf(seller)).to.be.equal(pricePerItem * BigInt(quantity) * 99n / 100n);
 
                         expect(await erc1155.balanceOf(buyer, tokenId)).to.be.equal(quantity);
                         expect(await erc1155.balanceOf(seller, tokenId)).to.be.equal(0);
@@ -1254,8 +1255,8 @@ describe('TreasureMarketplace', function () {
                         const buyQuantity = 5;
 
                         expect(await erc1155.balanceOf(seller, tokenId)).to.be.equal(quantity);
-                        await magicToken.mint(buyer, pricePerItem.mul(buyQuantity));
-                        await magicToken.connect(buyerSigner).approve(marketplace.address, pricePerItem.mul(buyQuantity));
+                        await magicToken.mint(buyer, pricePerItem * BigInt(buyQuantity));
+                        await magicToken.connect(buyerSigner).approve(marketplace.address, pricePerItem * BigInt(buyQuantity));
                         expect(await magicToken.balanceOf(marketplace.address)).to.be.equal(0);
                         expect(await magicToken.balanceOf(seller)).to.be.equal(0);
 
@@ -1269,8 +1270,8 @@ describe('TreasureMarketplace', function () {
                             false]]
                         )
 
-                        expect(await magicToken.balanceOf(await marketplace.feeReceipient())).to.be.equal(pricePerItem.mul(buyQuantity).div(100));
-                        expect(await magicToken.balanceOf(seller)).to.be.equal(pricePerItem.mul(buyQuantity).mul(99).div(100));
+                        expect(await magicToken.balanceOf(await marketplace.feeReceipient())).to.be.equal(pricePerItem * BigInt(buyQuantity) / 100n);
+                        expect(await magicToken.balanceOf(seller)).to.be.equal(pricePerItem * BigInt(buyQuantity) * 99n / 100n);
 
                         expect(await erc1155.balanceOf(buyer, tokenId)).to.be.equal(buyQuantity);
                         expect(await erc1155.balanceOf(seller, tokenId)).to.be.equal(quantity - buyQuantity);
@@ -1292,7 +1293,7 @@ describe('TreasureMarketplace', function () {
         await(await nft.mint(seller)).wait();
         let tokenId = 0;
 
-        let pricePerItem = ethers.utils.parseEther("1");
+        let pricePerItem = ethers.parseEther("1");
 
         await expect(marketplace
             .connect(sellerSigner)
@@ -1348,7 +1349,7 @@ describe('TreasureMarketplace', function () {
             .to.equal(buyer);
         // 1% fees are transferred
         expect(await weth.balanceOf(seller))
-            .to.eq(pricePerItem.sub(ethers.utils.parseEther("0.01")));
+            .to.eq(pricePerItem - ethers.parseEther("0.01"));
     });
 
     it('Should be able to buy in ETH for listings in weth', async function () {
@@ -1358,7 +1359,7 @@ describe('TreasureMarketplace', function () {
         await(await nft.mint(seller)).wait();
         let tokenId = 0;
 
-        let pricePerItem = ethers.utils.parseEther("1");
+        let pricePerItem = ethers.parseEther("1");
 
         await(await marketplace
             .connect(sellerSigner)
@@ -1401,7 +1402,7 @@ describe('TreasureMarketplace', function () {
                     weth.address,
                     true
                 ]]
-                , { value: pricePerItem.add(1) }
+                , { value: pricePerItem + 1n }
             )).to.be.revertedWith("TreasureMarketplace: Bad ETH value")
 
         // Contract doesn't have enough eth to process
@@ -1417,7 +1418,7 @@ describe('TreasureMarketplace', function () {
                     weth.address,
                     true
                 ]]
-                , { value: pricePerItem.sub(1) }
+                , { value: pricePerItem - 1n }
             )).to.be.revertedWith("TreasureMarketplace: Sending eth was not successful")
 
         await expect(await marketplace
@@ -1433,7 +1434,7 @@ describe('TreasureMarketplace', function () {
                     true
                 ]]
                 , { value: pricePerItem }
-            )).to.changeEtherBalances([buyerSigner, sellerSigner], [pricePerItem.mul(-1), pricePerItem.sub(ethers.utils.parseEther("0.01"))]);
+            )).to.changeEtherBalances([buyerSigner, sellerSigner], [pricePerItem * -1n, pricePerItem - ethers.parseEther("0.01")]);
 
         expect(await nft.ownerOf(tokenId))
             .to.equal(buyer);
@@ -1443,7 +1444,7 @@ describe('TreasureMarketplace', function () {
 
         let tokenId = 0;
 
-        let pricePerItem = ethers.utils.parseEther("1");
+        let pricePerItem = ethers.parseEther("1");
 
         await expect(marketplace
             .connect(buyerSigner)
@@ -1571,7 +1572,7 @@ describe('TreasureMarketplace', function () {
     });
 
     it('Should be able to create a valid 721 collection bid', async function () {
-        let pricePerItem = ethers.utils.parseEther("1");
+        let pricePerItem = ethers.parseEther("1");
 
         await(await marketplace.setTokenApprovalStatus(nft.address, TOKEN_APPROVAL_STATUS_ERC_721_APPROVED, magicToken.address)).wait();
         await(await marketplace.setTokenApprovalStatus(erc1155.address, TOKEN_APPROVAL_STATUS_ERC_1155_APPROVED, magicToken.address)).wait();
@@ -1596,7 +1597,7 @@ describe('TreasureMarketplace', function () {
                 magicToken.address)
             ).to.be.revertedWith("TreasureMarketplace: Bad quantity");
 
-        await(await magicToken.mint(buyer, pricePerItem.mul(2))).wait();
+        await(await magicToken.mint(buyer, pricePerItem * 2n)).wait();
         await(await magicToken
             .connect(buyerSigner)
             .approve(marketplace.address, pricePerItem))
@@ -1616,7 +1617,7 @@ describe('TreasureMarketplace', function () {
 
         await(await magicToken
             .connect(buyerSigner)
-            .approve(marketplace.address, pricePerItem.mul(2)))
+            .approve(marketplace.address, pricePerItem * 2n))
             .wait();
 
         await(await marketplace
@@ -1631,14 +1632,14 @@ describe('TreasureMarketplace', function () {
     });
 
     it('Should be able to accept a collection level bid', async function () {
-        let pricePerItem = ethers.utils.parseEther("1");
+        let pricePerItem = ethers.parseEther("1");
 
         await(await marketplace.setTokenApprovalStatus(nft.address, TOKEN_APPROVAL_STATUS_ERC_721_APPROVED, magicToken.address)).wait();
 
-        await(await magicToken.mint(buyer, pricePerItem.mul(3))).wait();
+        await(await magicToken.mint(buyer, pricePerItem * 3n)).wait();
         await(await magicToken
             .connect(buyerSigner)
-            .approve(marketplace.address, pricePerItem.mul(3)))
+            .approve(marketplace.address, pricePerItem * 3n))
             .wait();
 
         await(await marketplace
@@ -1672,7 +1673,7 @@ describe('TreasureMarketplace', function () {
                     0,
                     buyer,
                     1,
-                    pricePerItem.sub(1),
+                    pricePerItem - 1n,
                     magicToken.address
                 ]
             )).to.be.revertedWith("TreasureMarketplace: price does not match");
@@ -1772,19 +1773,19 @@ describe('TreasureMarketplace', function () {
         expect(await magicToken.balanceOf(buyer))
             .to.equal(pricePerItem);
         expect(await magicToken.balanceOf(seller))
-            .to.equal(ethers.utils.parseEther('1.98'));
+            .to.equal(ethers.parseEther('1.98'));
     });
 
     it('Should be able to accept a token level bid', async function () {
-        let pricePerItem = ethers.utils.parseEther("1");
+        let pricePerItem = ethers.parseEther("1");
 
         await(await marketplace.setTokenApprovalStatus(nft.address, TOKEN_APPROVAL_STATUS_ERC_721_APPROVED, magicToken.address)).wait();
         await(await marketplace.setTokenApprovalStatus(erc1155.address, TOKEN_APPROVAL_STATUS_ERC_1155_APPROVED, magicToken.address)).wait();
 
-        await(await magicToken.mint(buyer, pricePerItem.mul(3))).wait();
+        await(await magicToken.mint(buyer, pricePerItem * 3n)).wait();
         await(await magicToken
             .connect(buyerSigner)
-            .approve(marketplace.address, pricePerItem.mul(3)))
+            .approve(marketplace.address, pricePerItem * 3n))
             .wait();
 
         await(await marketplace
@@ -1818,7 +1819,7 @@ describe('TreasureMarketplace', function () {
                     10,
                     buyer,
                     1,
-                    pricePerItem.sub(1),
+                    pricePerItem - 1n,
                     magicToken.address
                 ]
             )).to.be.revertedWith("TreasureMarketplace: bid does not exist");
@@ -1862,6 +1863,6 @@ describe('TreasureMarketplace', function () {
         expect(await magicToken.balanceOf(buyer))
             .to.equal(0);
         expect(await magicToken.balanceOf(seller))
-            .to.equal(ethers.utils.parseEther('2.97'));
+            .to.equal(ethers.parseEther('2.97'));
     });
 });

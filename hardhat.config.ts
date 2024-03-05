@@ -1,4 +1,6 @@
 import 'dotenv/config';
+import '@nomicfoundation/hardhat-chai-matchers';
+import '@nomicfoundation/hardhat-ethers';
 import '@nomicfoundation/hardhat-foundry';
 import '@nomicfoundation/hardhat-verify';
 import 'hardhat-contract-sizer';
@@ -17,8 +19,8 @@ const config: HardhatUserConfig = {
     hardhat: {
       forking: {
         enabled: process.env.FORKING === "true",
-        url: `${process.env.ARBITRUM_MAINNET_URL}`,
-        blockNumber: 7754848
+        url: `${process.env.FORKING_ALCHEMY_URL}`,
+        blockNumber: parseInt(process.env.FORKING_BLOCK || '12821000', 10),
       },
       live: false,
       saveDeployments: true,

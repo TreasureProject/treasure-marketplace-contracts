@@ -1,13 +1,39 @@
 {
-  "compilerOptions": {
-    "target": "es2018",
-    "module": "commonjs",
-    "strict": true,
-    "esModuleInterop": true,
-    "moduleResolution": "node",
-    "outDir": "dist",
-    "declaration": true
-  },
-  "include": ["hardhat.config.ts", "./scripts", "./deploy", "./test"],
-  "exclude": ["node_modules"]
+    "compilerOptions": {
+        // Target and module behavior.
+        "lib": ["es2022", "dom"],
+        "target": "es2022",
+
+        // Module behavior compatibility to run w/ both tsc and ts-node.
+        "module": "commonjs",
+        "moduleResolution": "node",
+        "esModuleInterop": true, // Allow default imports for CommonJS modules.
+        "resolveJsonModule": true, // For importing .json files.
+        "moduleDetection": "force",
+
+        // Other TSC behavior.
+        "noEmit": true,
+        "allowImportingTsExtensions": true,
+
+        // JS and JSX compatibility.
+        "jsx": "preserve", // Support JSX.
+        "allowJs": true, // Allow importing `.js` from `.ts`.
+
+        // Best practices.
+        "strict": true,
+        "forceConsistentCasingInFileNames": true,
+        "skipLibCheck": true,
+
+        // Custom configs.
+        "typeRoots": ["./node_modules/@types"],
+        "paths": {
+            "@/*": ["./*"]
+        }
+    },
+    "exclude": ["node_modules"],
+    "include": ["hardhat.config.ts", "scripts/", "deploy/", "test/"],
+    "ts-node": {
+        "require": ["tsconfig-paths/register"],
+        "swc": true
+    }
 }

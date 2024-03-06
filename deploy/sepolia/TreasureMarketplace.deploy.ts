@@ -1,7 +1,7 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { DeployFunction } from 'hardhat-deploy/types';
 
-const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
+const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     const { deployments, getNamedAccounts } = hre;
     const { deploy, execute, read } = deployments;
     const { deployer } = await getNamedAccounts();
@@ -40,7 +40,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     // Set the DAO fees (w/o and w/ collection owner) in the contract.
     const feeFromContract = await read('TreasureMarketplace', 'fee');
     const feeWithCollectionOwnerFromContract = await read('TreasureMarketplace', 'feeWithCollectionOwner');
-    if (feeFromContract.toNumber() != fee || feeWithCollectionOwnerFromContract.toNumber() != feeWithCollectionOwner) {
+    if (
+        feeFromContract.toNumber() !== fee ||
+        feeWithCollectionOwnerFromContract.toNumber() !== feeWithCollectionOwner
+    ) {
         await execute('TreasureMarketplace', { from: deployer, log: true }, 'setFee', fee, feeWithCollectionOwner);
     }
 

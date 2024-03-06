@@ -1,22 +1,14 @@
-import { ethers } from 'hardhat'
+import { ethers } from 'hardhat';
 
-export async function getBlockTime(blockNumber: any) {
-  return (await ethers.provider.getBlock(blockNumber))?.timestamp ?? 0;
-}
+export const getBlockTime = async (blockNumber: number): Promise<number> =>
+    (await ethers.provider.getBlock(blockNumber))?.timestamp ?? 0;
 
-export async function getCurrentTime() {
-  const blockNumber = await ethers.provider.getBlockNumber();
-  return await getBlockTime(blockNumber);
-}
+export const getCurrentTime = async (): Promise<number> => {
+    const blockNumber = await ethers.provider.getBlockNumber();
+    const blockTime = await getBlockTime(blockNumber);
+    return blockTime;
+};
 
-export async function increaseTime(time: any) {
-  await ethers.provider.send('evm_increaseTime', [time]);
-}
-
-export async function setNextBlockTime(time: any) {
-  await ethers.provider.send('evm_setNextBlockTimestamp', [time]);
-}
-
-export async function mineBlock(time: any) {
-  await ethers.provider.send('evm_mine', [time]);
-}
+export const mineBlock = async (time: number): Promise<void> => {
+    await ethers.provider.send('evm_mine', [time]);
+};

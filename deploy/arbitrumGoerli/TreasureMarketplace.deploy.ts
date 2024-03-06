@@ -1,7 +1,7 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { DeployFunction } from 'hardhat-deploy/types';
 
-const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
+const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     const { deployments, getNamedAccounts } = hre;
     const { deploy, execute, read } = deployments;
     const { deployer } = await getNamedAccounts();
@@ -45,13 +45,14 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     // Set the DAO fees (w/o and w/ collection owner) in the contract.
     const feeFromContract = await read('TreasureMarketplace', 'fee');
     const feeWithCollectionOwnerFromContrat = await read('TreasureMarketplace', 'feeWithCollectionOwner');
-    if (feeFromContract.toNumber() != fee || feeWithCollectionOwnerFromContrat.toNumber() != feeWithCollectionOwner) {
+    if (feeFromContract.toNumber() !== fee || feeWithCollectionOwnerFromContrat.toNumber() !== feeWithCollectionOwner) {
         await execute('TreasureMarketplace', { from: deployer, log: true }, 'setFee', fee, feeWithCollectionOwner);
     }
 
     // Pre approve any collections if needed.
-    for (const nft of nftApprovedList) {
-        if ((await read('TreasureMarketplace', 'tokenApprovals', nft.address)) == 0) {
+    for (let i = 0; i < nftApprovedList.length; i += 1) {
+        const nft = nftApprovedList[i];
+        if ((await read('TreasureMarketplace', 'tokenApprovals', nft.address)) === 0) {
             console.log('setting:', nft.name, nft.address);
             await execute(
                 'TreasureMarketplace',
@@ -81,7 +82,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     // its role.
     if (
         (await read('TreasureMarketplace', 'hasRole', TREASURE_MARKETPLACE_ADMIN_ROLE, deployer)) &&
-        newOwner != deployer
+        newOwner !== deployer
     ) {
         await execute(
             'TreasureMarketplace',

@@ -1,9 +1,9 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { DeployFunction } from 'hardhat-deploy/types';
 
-const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
+const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     const { deployments, getNamedAccounts } = hre;
-    const { deploy, execute, read } = deployments;
+    const { execute, read } = deployments;
     const { deployer } = await getNamedAccounts();
 
     // Constants for this deploy script.
@@ -19,7 +19,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     // Set new fee recipient.
     const currentFeeRecipient = await read('TreasureMarketplace', 'feeReceipient');
-    if (currentFeeRecipient != newFeeRecipient) {
+    if (currentFeeRecipient !== newFeeRecipient) {
         console.log(`Updating fee recipient from ${currentFeeRecipient} to ${newFeeRecipient}.`);
         await execute('TreasureMarketplace', { from: deployer, log: true }, 'setFeeRecipient', newFeeRecipient);
     }
@@ -28,11 +28,23 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const TREASURE_MARKETPLACE_ADMIN_ROLE = await read('TreasureMarketplace', 'TREASURE_MARKETPLACE_ADMIN_ROLE');
     if (!(await read('TreasureMarketplace', 'hasRole', TREASURE_MARKETPLACE_ADMIN_ROLE, newOwner))) {
         console.log(`Granting ADMIN role to ${newOwner}.`);
-        await execute('TreasureMarketplace', { from: deployer, log: true }, 'grantRole', TREASURE_MARKETPLACE_ADMIN_ROLE, newOwner);
+        await execute(
+            'TreasureMarketplace',
+            { from: deployer, log: true },
+            'grantRole',
+            TREASURE_MARKETPLACE_ADMIN_ROLE,
+            newOwner,
+        );
     }
     if (await read('TreasureMarketplace', 'hasRole', TREASURE_MARKETPLACE_ADMIN_ROLE, oldOwner)) {
         console.log(`Revoking ADMIN role from ${oldOwner}.`);
-        await execute('TreasureMarketplace', { from: deployer, log: true }, 'revokeRole', TREASURE_MARKETPLACE_ADMIN_ROLE, oldOwner);
+        await execute(
+            'TreasureMarketplace',
+            { from: deployer, log: true },
+            'revokeRole',
+            TREASURE_MARKETPLACE_ADMIN_ROLE,
+            oldOwner,
+        );
     }
 
     // Transfer ProxyAdmin ownership.

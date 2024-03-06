@@ -1,8 +1,8 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { DeployFunction } from 'hardhat-deploy/types';
 
-const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
-    const isUnitTests = hre.network.name === "hardhat";
+const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
+    const isUnitTests = hre.network.name === 'hardhat';
 
     if (isUnitTests) {
         return;
@@ -24,7 +24,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     } catch (error) {
         console.log(`Error verifying: ${error}`);
     }
-    
 };
 export default func;
 func.tags = ['VerifyContracts'];

@@ -9,8 +9,8 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     const fee = 500; // 5%
     const feeWithCollectionOwner = 250; // 2.5%
     const feeRecipient = '0xDb6Ab450178bAbCf0e467c1F3B436050d907E233';
-    const newOwner = '0xB013ABD83F0bD173E9F14ce7d6e420Ad711483b4';
-    const newProxyOwner = '0xB013ABD83F0bD173E9F14ce7d6e420Ad711483b4';
+    const newOwner = '0xD1D943c09b9C3355207ce8c85aB1c4558f6Cd851';
+    const newProxyOwner = '0xD1D943c09b9C3355207ce8c85aB1c4558f6Cd851';
 
     const treasureMarketplace = await deploy('TreasureMarketplace', {
         from: deployer,
@@ -94,4 +94,4 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     console.table(entries);
 };
 export default func;
-func.tags = ['marketplace'];
+func.tags = ['TreasureMarketplace'];

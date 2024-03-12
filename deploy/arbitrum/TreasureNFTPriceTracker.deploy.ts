@@ -38,4 +38,4 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
 };
 export default func;
 func.tags = ['TreasureNFTPriceTracker'];
-func.dependencies = ['marketplace'];
+func.dependencies = ['TreasureMarketplace'];

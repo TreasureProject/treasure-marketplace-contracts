@@ -162,7 +162,7 @@ export class KmsSigner extends ProviderWrapperWithChainId {
                 gasPrice: txRequest.gasPrice,
                 maxFeePerGas: txRequest.maxFeePerGas,
                 maxPriorityFeePerGas: txRequest.maxPriorityFeePerGas,
-                nonce: Number(txRequest.nonce) ?? (await this.getNonce(sender)),
+                nonce: txRequest.nonce ? Number(txRequest.nonce) : (await this.getNonce(sender)),
                 value: txRequest.value,
                 to: txRequest.to ? toHex(txRequest.to) : undefined,
                 data: txRequest.data ? toHex(txRequest.data) : undefined,

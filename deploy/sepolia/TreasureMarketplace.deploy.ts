@@ -33,7 +33,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
 
     // Set the WETH address in the marketplace contracted if needed.
     const wethAddressFromContract = await read('TreasureMarketplace', 'weth');
-    if (wethAddress !== wethAddressFromContract) {
+    if (wethAddress !== wethAddressFromContract.toLowerCase()) {
         await execute('TreasureMarketplace', { from: deployer, log: true }, 'setWeth', wethAddress);
     }
 

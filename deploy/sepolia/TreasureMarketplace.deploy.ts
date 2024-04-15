@@ -12,7 +12,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     const feeReceipient = '0xd9F1E68fD5b9749ABc8C87241DDDA171baa0d791';
     const newOwner = '0xd9F1E68fD5b9749ABc8C87241DDDA171baa0d791';
     const newProxyOwner = '0xd9F1E68fD5b9749ABc8C87241DDDA171baa0d791';
-    const magicAddress = '0x55d0cf68a1afe0932aff6f36c87efa703508191c';
+    const magicAddress = '0x013cb2854daad8203c6686682f5d876e5d3de4a2';
     const wethAddress = '0xf531b8f309be94191af87605cfbf600d71c2cfe0';
 
     // Deploy/upgrade the Treasure marketplace contract.

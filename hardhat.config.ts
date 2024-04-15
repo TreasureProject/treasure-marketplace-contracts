@@ -10,8 +10,11 @@ import 'solidity-coverage';
 import { HardhatUserConfig } from 'hardhat/types';
 import './hardhat-extra';
 
-// KMS signer used for production deployments.
-const kmsKeyId = 'arn:aws:kms:us-west-2:665230337498:key/mrk-5a1618d2c69c4986b414b617fac6bfd1';
+// Prod deployer: 0x086a11794a945fb10a6199cca4e0d7ff6d25513b
+const prodKmsKey = 'arn:aws:kms:us-east-1:884078395586:key/mrk-d163b366670f455fa8a9df6d1854d5be';
+
+// Dev deployer: 0xc51f27cf93531be66671dd0543cf22b475d00873
+const devKmsKey = 'arn:aws:kms:us-east-1:665230337498:key/mrk-5a1618d2c69c4986b414b617fac6bfd1';
 
 const config: HardhatUserConfig = {
     defaultNetwork: 'hardhat',
@@ -33,7 +36,7 @@ const config: HardhatUserConfig = {
         },
         mainnet: {
             url: `${process.env.ETHEREUM_MAINNET_URL}`,
-            kmsKeyId,
+            kmsKeyId: prodKmsKey,
             chainId: 1,
             live: true,
             saveDeployments: true,
@@ -42,7 +45,7 @@ const config: HardhatUserConfig = {
         },
         sepolia: {
             url: `${process.env.SEPOLIA_URL}`,
-            kmsKeyId,
+            kmsKeyId: devKmsKey,
             chainId: 11155111,
             live: false,
             saveDeployments: true,
@@ -51,7 +54,7 @@ const config: HardhatUserConfig = {
         },
         arbitrum: {
             url: `${process.env.ARBITRUM_MAINNET_URL}`,
-            kmsKeyId,
+            kmsKeyId: prodKmsKey,
             chainId: 42161,
             live: true,
             saveDeployments: true,
@@ -60,7 +63,7 @@ const config: HardhatUserConfig = {
         },
         arbitrumNova: {
             url: `${process.env.ARBITRUM_NOVA_URL}`,
-            kmsKeyId,
+            kmsKeyId: prodKmsKey,
             chainId: 42170,
             live: true,
             saveDeployments: true,
@@ -69,7 +72,7 @@ const config: HardhatUserConfig = {
         },
         arbitrumSepolia: {
             url: `${process.env.ARBITRUM_SEPOLIA_URL}`,
-            kmsKeyId,
+            kmsKeyId: devKmsKey,
             chainId: 421614,
             live: false,
             saveDeployments: true,

@@ -10,10 +10,10 @@ import 'solidity-coverage';
 import { HardhatUserConfig } from 'hardhat/types';
 import './hardhat-extra';
 
-// Prod deployer: 0x086a11794a945fb10a6199cca4e0d7ff6d25513b
-const prodKmsKey = 'arn:aws:kms:us-east-1:884078395586:key/mrk-d163b366670f455fa8a9df6d1854d5be';
+// Prod Legacy deployer: 0xd1d943c09b9c3355207ce8c85ab1c4558f6cd851
+const prodKmsKey = 'arn:aws:kms:us-east-1:884078395586:key/mrk-646fd3ea71b94861a3ff4f3229d92573';
 
-// Dev deployer: 0xc51f27cf93531be66671dd0543cf22b475d00873
+// Dev Legacy deployer: 0xd9f1e68fd5b9749abc8c87241ddda171baa0d791
 const devKmsKey = 'arn:aws:kms:us-east-1:665230337498:key/mrk-5a1618d2c69c4986b414b617fac6bfd1';
 
 const config: HardhatUserConfig = {
@@ -78,6 +78,20 @@ const config: HardhatUserConfig = {
             saveDeployments: true,
             gasMultiplier: 2,
             deploy: ['deploy/arbitrumSepolia'],
+        },
+        ruby: {
+            url: `${process.env.RUBY_URL}`,
+            kmsKeyId: devKmsKey,
+            chainId: 0xEEEE1,
+            live: false,
+            saveDeployments: true,
+            gasMultiplier: 2,
+            deploy: ['deploy/ruby'],
+            verify: {
+                etherscan: {
+                    apiUrl: 'https://ruby.explorer.caldera.xyz/api?module=contract&action=verify',
+                },
+            },
         },
     },
     solidity: {

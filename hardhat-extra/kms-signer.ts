@@ -162,7 +162,7 @@ export class KmsSigner extends ProviderWrapperWithChainId {
                 gasPrice: txRequest.gasPrice,
                 maxFeePerGas: txRequest.maxFeePerGas,
                 maxPriorityFeePerGas: txRequest.maxPriorityFeePerGas,
-                nonce: txRequest.nonce ? Number(txRequest.nonce) : (await this.getNonce(sender)),
+                nonce: txRequest.nonce ? Number(txRequest.nonce) : await this.getNonce(sender),
                 value: txRequest.value,
                 to: txRequest.to ? toHex(txRequest.to) : undefined,
                 data: txRequest.data ? toHex(txRequest.data) : undefined,
@@ -178,7 +178,57 @@ export class KmsSigner extends ProviderWrapperWithChainId {
             });
         }
 
-        if (args.method === 'eth_accounts' || args.method === 'eth_requestAccounts') {
+        if (method === 'eth_signTypedData_v4') {
+            const {
+                domain,
+                types: typesRaw,
+                primaryType,
+                message,
+            }: {
+                domain: ethers.TypedDataDomain;
+                types: Record<string, Array<ethers.TypedDataField>>;
+                primaryType?: string;
+                message: Record<string, any>;
+            } = JSON.parse(params[1]);
+
+            // If primaryType is defined, traverse the types graph starting at primaryType
+            // to find all required types for the signature (ethers will throw an error if
+            // any unused types are included).
+            //
+            // If primaryType is not defined, just use the provided types as-is.
+            let types: Record<string, Array<ethers.TypedDataField>> = typesRaw;
+            if (primaryType) {
+                types = {}; // Reset and reconstruct.
+                let typesToVerify = [primaryType];
+                while (typesToVerify.length) {
+                    const nextTypesToVerify: Set<string> = new Set();
+
+                    typesToVerify.forEach((typeName) => {
+                        const typeValue = typesRaw[typeName];
+
+                        if (typeValue) {
+                            // The typeName is a valid, so include it in the final types.
+                            types[typeName] = typeValue;
+
+                            // Include the subfield types among the types to verify in the next round.
+                            Object.values(typeValue).forEach(({ type }) => nextTypesToVerify.add(type));
+                        }
+                    });
+
+                    assert(
+                        !nextTypesToVerify.has(primaryType),
+                        `Cycle detected in types: ${JSON.stringify(types, null, 4)}`,
+                    );
+
+                    typesToVerify = Array.from(nextTypesToVerify);
+                }
+            }
+
+            const signature = await this.signMessageHash(ethers.TypedDataEncoder.hash(domain, types, message));
+            return signature;
+        }
+
+        if (method === 'eth_accounts' || method === 'eth_requestAccounts') {
             return [sender];
         }
 

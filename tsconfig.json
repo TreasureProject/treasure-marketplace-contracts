@@ -31,7 +31,7 @@
         }
     },
     "exclude": ["node_modules"],
-    "include": ["hardhat.config.ts", "scripts/", "deploy/", "test/"],
+    "include": ["hardhat.config.ts", "scripts/", "deploy/", "typechain-types", "test/"],
     "ts-node": {
         "require": ["tsconfig-paths/register"],
         "swc": true

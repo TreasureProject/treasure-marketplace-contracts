@@ -49,7 +49,13 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
         feeFromContract.toNumber() !== fee ||
         feeWithCollectionOwnerFromContract.toNumber() !== feeWithCollectionOwner
     ) {
-        await execute('TreasureMarketplaceTestnet', { from: deployer, log: true }, 'setFee', fee, feeWithCollectionOwner);
+        await execute(
+            'TreasureMarketplaceTestnet',
+            { from: deployer, log: true },
+            'setFee',
+            fee,
+            feeWithCollectionOwner,
+        );
     }
 
     const areBidsActive = await read('TreasureMarketplaceTestnet', 'areBidsActive');
@@ -89,9 +95,15 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
             name: `TreasureMarketplace.hasRole(${deployer})`,
             value: await read('TreasureMarketplaceTestnet', 'hasRole', TREASURE_MARKETPLACE_ADMIN_ROLE, deployer),
         },
-        { name: `TreasureMarketplace.feeReceipient()`, value: await read('TreasureMarketplaceTestnet', 'feeReceipient') },
+        {
+            name: `TreasureMarketplace.feeReceipient()`,
+            value: await read('TreasureMarketplaceTestnet', 'feeReceipient'),
+        },
         { name: `TreasureMarketplace.fee()`, value: (await read('TreasureMarketplaceTestnet', 'fee')).toNumber() },
-        { name: 'TreasureMarketplace.areBidsActive()', value: await read('TreasureMarketplaceTestnet', 'areBidsActive') },
+        {
+            name: 'TreasureMarketplace.areBidsActive()',
+            value: await read('TreasureMarketplaceTestnet', 'areBidsActive'),
+        },
         { name: 'MAGIC address', value: await read('TreasureMarketplaceTestnet', 'paymentToken') },
         { name: 'WETH address', value: await read('TreasureMarketplaceTestnet', 'weth') },
     ];

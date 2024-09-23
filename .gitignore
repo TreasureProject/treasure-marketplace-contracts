@@ -152,3 +152,8 @@ coverage.json
 yarn.lock
 
 *.swp
+
+typechain-types/
+
+artifacts-zk/
+cache-zk/

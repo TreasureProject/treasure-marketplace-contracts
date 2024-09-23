@@ -28,7 +28,8 @@
             }
         ],
         "no-shadow": "off",
-        "@typescript-eslint/no-shadow": ["error"],
+        "@typescript-eslint/no-shadow": "error",
+        "@typescript-eslint/no-use-before-define": "off",
         "no-console": "off",
         "prefer-destructuring": [
             "error",

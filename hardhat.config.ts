@@ -10,7 +10,6 @@ import 'hardhat-contract-sizer';
 import 'hardhat-deploy';
 import 'hardhat-gas-reporter';
 import 'solidity-coverage';
-import '@typechain/hardhat';
 import { HardhatUserConfig } from 'hardhat/config';
 import './hardhat-extra';
 

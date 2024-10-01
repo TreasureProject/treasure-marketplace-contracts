@@ -26,7 +26,8 @@ contract MockWeth {
     function withdraw(uint256 wad) public {
         require(balanceOf[msg.sender] >= wad);
         balanceOf[msg.sender] -= wad;
-        payable(msg.sender).call{value: wad}("");
+        (bool success,) = payable(msg.sender).call{value: wad}("");
+        require(success, "Transfer failed");
         emit Withdrawal(msg.sender, wad);
     }
 

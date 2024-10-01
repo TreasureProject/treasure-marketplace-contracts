@@ -1,7 +1,7 @@
 import * as hre from 'hardhat';
+import { HttpNetworkUserConfig } from 'hardhat/types';
 import { Deployer } from '@matterlabs/hardhat-zksync-deploy';
 import { Provider, Wallet } from 'zksync-ethers';
-import { TreasureMarketplaceTestnet } from '../../typechain-types';
 
 const func = async () => {
     const wallet = getWallet();
@@ -19,14 +19,14 @@ const func = async () => {
     const contractName = 'TreasureMarketplaceTestnet';
 
     const contract = await deployer.loadArtifact(contractName);
-    const marketplace = (await hre.zkUpgrades.deployProxy(
+    const marketplace = await hre.zkUpgrades.deployProxy(
         deployer.zkWallet,
         contract,
         [fee, feeReceipient, magicAddress],
         {
             initializer: 'initialize',
         },
-    )) as unknown as TreasureMarketplaceTestnet;
+    );
     await marketplace.waitForDeployment();
 
     // Set the WETH address in the marketplace contracted if needed.
@@ -95,7 +95,7 @@ const func = async () => {
 };
 
 export const getProvider = () => {
-    const rpcUrl = hre.network.config.url;
+    const rpcUrl = (hre.network.config as HttpNetworkUserConfig).url;
     if (!rpcUrl)
         throw Error(
             `⛔️ RPC URL wasn't found in "${hre.network.name}"! Please add a "url" field to the network config in hardhat.config.ts`,

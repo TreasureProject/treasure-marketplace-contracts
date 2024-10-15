@@ -4,7 +4,6 @@ import '@matterlabs/hardhat-zksync-upgradable';
 import '@matterlabs/hardhat-zksync-verify';
 import '@nomicfoundation/hardhat-chai-matchers';
 import '@nomicfoundation/hardhat-ethers';
-import '@nomicfoundation/hardhat-foundry';
 import '@nomicfoundation/hardhat-verify';
 import 'hardhat-contract-sizer';
 import 'hardhat-deploy';
@@ -115,6 +114,12 @@ const config: HardhatUserConfig = {
             ethNetwork: 'sepolia', // or a Sepolia RPC endpoint from Infura/Alchemy/Chainstack etc.
             zksync: true,
             verifyURL: 'https://explorer.sepolia.era.zksync.dev/contract_verification',
+        },
+        treasureTopaz: {
+            url: 'https://rpc.topaz.treasure.lol',
+            ethNetwork: 'sepolia',
+            zksync: true,
+            kmsKeyId: devKmsKey,
         },
     },
     zksolc: {

@@ -11,12 +11,13 @@ const func = async () => {
     // Constants for this deploy script.
     const fee = 500n; // 5%
     const feeWithCollectionOwner = 250n; // 2.5%
+    // TODO: Set the feeReceipient to the multisig address when deployed
     const feeReceipient = deployer.zkWallet.address;
     const newOwner = deployer.zkWallet.address;
-    const magicAddress = '0x095ded714d42cBD5fb2E84A0FfbFb140E38dC9E1';
-    const wethAddress = '0x095ded714d42cBD5fb2E84A0FfbFb140E38dC9E1';
+    const magicAddress = '0x263D8f36Bb8d0d9526255E205868C26690b04B88';
+    const wethAddress = '0x263D8f36Bb8d0d9526255E205868C26690b04B88';
 
-    const contractName = 'TreasureMarketplaceTestnet';
+    const contractName = 'TreasureMarketplace';
 
     const contract = await deployer.loadArtifact(contractName);
     const marketplace = await hre.zkUpgrades.deployProxy(
@@ -33,11 +34,6 @@ const func = async () => {
     const wethAddressFromContract = await marketplace.weth();
     if (wethAddress.toLowerCase() !== wethAddressFromContract.toLowerCase()) {
         await marketplace.setWeth(wethAddress);
-    }
-
-    const paymentTokenFromContract = await marketplace.paymentToken();
-    if (magicAddress.toLowerCase() !== paymentTokenFromContract.toLowerCase()) {
-        await marketplace.setPaymentToken(magicAddress);
     }
 
     // Set the DAO fees (w/o and w/ collection owner) in the contract.
@@ -90,7 +86,7 @@ const func = async () => {
         { name: 'WETH address', value: await marketplace.weth() },
     ];
 
-    console.log(`---- TreasureMarketplaceTestnet Config ----`);
+    console.log(`---- TreasureMarketplace Config ----`);
     console.table(entries);
 };
 

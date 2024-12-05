@@ -120,10 +120,19 @@ const config: HardhatUserConfig = {
             ethNetwork: 'sepolia',
             zksync: true,
             kmsKeyId: devKmsKey,
+            verifyURL: 'https://rpc-explorer-verify.topaz.treasure.lol/contract_verification',
+        },
+        treasureMainnet: {
+            url: 'https://rpc.treasure.lol',
+            ethNetwork: 'mainnet',
+            zksync: true,
+            kmsKeyId: prodKmsKey,
+            verifyURL: 'https://rpc-explorer-verify.treasure.lol/contract_verification',
+            saveDeployments: true,
         },
     },
     zksolc: {
-        version: 'latest',
+        version: '1.5.7',
         settings: {},
     },
     solidity: {

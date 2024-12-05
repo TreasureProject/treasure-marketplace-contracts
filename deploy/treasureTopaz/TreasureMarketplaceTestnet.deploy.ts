@@ -11,8 +11,8 @@ const func = async () => {
     // Constants for this deploy script.
     const fee = 500n; // 5%
     const feeWithCollectionOwner = 250n; // 2.5%
-    const feeReceipient = '0x892d81728eB3B33E463AEEdc2dC167130E74Be8c';
-    const newOwner = '0x892d81728eB3B33E463AEEdc2dC167130E74Be8c';
+    const feeReceipient = deployer.zkWallet.address;
+    const newOwner = deployer.zkWallet.address;
     const magicAddress = '0x095ded714d42cBD5fb2E84A0FfbFb140E38dC9E1';
     const wethAddress = '0x095ded714d42cBD5fb2E84A0FfbFb140E38dC9E1';
 

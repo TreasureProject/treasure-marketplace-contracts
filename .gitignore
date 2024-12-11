@@ -141,7 +141,6 @@ yarn-error.log*
 artifacts
 cache
 .env
-package-lock.json
 
 deployments/localhost
 deployments/rinkeby

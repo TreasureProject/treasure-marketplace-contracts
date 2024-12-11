@@ -8,11 +8,17 @@
 
 ## Build and test
 
-Use Node version 14 or 16.
+Use Node version 20 or higher.
 
 ```sh
-npm install
-npm test # This performs tests and checks test coverage
+pnpm install
+pnpm test # This performs tests and checks test coverage
+```
+
+## Deployment on Treasure Chains
+
+```
+pnpm hardhat deploy --network treasureMainnet --deploy-scripts deploy/treasureMainnet --tags treasure-marketplace
 ```
 
 ## Deployment

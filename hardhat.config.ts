@@ -1,7 +1,4 @@
 import 'dotenv/config';
-import '@matterlabs/hardhat-zksync';
-import '@matterlabs/hardhat-zksync-upgradable';
-import '@matterlabs/hardhat-zksync-verify';
 import '@nomicfoundation/hardhat-chai-matchers';
 import '@nomicfoundation/hardhat-ethers';
 import '@nomicfoundation/hardhat-verify';
@@ -9,6 +6,7 @@ import 'hardhat-contract-sizer';
 import 'hardhat-deploy';
 import 'hardhat-gas-reporter';
 import 'solidity-coverage';
+import '@matterlabs/hardhat-zksync';
 import { HardhatUserConfig } from 'hardhat/config';
 import './hardhat-extra';
 
@@ -128,7 +126,6 @@ const config: HardhatUserConfig = {
             zksync: true,
             kmsKeyId: prodKmsKey,
             verifyURL: 'https://rpc-explorer-verify.treasure.lol/contract_verification',
-            saveDeployments: true,
         },
     },
     zksolc: {

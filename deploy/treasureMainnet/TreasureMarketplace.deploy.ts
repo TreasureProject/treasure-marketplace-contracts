@@ -12,7 +12,7 @@ const func = async () => {
     const fee = 500n; // 5%
     const feeWithCollectionOwner = 250n; // 2.5%
     // TODO: Set the feeReceipient to the multisig address when deployed
-    const feeReceipient = deployer.zkWallet.address;
+    const feeReceipient = '0x36Ec9CF670d220abBc59f866d0BD916166f22b1D'; // Marketplace multisig.
     const newOwner = deployer.zkWallet.address;
     const magicAddress = '0x263D8f36Bb8d0d9526255E205868C26690b04B88';
     const wethAddress = '0x263D8f36Bb8d0d9526255E205868C26690b04B88';

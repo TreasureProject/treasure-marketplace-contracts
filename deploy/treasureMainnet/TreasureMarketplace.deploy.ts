@@ -1,115 +1,123 @@
-import * as hre from 'hardhat';
-import { HttpNetworkUserConfig } from 'hardhat/types';
-import { Deployer } from '@matterlabs/hardhat-zksync-deploy';
-import { Provider, Wallet } from 'zksync-ethers';
+import { HardhatRuntimeEnvironment } from 'hardhat/types';
+import { DeployFunction } from 'hardhat-deploy/types';
 
-const func = async () => {
-    const wallet = getWallet();
-
-    const deployer = new Deployer(hre, wallet);
+const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
+    const { deployments, getNamedAccounts } = hre;
+    const { deploy, execute, read } = deployments;
+    const { deployer } = await getNamedAccounts();
 
     // Constants for this deploy script.
-    const fee = 500n; // 5%
-    const feeWithCollectionOwner = 250n; // 2.5%
-    // TODO: Set the feeReceipient to the multisig address when deployed
+    const fee = 500; // 5%
+    const feeWithCollectionOwner = 250; // 2.5%
     const feeReceipient = '0x36Ec9CF670d220abBc59f866d0BD916166f22b1D'; // Marketplace multisig.
-    const newOwner = deployer.zkWallet.address;
+    const newOwner = deployer;
+    const newProxyOwner = deployer;
     const magicAddress = '0x263D8f36Bb8d0d9526255E205868C26690b04B88';
     const wethAddress = '0x263D8f36Bb8d0d9526255E205868C26690b04B88';
 
     const contractName = 'TreasureMarketplace';
 
-    const contract = await deployer.loadArtifact(contractName);
-    const marketplace = await hre.zkUpgrades.deployProxy(
-        deployer.zkWallet,
-        contract,
-        [fee, feeReceipient, magicAddress],
-        {
-            initializer: 'initialize',
+    // Deploy/upgrade the Treasure marketplace contract.
+    const treasureMarketplace = await deploy(contractName, {
+        from: deployer,
+        log: true,
+        proxy: {
+            owner: newProxyOwner,
+
+            // On ZK-based chains, need to manually copy TransparentUpgradeableProxy and
+            // ProxyAdmin to your source directory.
+            proxyContract: 'TransparentUpgradeableProxy',
+            checkABIConflict: false,
+            viaAdminContract: 'ProxyAdmin',
+
+            execute: {
+                init: {
+                    methodName: 'initialize',
+                    args: [fee, feeReceipient, magicAddress],
+                },
+            },
         },
-    );
-    await marketplace.waitForDeployment();
+    });
 
     // Set the WETH address in the marketplace contracted if needed.
-    const wethAddressFromContract = await marketplace.weth();
+    const wethAddressFromContract = await read(contractName, 'weth');
     if (wethAddress.toLowerCase() !== wethAddressFromContract.toLowerCase()) {
-        await marketplace.setWeth(wethAddress);
+        await execute(contractName, { from: deployer, log: true }, 'setWeth', wethAddress);
+    }
+
+    const paymentTokenFromContract = await read(contractName, 'paymentToken');
+    if (magicAddress.toLowerCase() !== paymentTokenFromContract.toLowerCase()) {
+        await execute(contractName, { from: deployer, log: true }, 'setPaymentToken', magicAddress);
     }
 
     // Set the DAO fees (w/o and w/ collection owner) in the contract.
-    const feeFromContract = await marketplace.fee();
-    const feeWithCollectionOwnerFromContract = await marketplace.feeWithCollectionOwner();
-    if (feeFromContract !== fee || feeWithCollectionOwnerFromContract !== feeWithCollectionOwner) {
-        await marketplace.setFee(fee, feeWithCollectionOwner);
+    const feeFromContract = await read(contractName, 'fee');
+    const feeWithCollectionOwnerFromContract = await read(contractName, 'feeWithCollectionOwner');
+    if (
+        feeFromContract.toNumber() !== fee ||
+        feeWithCollectionOwnerFromContract.toNumber() !== feeWithCollectionOwner
+    ) {
+        await execute(
+            contractName,
+            { from: deployer, log: true },
+            'setFee',
+            fee,
+            feeWithCollectionOwner,
+        );
     }
 
-    const areBidsActive = await marketplace.areBidsActive();
+    const areBidsActive = await read(contractName, 'areBidsActive');
     if (!areBidsActive) {
-        await marketplace.toggleAreBidsActive();
+        await execute(contractName, { from: deployer, log: true }, 'toggleAreBidsActive');
     }
 
     // Grep the admin role identifier.
-    const TREASURE_MARKETPLACE_ADMIN_ROLE = await marketplace.TREASURE_MARKETPLACE_ADMIN_ROLE();
+    const TREASURE_MARKETPLACE_ADMIN_ROLE = await read(contractName, 'TREASURE_MARKETPLACE_ADMIN_ROLE');
+
     // If newOwner is not an admin, grant admin role to newOwner.
-    if (!(await marketplace.hasRole(TREASURE_MARKETPLACE_ADMIN_ROLE, newOwner))) {
-        await marketplace.grantRole(TREASURE_MARKETPLACE_ADMIN_ROLE, newOwner);
+    if (!(await read(contractName, 'hasRole', TREASURE_MARKETPLACE_ADMIN_ROLE, newOwner))) {
+        await execute(
+            contractName,
+            { from: deployer, log: true },
+            'grantRole',
+            TREASURE_MARKETPLACE_ADMIN_ROLE,
+            newOwner,
+        );
     }
 
-    const defaultProxyAdmin = await hre.zkUpgrades.admin.getInstance(wallet);
+    const ProxyAdmin = await deployments.get('ProxyAdmin');
 
     const entries = [
-        { name: 'TreasureMarketplace.address', value: marketplace.getAddress() },
-        { name: 'DefaultProxyAdmin.address', value: await defaultProxyAdmin.getAddress() },
+        { name: 'TreasureMarketplace.address', value: treasureMarketplace.address },
+        { name: 'ProxyAdmin.address', value: ProxyAdmin.address },
         {
-            name: 'DefaultProxyAdmin.getProxyAdmin("TreasureMarketplace")',
-            value: await defaultProxyAdmin.getProxyAdmin(await marketplace.getAddress()),
+            name: 'ProxyAdmin.getProxyAdmin("TreasureMarketplace")',
+            value: await read('ProxyAdmin', 'getProxyAdmin', treasureMarketplace.address),
         },
-        { name: 'DefaultProxyAdmin.owner()', value: await defaultProxyAdmin.owner() },
+        { name: 'ProxyAdmin.owner()', value: await read('ProxyAdmin', 'owner') },
         {
             name: `TreasureMarketplace.hasRole(${newOwner})`,
-            value: await marketplace.hasRole(TREASURE_MARKETPLACE_ADMIN_ROLE, newOwner),
+            value: await read(contractName, 'hasRole', TREASURE_MARKETPLACE_ADMIN_ROLE, newOwner),
         },
         {
             name: `TreasureMarketplace.hasRole(${deployer})`,
-            value: await marketplace.hasRole(TREASURE_MARKETPLACE_ADMIN_ROLE, deployer.zkWallet.address),
+            value: await read(contractName, 'hasRole', TREASURE_MARKETPLACE_ADMIN_ROLE, deployer),
         },
         {
             name: `TreasureMarketplace.feeReceipient()`,
-            value: await marketplace.feeReceipient(),
+            value: await read(contractName, 'feeReceipient'),
         },
-        { name: `TreasureMarketplace.fee()`, value: await marketplace.fee() },
+        { name: `TreasureMarketplace.fee()`, value: (await read(contractName, 'fee')).toNumber() },
         {
             name: 'TreasureMarketplace.areBidsActive()',
-            value: await marketplace.areBidsActive(),
+            value: await read(contractName, 'areBidsActive'),
         },
-        { name: 'MAGIC address', value: await marketplace.paymentToken() },
-        { name: 'WETH address', value: await marketplace.weth() },
+        { name: 'MAGIC address', value: await read(contractName, 'paymentToken') },
+        { name: 'WETH address', value: await read(contractName, 'weth') },
     ];
 
-    console.log(`---- TreasureMarketplace Config ----`);
+    console.log(`---- ${contractName} Config ----`);
     console.table(entries);
 };
-
-export const getProvider = () => {
-    const rpcUrl = (hre.network.config as HttpNetworkUserConfig).url;
-    if (!rpcUrl)
-        throw Error(
-            `⛔️ RPC URL wasn't found in "${hre.network.name}"! Please add a "url" field to the network config in hardhat.config.ts`,
-        );
-
-    // Initialize ZKsync Provider
-    const provider = new Provider(rpcUrl);
-
-    return provider;
-};
-
-export const getWallet = (privateKey?: string) => {
-    const provider = getProvider();
-
-    // Initialize ZKsync Wallet
-    const wallet = new Wallet(privateKey ?? process.env.WALLET_PRIVATE_KEY!, provider);
-
-    return wallet;
-};
-
 export default func;
+func.tags = ['treasure-marketplace'];
